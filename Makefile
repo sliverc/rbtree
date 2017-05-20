@@ -28,9 +28,11 @@ DOCS := \
 	$(BUILD)/src/test_traits.c.rst
 
 ide:
-	$(MAKE) all 2>&1 | $(BASE)/mk/pfix
+	$(MAKE) ride 2>&1 | $(BASE)/mk/pfix
 
-all: docs module
+ride: docs rbtree module
+
+all: rbtree test
 
 test: doc cppcheck tests
 
@@ -45,7 +47,7 @@ docs: $(DOCS)
 	@git add $(BASE)/README.rst
 
 rbtree: $(BUILD)/src/rbtree.h ## Make rbtree.h
-	@clang-format -style=file $(BUILD)/src/rbtree.h > $(BASE)/rbtree.h
+	@cp -f $(BUILD)/src/rbtree.h $(BASE)/rbtree.h
 	@git add $(BASE)/rbtree.h
 
 doc: docs  ## Make documentation

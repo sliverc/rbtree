@@ -16,7 +16,6 @@ Development
 Requirements
 ------------
 
-* clang-format
 * gcc or clang
 * hypothesis
 * cffi
@@ -47,7 +46,7 @@ Short
 Detailed
 --------
 
-Every function comes in three flavors
+Every function x comes in three flavors
 
 x_m
    These functions only take a context as standard argument, but they assume
@@ -60,7 +59,7 @@ x_m
 
    .. code-block:: cpp
 
-      rb_node_init_tr_m(my, node);
+      rb_node_init_m(my, node);
 
 
 x_cx_m
@@ -86,7 +85,7 @@ x_tr_m
 
    .. code-block:: cpp
 
-      rb_node_init_m(
+      rb_node_init_tr_m(
           node_t,
           rb_color_m,
           rb_parent_m,
@@ -96,9 +95,9 @@ x_tr_m
       );
 
 
-Usually you would the x_m functions and add color, parent, left and right to
-the structure used. If you want to use different fields you need to use
-x_cx_m. The x_tr_m function can usually just be ignored and are only
+Usually you would the x_m functions and add color, parent, left and right
+fields to the structure used. If you want to use different fields you need
+to use x_cx_m. The x_tr_m function can usually just be ignored and are only
 interesting if you are extending the functionality of rbtree.
 
 Implementation
@@ -111,7 +110,7 @@ Based on the following references: auckland_
 Basic traits
 ============
 
-Traits used by default (x_tr_m macros)
+Traits used by default (x_m macros)
 
 .. code-block:: cpp
 
@@ -120,16 +119,65 @@ Traits used by default (x_tr_m macros)
    #define rb_left_m(x) (x)->left
    #define rb_right_m(x) (x)->right
    
-API
-===
+Colors
+======
 
-Functions that are part of the API.
+The obvious color plus white which is used for nodes that are currently not
+in the rbtree. This way we can assert if a node is added twice.
 
 .. code-block:: cpp
 
-   #begindef rb_node_init_tr_m(type, color, parent, left, right, node)
+   #define RB_WHITE 0
+   #define RB_RED 1
+   #define RB_BLACK 2
+   
+API
+===
+
+Functions that are part of the API. The standard arguments are documented
+once:
+
+type
+   The type of the nodes in the red-black tree.
+
+color
+   The color trait of the nodes in the rbtree.
+
+parent
+   The parent trait of the nodes in the rbtree is a pointer back to the
+   parent node.
+
+left
+   The left trait of the nodes in the rbtree is a pointer to the left branch
+   of the node.
+
+right
+   The right trait of the nodes in the rbtree is a pointer to the right
+   branch of the node.
+
+rb_node_init_tr_m
+-----------------
+
+Also: rb_node_init_cx_m, rb_node_init_m
+
+Initializes a node by setting the color to RB_WHITE and all pointers to
+NULL.
+
+node
+   The node to initialize.
+
+.. code-block:: cpp
+
+   #begindef rb_node_init_tr_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           node
+   )
    {
-       color(node) = 0;
+       color(node) = RB_WHITE;
        parent(node) = NULL;
        left(node) = NULL;
        right(node) = NULL;
@@ -151,6 +199,35 @@ Functions that are part of the API.
        rb_node_init_cx_m(rb, node)
    #enddef
    
+rb_insert_tr_m
+--------------
+
+Also: rb_insert_cx_m, rb_insert_m
+
+Insert the node into the tree. This function might replace the root node
+(tree).
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+node
+   The node to initialize.
+
+.. code-block:: cpp
+
+   #begindef rb_insert_tr_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           tree,
+           node
+   )
+   {
+   }
+   #enddef
+   
 Context helpers
 ===============
 
@@ -166,4 +243,3 @@ Private
 =======
 
 Functions that are used internally.
-
