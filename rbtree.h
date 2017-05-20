@@ -2,6 +2,9 @@
 // Red-Black Tree
 // ==============
 //
+// WORK IN PROGRESS
+// ================
+//
 // Installation
 // ============
 //
@@ -53,3 +56,26 @@
 #define rb_left_m(x) (x)->left
 #define rb_right_m(x) (x)->right
 #define rb_parent_m(x) (x)->parent
+
+// API
+// ===
+//
+// Functions that are part of the API.
+//
+// .. code-block:: cpp
+//
+#define rb_node_init_m(left, right, parent, node)                              \
+    {                                                                          \
+        left(node)   = NULL;                                                   \
+        right(node)  = NULL;                                                   \
+        parent(node) = NULL;                                                   \
+    }
+
+#define rb_node_init_tr_m(node)                                                \
+    rb_node_init_m(rb_left_m, rb_right_m, rb_parent_m, node)
+
+// Private
+// =======
+//
+// Functions that are used internally.
+//

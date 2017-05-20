@@ -21,19 +21,29 @@ TESTS := \
 HEADERS := \
 	$(BUILD)/src/rbtree.h
 
-all: doc rbtree cppcheck tests
+DOCS := \
+	$(BUILD)/src/rbtree.rg.h.rst \
+	$(BUILD)/src/testing.rg.h.rst \
+	$(BUILD)/src/test_traits.h.rst \
+	$(BUILD)/src/test_traits.c.rst
 
-$(TESTS): $(HEADERS)
+all: docs rbtree
+
+test: doc cppcheck tests
+
+$(TESTS): $(HEADERS) $(BUILD)/src/testing.h
 
 $(BUILD)/rbtests.a: $(TESTS)
 
 headers: $(HEADERS)  ## Make headers
 
+docs: $(DOCS)
+
 rbtree: $(BUILD)/src/rbtree.h ## Make rbtree.h
 	@clang-format -style=file $(BUILD)/src/rbtree.h > $(BASE)/rbtree.h
 	@git add $(BASE)/rbtree.h
 
-doc: $(BUILD)/src/rbtree.rg.h.rst  ## Make documentation
+doc: docs  ## Make documentation
 	@command -v rst2html && \
 		rst2html $(BUILD)/src/rbtree.rg.h.rst $(BUILD)/rbtree.html || \
 		rst2html.py $(BUILD)/src/rbtree.rg.h.rst $(BUILD)/rbtree.html
