@@ -8,7 +8,8 @@ struct node_s {
     node_t* parnet;
 };
 
-int test_traits(void)
+int
+test_traits(void)
 {
     return 0;
 }

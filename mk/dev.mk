@@ -19,4 +19,5 @@ CFLAGS += \
 LDFLAGS += \
 	-lm
 
-
+export CFLAGS
+export LDFLAGS
