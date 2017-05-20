@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+"""Check for trailing whitespaces."""
+
+import codecs
+import sys
+import os
+import re
+
+_twsp = re.compile(".*\s$")
+_sphinx_link = re.compile(".. [^:]+: http")
+
+in_comment = False
+slash_comment = 0
+line = ""
+ret = 0
+i = 0
+
+file_ = os.path.abspath(sys.argv[1])
+if file_.endswith("sglib.h"):
+    sys.exit(0)
+
+with codecs.open(file_, encoding="UTF-8") as in_:
+    for i, line in enumerate(in_.readlines()):
+        line = line.strip("\n\r")
+        if len(line) > 81:
+            if not _sphinx_link.match(line):
+                ret = 1
+                print("%s:%d:%d: error: line longer than 80 characters" % (
+                    file_,
+                    i + 1,
+                    len(line) - 1
+                ))
+        if _twsp.match(line):
+            ret = 1
+            print("%s:%d:%d: error: trailing whitespace" % (
+                file_,
+                i + 1,
+                len(line) - 1
+            ))
+        strip_line = line.lstrip(' ')
+        if "*/" in strip_line:
+            in_comment = False
+        spaces = len(line) - len(strip_line)
+        if spaces:
+            if strip_line.startswith("//"):
+                if slash_comment == spaces:
+                    ret = 1
+                    print("%s:%d:%d: error: use /* for multiline comments" % (
+                        file_,
+                        i + 1,
+                        spaces - 1
+                    ))
+                slash_comment = spaces
+            else:
+                slash_comment = 0
+        if spaces % 4:
+            if not (
+                    strip_line.startswith("//") or
+                    strip_line.startswith("/*") or
+                    strip_line.startswith("*/") or
+                    in_comment
+            ):
+                ret = 1
+                print(
+                    "%s:%d:0: error: leading spaces should "
+                    "be multiple for four" % (
+                        file_,
+                        i + 1,
+                    )
+                )
+        # Not completely accurate but good enough
+        if "/*" in strip_line:
+            in_comment = True
+        if "*/" in strip_line:
+            in_comment = False
+if not len(line.strip()):
+        ret = 1
+        print("%s:%d:0: error: empty line at end" % (
+            file_,
+            i + 1,
+        ))
+sys.exit(ret)
