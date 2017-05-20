@@ -140,7 +140,7 @@
     rb_node_init_tr_m(                                                         \
         void, cx##_color_m, cx##_parent_m, cx##_left_m, cx##_right_m, node)
 
-#define rb_node_init_m(cx, node) rb_node_init_cx_m(rb, node)
+#define rb_node_init_m(cx, node) rb_nofde_init_cx_m(rb, node)
 
 // Context helpers
 // ===============

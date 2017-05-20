@@ -27,7 +27,10 @@ DOCS := \
 	$(BUILD)/src/test_traits.h.rst \
 	$(BUILD)/src/test_traits.c.rst
 
-all: docs rbtree
+ide:
+	$(MAKE) all 2>&1 | $(BASE)/mk/pfix
+
+all: docs module
 
 test: doc cppcheck tests
 
@@ -38,6 +41,8 @@ $(BUILD)/rbtests.a: $(TESTS)
 headers: $(HEADERS)  ## Make headers
 
 docs: $(DOCS)
+	@cp -f $(BUILD)/src/rbtree.rg.h.rst $(BASE)/README.rst
+	@git add $(BASE)/README.rst
 
 rbtree: $(BUILD)/src/rbtree.h ## Make rbtree.h
 	@clang-format -style=file $(BUILD)/src/rbtree.h > $(BASE)/rbtree.h
@@ -47,11 +52,11 @@ doc: docs  ## Make documentation
 	@command -v rst2html && \
 		rst2html $(BUILD)/src/rbtree.rg.h.rst $(BUILD)/rbtree.html || \
 		rst2html.py $(BUILD)/src/rbtree.rg.h.rst $(BUILD)/rbtree.html
-	@cp -f $(BUILD)/src/rbtree.rg.h.rst $(BASE)/README.rst
-	@git add $(BASE)/README.rst
 
-tests: $(BUILD)/_rbtree_tests.o
+tests: module
 	@pytest
+
+module: $(BUILD)/_rbtree_tests.o
 
 $(BUILD)/_rbtree_tests.o: $(BUILD)/rbtests.a
 	@cd $(BUILD) && python $(BASE)/src/cffi_build.py
