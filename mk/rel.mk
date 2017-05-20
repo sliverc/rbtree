@@ -3,7 +3,7 @@ ifneq ($(STRIP),True)
 endif
 
 ifeq (,$(findstring -O,$(CFLAGS)))
-	OPTFLAG := -O2
+	OPTFLAG := -Os
 endif
 
 CFLAGS += \
@@ -26,3 +26,6 @@ CFLAGS += \
 
 LDFLAGS += \
 	-lm
+
+export CFLAGS
+export LDFLAGS

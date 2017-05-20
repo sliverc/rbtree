@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+import sys
+
+_replaces = [
+    ('build/src/rbtree.h',  'src/rbtree.rg.h'),
+    ('build/src/testing.h', 'src/testing.rg.h'),
+]
+
+for line in sys.stdin.readlines():
+    for replace in _replaces:
+        line = line.replace(*replace)
+    sys.stdout.write(line)
+    sys.stdout.flush()

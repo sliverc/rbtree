@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import sys
+import codecs
+
+_files = []
+
+_len = len(sys.argv) - 1
+for file_ in sys.argv[1:]:
+    _files.append(codecs.open(file_, encoding="UTF-8"))
+
+while True:
+    lines = []
+    for file_ in _files:
+        line = file_.readline()
+        if line:
+            lines.append(line)
+        else:
+            sys.exit(0)
+    split = lines[0].split(" ")
+    if len(split) > 1:
+        sys.stdout.write(split[0])
+        sys.stdout.write(" ")
+        avg = 0
+        for line in lines:
+            split = line.split(" ")
+            avg += float(split[1])
+        print(avg / float(_len))
+    else:
+        sys.stdout.write(lines[0])

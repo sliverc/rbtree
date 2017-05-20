@@ -1,2 +1,5 @@
 /build
 /tags
+/.cache
+/.hypothesis
+__pycache__

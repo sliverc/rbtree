@@ -14,9 +14,7 @@ STRPCMD:= strip --strip-debug
 endif
 
 ifeq ($(UNAME_S),Darwin)
-CFLAGS += -I/usr/local/opt/openssl/include
 LDFLAGS += -Wl,-dead_strip
-LDFLAGS += -L/usr/local/opt/openssl/lib
 else
 CFLAGS += -pthread
 LDFLAGS += -Wl,--gc-sections
@@ -126,6 +124,7 @@ clean:  ## Clean build
 	touch $(BUILD)/.keep
 
 cppcheck: headers  ## Static analysis
+ifneq ($(TRAVIS),true)
 	cppcheck -v \
 		--error-exitcode=1 \
 		--std=c99 \
@@ -134,3 +133,4 @@ cppcheck: headers  ## Static analysis
 		-I"$(BASE)/src" \
 		-I"$(BUILD)/src" \
 		"$(BASE)/src"
+endif
