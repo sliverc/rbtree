@@ -4,10 +4,17 @@
 struct node_s;
 typedef struct node_s node_t;
 struct node_s {
+    char    color;
+    node_t* parent;
     node_t* left;
     node_t* right;
-    node_t* parent;
 };
+
+rb_new_context_m(my, node_t)
+#define my_color_m(x) (x)->color
+#define my_parent_m(x) (x)->parent
+#define my_left_m(x) (x)->left
+#define my_right_m(x) (x)->right
 
 static
 int
@@ -42,12 +49,29 @@ test_traits(void)
 
     T(test_set_tratis(node));
 
-    rb_node_init_tr_m(node);
+    rb_node_init_m(rb, node);
     T(assert_init_tratis(node));
 
     T(test_set_tratis(node));
 
-    rb_node_init_m(rb_left_m, rb_right_m, rb_parent_m, node);
-    assert_init_tratis(node);
+    rb_node_init_cx_m(rb, node);
+    T(assert_init_tratis(node));
+
+    T(test_set_tratis(node));
+
+    rb_node_init_cx_m(my, node);
+    T(assert_init_tratis(node));
+
+    T(test_set_tratis(node));
+
+    rb_node_init_tr_m(
+        node_t,
+        rb_color_m,
+        rb_parent_m,
+        rb_left_m,
+        rb_right_m,
+        node
+    );
+    T(assert_init_tratis(node));
     return 0;
 }
