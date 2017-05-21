@@ -398,11 +398,11 @@ do { \
 // .. code-block:: text
 //
 //               .---.   rotate_right   .---.
-//               | y |     ------->     | y |
+//               | y |     ------->     | x |
 //               .---.                  .---.
 //              /     ∖                /     ∖
 //         .---'     .-'-.        .---'      .'--.
-//         | x |     | C |        | A |      | x |
+//         | x |     | C |        | A |      | y |
 //         .---.     '---'        '---'      .---.
 //        /     ∖                           /     ∖
 //     .-'-.    .'--.                    .-'-.    .'--.
@@ -435,17 +435,29 @@ do { \
     if(parent(__rb_x_) == NULL) \
         tree = __rb_y_; \
     else { \
-        if(__rb_x_ == left(parent(__rb_x_)) \
+        if(__rb_x_ == left(parent(__rb_x_))) \
             /* x was on the left of its parent */ \
-            left(parent(__rb_x_) == __rb_y_; \
+            left(parent(__rb_x_)) = __rb_y_; \
         else \
             /* x must have been on the right */ \
-            right(parent(__rb_x_) == __rb_y_; \
+            right(parent(__rb_x_)) = __rb_y_; \
     } \
     /* Finally, put x on y's left */ \
-    left(__rb_y_) = x; \
-    parent(__rb_x_) = y; \
+    left(__rb_y_) = __rb_x_; \
+    parent(__rb_x_) = __rb_y_; \
 } \
+
+
+#define _rb_rotate_left_m(cx, tree, node) \
+    _rb_rotate_left_tr_m( \
+        cx##_type_t, \
+        rb_color_m, \
+        rb_parent_m, \
+        rb_left_m, \
+        rb_right_m, \
+        tree, \
+        node \
+    ) \
 
 
 #define _rb_rotate_right_tr_m( \
@@ -463,6 +475,18 @@ do { \
         parent, \
         right, /* Switched */ \
         left,  /* Switched */ \
+        tree, \
+        node \
+    ) \
+
+
+#define _rb_rotate_right_m(cx, tree, node) \
+    _rb_rotate_right_tr_m( \
+        cx##_type_t, \
+        rb_color_m, \
+        rb_parent_m, \
+        rb_left_m, \
+        rb_right_m, \
         tree, \
         node \
     ) \

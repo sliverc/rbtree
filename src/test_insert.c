@@ -78,3 +78,145 @@ test_insert_static(void)
     );
     return 0;
 }
+
+//               .---.   rotate_right   .---.
+//               | y |     ------->     | x |
+//               .---.                  .---.
+//              /     ∖                /     ∖
+//         .---'     .-'-.        .---'      .'--.
+//         | x |     | C |        | A |      | y |
+//         .---.     '---'        '---'      .---.
+//        /     ∖                           /     ∖
+//     .-'-.    .'--.                    .-'-.    .'--.
+//     | A |    | B |      <------       | B |    | C |
+//     '---'    '---'    rotate_left     '---'    '---'
+
+#define Ny 0
+#define Nx 1
+#define NA 2
+#define NB 3
+#define NC 4
+#define node_m(x) (&n[x])
+
+int
+assert_right(node_t n[5]) {
+    TA(
+        rb_left_m(node_m(Nx))   == node_m(NA),
+        "Not rotated right"
+    );
+    TA(
+        rb_right_m(node_m(Nx))  == node_m(Ny),
+        "Not rotated right"
+    );
+    TA(
+        rb_left_m(node_m(Ny))   == node_m(NB),
+        "Not rotated right"
+    );
+    TA(
+        rb_right_m(node_m(Ny))  == node_m(NC),
+        "Not rotated right"
+    );
+    TA(
+        rb_parent_m(node_m(Nx)) == NULL,
+        "Not rotated right"
+    );
+    TA(
+        rb_parent_m(node_m(NA)) == node_m(Nx),
+        "Not rotated right"
+    );
+    TA(
+        rb_parent_m(node_m(Ny)) == node_m(Nx),
+        "Not rotated right"
+    );
+    TA(
+        rb_parent_m(node_m(NB)) == node_m(Ny),
+        "Not rotated right"
+    );
+    TA(
+        rb_parent_m(node_m(NC)) == node_m(Ny),
+        "Not rotated right"
+    );
+    return 0;
+}
+
+
+int
+assert_left(node_t n[5]) {
+    TA(
+        rb_left_m(node_m(Ny))   == node_m(Nx),
+        "Not rotated left"
+    );
+    TA(
+        rb_right_m(node_m(Ny))  == node_m(NC),
+        "Not rotated left"
+    );
+    TA(
+        rb_left_m(node_m(Nx))   == node_m(NA),
+        "Not rotated left"
+    );
+    TA(
+        rb_right_m(node_m(Nx))   == node_m(NB),
+        "Not rotated left"
+    );
+    TA(
+        rb_parent_m(node_m(Ny))  == NULL,
+        "Not rotated left"
+    );
+    TA(
+        rb_parent_m(node_m(Nx)) == node_m(Ny),
+        "Not rotated left"
+    );
+    TA(
+        rb_parent_m(node_m(NC)) == node_m(Ny),
+        "Not rotated left"
+    );
+    TA(
+        rb_parent_m(node_m(NA)) == node_m(Nx),
+        "Not rotated left"
+    );
+    TA(
+        rb_parent_m(node_m(NB)) == node_m(Nx),
+        "Not rotated left"
+    );
+    return 0;
+}
+
+int
+test_rotate(void)
+{
+    node_t n[5];
+    node_t* tree = node_m(Nx);
+    node_t* node = node_m(Nx);
+    for(int i = 0; i < 5; i++) {
+        rb_value_m(node_m(i)) = i;
+        rb_node_init_m(my, node_m(i));
+    }
+    /* Setup nodes */
+    rb_left_m(node_m(Nx))   = node_m(NA);
+    rb_right_m(node_m(Nx))  = node_m(Ny);
+
+    rb_left_m(node_m(Ny))   = node_m(NB);
+    rb_right_m(node_m(Ny))  = node_m(NC);
+
+    rb_parent_m(node_m(NA)) = node_m(Nx);
+    rb_parent_m(node_m(NB)) = node_m(Ny);
+    rb_parent_m(node_m(NC)) = node_m(Ny);
+    rb_parent_m(node_m(Ny)) = node_m(Nx);
+    T(assert_right(n));
+    _rb_rotate_left_m(my, tree, node);
+    TA(
+        tree == node_m(Ny),
+        "Y should be root"
+    );
+    T(assert_left(n));
+    tree = node_m(Ny);
+    node = node_m(Ny);
+    _rb_rotate_right_m(my, tree, node);
+    T(assert_right(n));
+    return 0;
+}
+
+int main(void)
+{
+    return test_rotate();
+}
