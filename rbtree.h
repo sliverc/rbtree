@@ -51,11 +51,12 @@
 // x_m
 //    These functions only take a context as standard argument, but they assume
 //    you use the default traits (rb_color, rb_parent_m, rb_left_m, rb_right_m).
-//    Therefore you only have to define the type.
+//    Therefore you only have to define the type and comparator.
 //
 //    .. code-block:: cpp
 //
 //       rb_new_context_m(my, node_t)
+//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
 //
 //    .. code-block:: cpp
 //
@@ -74,6 +75,7 @@
 //       #define my_parent_m(x) (x)->parent
 //       #define my_left_m(x) (x)->left
 //       #define my_right_m(x) (x)->right
+//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
 //
 //    .. code-block:: cpp
 //
@@ -100,12 +102,33 @@
 // to use x_cx_m. The x_tr_m function can usually just be ignored and are only
 // interesting if you are extending the functionality of rbtree.
 //
+// Questions
+// =========
+//
+// Why don't you just generate typed functions from the beginning?
+//    I want to be able to reuse and compose my code. Especially for
+//    composability I need access to the generic functions. Thats how st_map_m,
+//    st_filter_m and st_reduce_m can use the rbtree. Thats the reason we need
+//    granular/late binding (generation of typed functions).
+//
+//
 // Implementation
 // ==============
 //
 // Based on the following references: auckland_
 //
 // .. _auckland: https://www.cs.auckland.ac.nz/~jmor159/PLDS210/niemann/s_rbt.txt
+//
+// Assertion
+// =========
+//
+// .. code-block:: cpp
+//
+#ifndef RB_A
+#   define RB_A(x) assert(x)
+#   include <assert.h>
+#endif
+//
 //
 // Basic traits
 // ============
@@ -118,6 +141,40 @@
 #define rb_parent_m(x) (x)->parent
 #define rb_left_m(x) (x)->left
 #define rb_right_m(x) (x)->right
+#define rb_value_m(x) (x)->value
+
+// Comparators
+// ===========
+//
+// Some basic comparators usually you would define your own.
+//
+// rb_pointer_cmp_m
+// ----------------
+//
+// Compares pointers.
+//
+// x, y
+//    Nodes to compare
+//
+// .. code-block:: cpp
+//
+#define rb_pointer_cmp_m(x, y) \
+    ((int) (x - y)) \
+
+
+// rb_value_cmp_m
+// ----------------
+//
+// Compares nodes that have the rb_value_m trait.
+//
+// x, y
+//    Nodes to compare
+//
+// .. code-block:: cpp
+//
+#define rb_value_cmp_m(x, y) \
+    rb_value_m(x) - rb_value_m(y) \
+
 
 // Colors
 // ======
@@ -127,9 +184,25 @@
 //
 // .. code-block:: cpp
 //
-#define RB_WHITE 0
-#define RB_RED 1
-#define RB_BLACK 2
+#define RB_WHITE  0
+#define RB_BLACK (1 << 0)
+#define RB_ROOT  (1 << 1)
+#define RB_COPY  (1 << 2) /* Used in future for persistent rbtrees */
+
+#define rb_is_white_m(x)   x == RB_WHITE
+#define rb_is_red_m(x)   !(x & RB_BLACK)
+#define rb_is_black_m(x)   x & RB_BLACK
+#define rb_is_root_m(x)    x & RB_ROOT /* Special black :-p */
+#define rb_needs_copy_m(x) x & RB_COPY
+
+#define rb_make_white_m(x) x = RB_WHITE
+#define rb_make_black_m(x) x |= RB_BLACK
+#define rb_make_red_m(x)   x &= ~RB_BLACK
+#define rb_make_root_m(x)  x = RB_BLACK | RB_ROOT
+#define rb_set_root_m(x)   x |= RB_ROOT
+#define rb_unset_root_m(x) x &= ~RB_ROOT
+#define rb_set_copy_m(x)   x |= RB_COPY
+#define rb_unset_copy_m(x) x &= ~RB_COPY
 
 // API
 // ===
@@ -177,7 +250,7 @@
         node \
 ) \
 { \
-    color(node) = RB_WHITE; \
+    rb_make_white_m(color(node)); \
     parent(node) = NULL; \
     left(node) = NULL; \
     right(node) = NULL; \
@@ -205,7 +278,11 @@
 // Also: rb_insert_cx_m, rb_insert_m
 //
 // Insert the node into the tree. This function might replace the root node
-// (tree).
+// (tree). If an equal node exists in the tree node will note added an will
+// still be RB_WHITE.
+//
+// cmp
+//    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
 //
 // tree
 //    The root node of the tree. Pointer to NULL represents an empty tree.
@@ -221,23 +298,87 @@
         parent, \
         left, \
         right, \
+        cmp, \
         tree, \
         node \
 ) \
-{ \
-} \
+do { \
+    RB_A(node != NULL); \
+    RB_A(rb_is_white_m(color(node))); \
+    if(tree == NULL) { \
+        tree = node; \
+        rb_make_root_m(color(tree)); \
+    } else { \
+        RB_A(rb_is_root_m(color(tree))); \
+    } \
+    type* __rb_current_ = tree; \
+    type* __rb_parent_ = NULL; \
+    int __rb_result_ = 0; \
+    while(__rb_current_ != NULL) { \
+        /* The node is already in the rbtree, we break */ \
+        __rb_result_ = cmp(__rb_current_, node); \
+        if(__rb_result_ == 0) \
+            break; \
+        __rb_parent_ = __rb_current_; \
+        /* Smaller on the left, bigger on the right */ \
+        __rb_current_ = __rb_result_ > 0 ? left(node) : right(node); \
+    } \
+    /* The node is already in the rbtree, we break */ \
+    if(__rb_current_ != NULL) \
+        break; \
+ \
+    parent(node) = __rb_parent_; \
+    rb_make_red_m(color(node)); \
+ \
+    /* Smaller on the left, bigger on the right */ \
+    if(__rb_result_ > 0) { \
+        RB_A(left(__rb_parent_) == NULL); \
+        left(__rb_parent_) = node; \
+    } else { \
+        RB_A(right(__rb_parent_) == NULL); \
+        right(__rb_parent_) = node; \
+    } \
+} while(0) \
 
 
-// Context helpers
-// ===============
+#define rb_insert_cx_m(cx, tree, node) \
+    rb_insert_tr_m( \
+        cx##_type_t, \
+        cx##_color_m, \
+        cx##_parent_m, \
+        cx##_left_m, \
+        cx##_right_m, \
+        cx##_cmp_m, \
+        tree, \
+        node \
+    ) \
+
+
+#define rb_insert_m(cx, tree, node) \
+    rb_insert_tr_m( \
+        cx##_type_t, \
+        rb_color_m, \
+        rb_parent_m, \
+        rb_left_m, \
+        rb_right_m, \
+        cx##_cmp_m, \
+        tree, \
+        node \
+    ) \
+
+
+// Helpers
+// =======
 //
-// Functions that help setting up contexts.
+// Functions that help setting up contexts. And other helpers
 //
 // .. code-block:: cpp
 //
 #define rb_new_context_m(cx, type) \
-    typedef type cx##_type_m; \
+    typedef type cx##_type_t; \
 
+
+#define RB_RETURN goto __rb_return_;
 
 // Private
 // =======

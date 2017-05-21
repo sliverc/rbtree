@@ -16,7 +16,8 @@ include $(BASE)/mk/dev.mk
 endif
 
 TESTS := \
-	$(BUILD)/src/test_traits.o
+	$(BUILD)/src/test_traits.o \
+	$(BUILD)/src/test_insert.o
 
 HEADERS := \
 	$(BUILD)/src/rbtree.h
@@ -25,7 +26,9 @@ DOCS := \
 	$(BUILD)/src/rbtree.rg.h.rst \
 	$(BUILD)/src/testing.rg.h.rst \
 	$(BUILD)/src/test_traits.h.rst \
-	$(BUILD)/src/test_traits.c.rst
+	$(BUILD)/src/test_traits.c.rst \
+	$(BUILD)/src/test_insert.h.rst \
+	$(BUILD)/src/test_insert.c.rst
 
 ide:
 	$(MAKE) ride 2>&1 | $(BASE)/mk/pfix
