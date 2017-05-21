@@ -395,6 +395,20 @@ do { \
 // node
 //    The node to initialize.
 //
+// .. code-block:: text
+//
+//               .---.   rotate_right   .---.
+//               | y |     ------->     | y |
+//               .---.                  .---.
+//              /     ∖                /     ∖
+//         .---'     .-'-.        .---'      .'--.
+//         | x |     | C |        | C |      | x |
+//         .---.     '---'        '---'      .---.
+//        /     ∖                           /     ∖
+//     .-'-.    .'--.                    .-'-.    .'--.
+//     | A |    | B |      <------       | A |    | B |
+//     '---'    '---'    rotate_left     '---'    '---'
+//
 // .. code-block:: cpp
 //
 #define _rb_rotate_left_tr_m( \
