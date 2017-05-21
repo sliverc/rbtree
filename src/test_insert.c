@@ -96,6 +96,7 @@ test_insert_static(void)
 #define NA 2
 #define NB 3
 #define NC 4
+#define Nr 5
 #define node_m(x) (&n[x])
 
 int
@@ -114,10 +115,6 @@ assert_right(node_t n[5]) {
     );
     TA(
         rb_right_m(node_m(Ny))  == node_m(NC),
-        "Not rotated right"
-    );
-    TA(
-        rb_parent_m(node_m(Nx)) == NULL,
         "Not rotated right"
     );
     TA(
@@ -141,7 +138,7 @@ assert_right(node_t n[5]) {
 
 
 int
-assert_left(node_t n[5]) {
+assert_left(node_t n[6]) {
     TA(
         rb_left_m(node_m(Ny))   == node_m(Nx),
         "Not rotated left"
@@ -156,10 +153,6 @@ assert_left(node_t n[5]) {
     );
     TA(
         rb_right_m(node_m(Nx))   == node_m(NB),
-        "Not rotated left"
-    );
-    TA(
-        rb_parent_m(node_m(Ny))  == NULL,
         "Not rotated left"
     );
     TA(
@@ -184,10 +177,10 @@ assert_left(node_t n[5]) {
 int
 test_rotate(void)
 {
-    node_t n[5];
+    node_t n[6];
     node_t* tree = node_m(Nx);
     node_t* node = node_m(Nx);
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0; i < 6; i++) {
         rb_value_m(node_m(i)) = i;
         rb_node_init_m(my, node_m(i));
     }
@@ -203,15 +196,54 @@ test_rotate(void)
     rb_parent_m(node_m(NC)) = node_m(Ny);
     rb_parent_m(node_m(Ny)) = node_m(Nx);
     T(assert_right(n));
+    TA(
+        rb_parent_m(node_m(Nx)) == NULL,
+        "Not rotated right"
+    );
     _rb_rotate_left_m(my, tree, node);
     TA(
         tree == node_m(Ny),
         "Y should be root"
     );
     T(assert_left(n));
+    TA(
+        rb_parent_m(node_m(Ny))  == NULL,
+        "Not rotated left"
+    );
     tree = node_m(Ny);
     node = node_m(Ny);
     _rb_rotate_right_m(my, tree, node);
+    TA(
+        tree == node_m(Nx),
+        "X should be root"
+    );
+    T(assert_right(n));
+    TA(
+        rb_parent_m(node_m(Nx)) == NULL,
+        "Not rotated right"
+    );
+    /* Test with extra root */
+    rb_parent_m(node_m(Nx)) = node_m(Nr);
+    rb_left_m(node_m(Nr))   = node_m(Nx);
+    T(assert_right(n));
+    tree = node_m(Nr);
+    node = node_m(Nx);
+    TA(
+        tree == node_m(Nr),
+        "r should be root"
+    );
+    _rb_rotate_left_m(my, tree, node);
+    TA(
+        tree == node_m(Nr),
+        "r should be root"
+    );
+    T(assert_left(n));
+    node = node_m(Ny);
+    _rb_rotate_right_m(my, tree, node);
+    TA(
+        tree == node_m(Nr),
+        "r should be root"
+    );
     T(assert_right(n));
     return 0;
 }
