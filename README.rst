@@ -115,9 +115,10 @@ Why don't you just generate typed functions from the beginning?
 Implementation
 ==============
 
-Based on the following references: auckland_
+Based on the following references: auckland1_, auckland2_
 
-.. _auckland: https://www.cs.auckland.ac.nz/~jmor159/PLDS210/niemann/s_rbt.txt
+.. _auckland1: https://www.cs.auckland.ac.nz/software/AlgAnim/red_black.html
+.. _auckland2: https://www.cs.auckland.ac.nz/~jmor159/PLDS210/niemann/s_rbt.txt
 
 Assertion
 =========
@@ -142,6 +143,10 @@ Traits used by default (x_m macros)
    #define rb_left_m(x) (x)->left
    #define rb_right_m(x) (x)->right
    #define rb_value_m(x) (x)->value
+   
+   #begindef rb_new_context_m(cx, type)
+       typedef type cx##_type_t;
+   #enddef
    
 Comparators
 ===========
@@ -367,20 +372,84 @@ node
        )
    #enddef
    
-Helpers
-=======
-
-Functions that help setting up contexts. And other helpers
-
-.. code-block:: cpp
-
-   #begindef rb_new_context_m(cx, type)
-       typedef type cx##_type_t;
-   #enddef
-   
-   #define RB_RETURN goto __rb_return_;
-   
 Private
 =======
 
 Functions that are used internally.
+
+_rb_rotate_left_tr_m
+---------------------
+
+Also: _rb_rotate_right_tr_m
+
+A rotation is a local operation in a search tree that preserves in-order
+traversal key ordering. Used to fix insert/deletion discrepancies. This
+operation might change the current root.
+
+_rb_rotate_right_tr_m is _rb_rotate_left_tr_m where left and right had been
+switched.
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+node
+   The node to initialize.
+
+.. code-block:: cpp
+
+   #begindef _rb_rotate_left_tr_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           tree,
+           node
+   )
+   {
+       type* __rb_x_ = node;
+       type* __rb_y_ = right(node);
+   
+       /* Turn y's left sub-tree into x's right sub-tree */
+       right(__rb_x_) = left(__rb_y_);
+       if(left(__rb_y_) != NULL)
+           parent(left(__rb_y_)) = __rb_x_;
+       /* y's new parent was x's parent */
+       parent(__rb_y_) = parent(__rb_x_);
+       /* Set the parent to point to y instead of x */
+       /* First see whether we're at the root */
+       if(parent(__rb_x_) == NULL)
+           tree = __rb_y_;
+       else {
+           if(__rb_x_ == left(parent(__rb_x_))
+               /* x was on the left of its parent */
+               left(parent(__rb_x_) == __rb_y_;
+           else
+               /* x must have been on the right */
+               right(parent(__rb_x_) == __rb_y_;
+       }
+       /* Finally, put x on y's left */
+       left(__rb_y_) = x;
+       parent(__rb_x_) = y;
+   }
+   #enddef
+   
+   #begindef _rb_rotate_right_tr_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           tree,
+           node
+   )
+       _rb_rotate_left_tr_m(
+           type,
+           color,
+           parent,
+           right, /* Switched */
+           left,  /* Switched */
+           tree,
+           node
+       )
+   #enddef
