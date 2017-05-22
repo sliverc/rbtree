@@ -297,15 +297,17 @@ node
 
 .. code-block:: cpp
 
-   #begindef rb_insert_tr_m(
-           type,
+   #begindef _rb_insert_tr_m(
            color,
            parent,
            left,
            right,
            cmp,
            tree,
-           node
+           node,
+           c, /* current */
+           p, /* parent */
+           r  /* result */
    )
    do {
        RB_A(node != NULL);
@@ -316,34 +318,63 @@ node
        } else {
            RB_A(rb_is_root_m(color(tree)));
        }
-       type* __rb_current_ = tree;
-       type* __rb_parent_ = NULL;
-       int __rb_result_ = 0;
-       while(__rb_current_ != NULL) {
+       c = tree;
+       p = NULL;
+       r = 0;
+       while(c != NULL) {
            /* The node is already in the rbtree, we break */
-           __rb_result_ = cmp(__rb_current_, node);
-           if(__rb_result_ == 0)
+           r = cmp(c, node);
+           if(r == 0)
                break;
-           __rb_parent_ = __rb_current_;
+           p = c;
            /* Smaller on the left, bigger on the right */
-           __rb_current_ = __rb_result_ > 0 ? left(node) : right(node);
+           c = r > 0 ? left(node) : right(node);
        }
        /* The node is already in the rbtree, we break */
-       if(__rb_current_ != NULL)
+       if(c != NULL)
            break;
    
-       parent(node) = __rb_parent_;
+       parent(node) = p;
        rb_make_red_m(color(node));
    
        /* Smaller on the left, bigger on the right */
-       if(__rb_result_ > 0) {
-           RB_A(left(__rb_parent_) == NULL);
-           left(__rb_parent_) = node;
+       if(r > 0) {
+           RB_A(left(p) == NULL);
+           left(p) = node;
        } else {
-           RB_A(right(__rb_parent_) == NULL);
-           right(__rb_parent_) = node;
+           RB_A(right(p) == NULL);
+           right(p) = node;
        }
-   } while(0)
+   } while(0);
+   #enddef
+   
+   #begindef rb_insert_tr_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           cmp,
+           tree,
+           node
+   )
+   {
+       type* __rb_current_;
+       type* __rb_parent_;
+       int   __rb_result_;
+       _rb_insert_tr_m(
+           color,
+           parent,
+           left,
+           right,
+           cmp,
+           tree,
+           node,
+           __rb_current_,
+           __rb_parent_,
+           __rb_result_
+       )
+   }
    #enddef
    
    #begindef rb_insert_cx_m(cx, tree, node)
@@ -411,9 +442,45 @@ node
 
 .. code-block:: cpp
 
+   #begindef __rb_rotate_left_tr_m(
+           parent,
+           left,
+           right,
+           tree,
+           node,
+           x,
+           y
+   )
+   {
+       x = node;
+       y = right(node);
+   
+       /* Turn y's left sub-tree into x's right sub-tree */
+       right(x) = left(y);
+       if(left(y) != NULL)
+           parent(left(y)) = x;
+       /* y's new parent was x's parent */
+       parent(y) = parent(x);
+       /* Set the parent to point to y instead of x */
+       /* First see whether we're at the root */
+       if(parent(x) == NULL)
+           tree = y;
+       else {
+           if(x == left(parent(x)))
+               /* x was on the left of its parent */
+               left(parent(x)) = y;
+           else
+               /* x must have been on the right */
+               right(parent(x)) = y;
+       }
+       /* Finally, put x on y's left */
+       left(y) = x;
+       parent(x) = y;
+   }
+   #enddef
+   
    #begindef _rb_rotate_left_tr_m(
            type,
-           color,
            parent,
            left,
            right,
@@ -421,37 +488,23 @@ node
            node
    )
    {
-       type* __rb_x_ = node;
-       type* __rb_y_ = right(node);
-   
-       /* Turn y's left sub-tree into x's right sub-tree */
-       right(__rb_x_) = left(__rb_y_);
-       if(left(__rb_y_) != NULL)
-           parent(left(__rb_y_)) = __rb_x_;
-       /* y's new parent was x's parent */
-       parent(__rb_y_) = parent(__rb_x_);
-       /* Set the parent to point to y instead of x */
-       /* First see whether we're at the root */
-       if(parent(__rb_x_) == NULL)
-           tree = __rb_y_;
-       else {
-           if(__rb_x_ == left(parent(__rb_x_)))
-               /* x was on the left of its parent */
-               left(parent(__rb_x_)) = __rb_y_;
-           else
-               /* x must have been on the right */
-               right(parent(__rb_x_)) = __rb_y_;
-       }
-       /* Finally, put x on y's left */
-       left(__rb_y_) = __rb_x_;
-       parent(__rb_x_) = __rb_y_;
+       type* __rb_x_;
+       type* __rb_y_;
+       __rb_rotate_left_tr_m(
+           parent,
+           left,
+           right,
+           tree,
+           node,
+           __rb_x_,
+           __rb_y_
+       )
    }
    #enddef
    
    #begindef _rb_rotate_left_m(cx, tree, node)
        _rb_rotate_left_tr_m(
            cx##_type_t,
-           rb_color_m,
            rb_parent_m,
            rb_left_m,
            rb_right_m,
@@ -462,7 +515,6 @@ node
    
    #begindef _rb_rotate_right_tr_m(
            type,
-           color,
            parent,
            left,
            right,
@@ -471,7 +523,6 @@ node
    )
        _rb_rotate_left_tr_m(
            type,
-           color,
            parent,
            right, /* Switched */
            left,  /* Switched */
@@ -483,11 +534,82 @@ node
    #begindef _rb_rotate_right_m(cx, tree, node)
        _rb_rotate_right_tr_m(
            cx##_type_t,
-           rb_color_m,
            rb_parent_m,
            rb_left_m,
            rb_right_m,
            tree,
            node
        )
+   #enddef
+   
+_rb_insert_fix_tr_m
+---------------------
+
+After insert new node is labelled red, and possibly destroys the red-black
+property. The main loop moves up the tree, restoring the red-black property.
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+node
+   The node to initialize.
+
+.. code-block:: cpp
+
+   #begindef __rb_insert_fix_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           tree,
+           node,
+           x,
+           y
+   )
+   {
+       x = node;
+       while(
+               (x != tree) &&
+               rb_is_red_m(parent(color(x)))
+       ) {
+           if(parent(x) == parent(parent(left(x)))) {
+               /* If x's parent is a left, y is x's right 'uncle' */
+               y = parent(parent(right(x)));
+               if (rb_is_red_m(color(y))) {
+                   /* case 1 - change the colors */
+                   rb_make_black_m(color(parent(x)));
+                   /*y->colour = black;
+                    * x->parent->parent->colour = red;*/
+                   /* Move x up the tree */
+                   /*x = x->parent->parent;*/
+           }
+       }
+   }
+   #enddef
+   
+   #begindef _rb_insert_fix_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           tree,
+           node
+   )
+   {
+       type* __rb_x;
+       type* __rb_y_;
+       __rb_insert_fix_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           tree,
+           node,
+           __rb_x_,
+           __rb_y_
+       )
+   }
    #enddef
