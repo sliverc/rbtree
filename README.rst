@@ -13,6 +13,10 @@ Copy rbtree.h into your source.
 Development
 ===========
 
+Developed on github_
+
+.. _github: https://github.com/adfinis-sygroup/rbtree
+
 Requirements
 ------------
 
@@ -111,14 +115,20 @@ Why don't you just generate typed functions from the beginning?
    st_filter_m and st_reduce_m can use the rbtree. Thats the reason we need
    granular/late binding (generation of typed functions).
 
+Why is the iterator so complicated?
+   rbtree is part of a larger set of data-structures, some need more
+   complicated iterator setups, to make the data-structures interchangeable,
+   all have to follow the iterator protocol. use rb_for_m or rb_for_cx_m.
+
 
 Implementation
 ==============
 
-Based on the following references: auckland1_, auckland2_
+Based on the following references: auckland1_, auckland2_, sglib_
 
 .. _auckland1: https://www.cs.auckland.ac.nz/software/AlgAnim/red_black.html
 .. _auckland2: https://www.cs.auckland.ac.nz/~jmor159/PLDS210/niemann/s_rbt.txt
+.. _sglib: http://sglib.sourceforge.net/doc/index.html#rbtree_api1
 
 Assertion
 =========
@@ -194,15 +204,15 @@ in the rbtree. This way we can assert if a node is added twice.
    #define RB_ROOT  (1 << 1)
    #define RB_COPY  (1 << 2) /* Used in future for persistent rbtrees */
    
-   #define rb_is_white_m(x)   x == RB_WHITE
-   #define rb_is_red_m(x)   !(x & RB_BLACK)
-   #define rb_is_black_m(x)   x & RB_BLACK
+   #define rb_is_white_m(x)   (x == RB_WHITE)
+   #define rb_is_red_m(x)   (!(x & RB_BLACK))
+   #define rb_is_black_m(x)   (x & RB_BLACK)
    #ifdef NDEBUG
-   #   define rb_is_root_m(x)    1
+   #   define rb_is_root_m(x)  1
    #else
-   #   define rb_is_root_m(x)    x & RB_ROOT /* Special black :-p */
+   #   define rb_is_root_m(x) (x & RB_ROOT) /* Special black :-p */
    #endif
-   #define rb_needs_copy_m(x) x & RB_COPY
+   #define rb_needs_copy_m(x) (x & RB_COPY
    
    #define rb_make_white_m(x) x = RB_WHITE
    #define rb_make_black_m(x) x |= RB_BLACK
@@ -272,6 +282,10 @@ node
    }
    #enddef
    
+   #begindef test(x)
+       x
+   #enddef
+   
    #begindef rb_node_init_cx_m(cx, node)
        rb_node_init_tr_m(
            void,
@@ -285,6 +299,217 @@ node
    
    #begindef rb_node_init_m(cx, node)
        rb_node_init_cx_m(rb, node)
+   #enddef
+   
+rb_for_tr_m
+------------
+
+Also: rb_for_cx_m, rb_for_m
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+elem
+   The pointer to the current element.
+
+code
+   Code-block to execute on each element.
+
+Be aware the name you choose for elem will be defined as a variable.
+
+.. code-block:: cpp
+
+   #begindef rb_for_tr_m(
+           type,
+           parent,
+           left,
+           right,
+           tree,
+           elem,
+           code
+   )
+   {
+       rb_iter_decl_tr_m(type, elem);
+       rb_iter_init_tr_m(tree, elem);
+       while(!rb_iter_end_tr_m(elem)) {
+           code;
+           rb_iter_next_tr_m(
+               parent,
+               left,
+               right,
+               elem
+           )
+       }
+   }
+   #enddef
+   
+   #begindef rb_for_cx_m(cx, tree, elem, code)
+       rb_for_tr_m(
+           cx##_type_t,
+           cx##_parent_m,
+           cx##_left_m,
+           cx##_right_m,
+           tree,
+           elem,
+           code
+       )
+   #enddef
+   
+   #begindef rb_for_m(cx, tree, elem, code)
+       rb_for_tr_m(
+           cx##_type_t,
+           rb_parent_m,
+           rb_left_m,
+           rb_right_m,
+           tree,
+           elem,
+           code
+       )
+   #enddef
+   
+   
+rb_iter_decl_tr_m
+-----------------
+
+Also: rb_iter_decl_cx_m, rb_init_decl_m
+
+Declare iterator variable.
+
+iter
+   The new iterator variable.
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef rb_iter_decl_tr_m(type, elem)
+       type* elem = NULL;
+   #enddef
+   
+   #begindef rb_iter_decl_cx_m(cx, iter, elem)
+       cx##_type_t* elem = NULL;
+   #enddef
+   
+   #begindef rb_iter_decl_m(cx, iter, elem)
+       cx##_type_t* elem = NULL;
+   #enddef
+   
+rb_iter_init_tr_m
+-----------------
+
+Also: rb_iter_init_cx_m, rb_iter_init_m
+
+Initialize iterator. It will point to the first element.
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+iter
+   The new iterator variable
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef rb_iter_init_tr_m(tree, elem)
+       elem = tree;
+   #enddef
+   
+   #begindef rb_iter_init_cx_m(cx, tree, iter, elem)
+       elem = tree;
+   #enddef
+   
+   #begindef rb_iter_init_m(cx, tree, iter, elem)
+       elem = tree;
+   #enddef
+   
+rb_iter_next_tr_m
+-----------------
+
+Also: rb_iter_next_cx_m, rb_iter_next_m
+
+Initialize iterator. It will point to the first element.
+
+iter
+   The new iterator variable
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef rb_iter_next_tr_m(
+       parent,
+       left,
+       right,
+       elem
+   )
+   {
+       if(left(elem) != NULL)
+           elem = left(elem);
+       else {
+           if(parent(elem) != NULL) {
+               if(left(parent(elem)) == elem)
+                   /* Continue right if we are left node */
+                   elem = right(parent(elem));
+               else {
+                   if(parent(parent(elem)) != NULL)
+                       /* Continue grandparents right if there is a grandparent */
+                       elem = right(parent(parent(elem)));
+                   else
+                       /* We are finished */
+                       elem = NULL;
+               }
+           }
+       }
+   }
+   #enddef
+   
+   #begindef rb_iter_next_cx_m(cx, iter, elem)
+       rb_iter_next_tr_m(
+           cx##_parent_m,
+           cx##_left_m,
+           cx##_right_m,
+           elem
+       )
+   #enddef
+   
+   #begindef rb_iter_next_m(cx, iter, elem)
+       rb_iter_next_tr_m(
+           rb_parent_m,
+           rb_left_m,
+           rb_right_m,
+           elem
+       )
+   #enddef
+   
+rb_iter_end_tr_m
+-----------------
+
+Also: rb_iter_end_cx_m, rb_iter_end_m
+
+True if iterator is at the end.
+
+iter
+   The new iterator variable
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef rb_iter_end_tr_m(elem)
+       (elem == NULL)
+   #enddef
+   
+   #begindef rb_iter_end_cx_m(cx, iter, elem)
+       (elem == NULL)
+   #enddef
+   
+   #begindef rb_iter_end_m(cx, iter, elem)
+       (elem == NULL)
    #enddef
    
 rb_insert_tr_m

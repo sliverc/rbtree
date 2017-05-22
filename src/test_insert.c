@@ -76,6 +76,19 @@ test_insert_static(void)
         rb_right_m(tree) == &mnodes[2],
         "The bigger node should be in the left"
     );
+    int sum = 0;
+    rb_iter_decl_m(my, iter, elem);
+    rb_iter_init_m(my, tree, iter, elem);
+    while(!rb_iter_end_m(my, iter, elem)) {
+        sum += rb_value_m(elem);
+        rb_iter_next_m(my, iter, elem);
+    }
+    TA(sum == 3, "Sum should be 3");
+    sum = 0;
+    rb_for_m(my, tree, elem, {
+        sum += rb_value_m(elem);
+    });
+    TA(sum == 3, "Sum should be 3");
     return 0;
 }
 
