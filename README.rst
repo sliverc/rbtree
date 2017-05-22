@@ -582,7 +582,7 @@ node
            RB_A(right(p) == NULL);
            right(p) = node;
        }
-       print_tree(0, tree, NULL);
+       /* print_tree(0, tree, NULL); */
        _rb_insert_fix_m(
                type,
                color,
