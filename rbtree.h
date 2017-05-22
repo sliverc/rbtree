@@ -188,7 +188,7 @@
 // .. code-block:: cpp
 //
 #define rb_value_cmp_m(x, y) \
-    rb_value_m(x) - rb_value_m(y) \
+    (rb_value_m(x) - rb_value_m(y)) \
 
 
 // Colors
@@ -332,7 +332,7 @@
     rb_iter_decl_tr_m(type, elem); \
     rb_iter_init_tr_m(tree, elem); \
     while(!rb_iter_end_tr_m(elem)) { \
-        code; \
+        code \
         rb_iter_next_tr_m( \
             type, \
             parent, \
@@ -687,6 +687,129 @@ do { \
         cx##_cmp_m, \
         tree, \
         node \
+    ) \
+
+
+// rb_check_tree_tr_m
+// ------------------
+//
+// Also: rb_check_tree_cx_m, rb_check_tree_m
+//
+// Check consistency of a tree
+//
+// tree
+//    The root node of the tree. Pointer to NULL represents an empty tree.
+//
+// result
+//    Zero on success, other on failure
+//
+// .. code-block:: cpp
+//
+#define _rb_check_tree_tr_m( \
+        type, \
+        color, \
+        parent, \
+        left, \
+        right, \
+        cmp, \
+        tree, \
+        result, \
+        elem, \
+        tmp \
+) \
+{ \
+    result = 0; \
+    rb_for_tr_m( \
+        type, \
+        parent, \
+        left, \
+        right, \
+        tree, \
+        elem, \
+        { \
+            (void)(elem); \
+            (void)(tmp); \
+            if(tree == elem) { \
+                if(!rb_is_root_m(color(elem))) { \
+                    result = 1; \
+                    break; \
+                } \
+            } if(rb_is_red_m(color(elem))) { \
+                tmp = left(elem); \
+                if(tmp != NULL) { \
+                    if(rb_is_red_m(color(tmp))) { \
+                        result = 1; \
+                        break; \
+                    } \
+                } \
+                tmp =right(elem); \
+                if(tmp != NULL) { \
+                    if(rb_is_red_m(color(tmp))) { \
+                        result = 1; \
+                        break; \
+                    } \
+                } \
+            } \
+            tmp = left(elem); \
+            if(tmp != NULL) { \
+                if((cmp(tmp, elem)) < 0) { \
+                    result = 1; \
+                    break; \
+                } \
+            } \
+        } \
+    ); \
+} \
+
+
+#define rb_check_tree_tr_m( \
+        type, \
+        color, \
+        parent, \
+        left, \
+        right, \
+        cmp, \
+        tree, \
+        result \
+) \
+    type* __rb_check_tmp_; \
+    _rb_check_tree_tr_m( \
+        type, \
+        color, \
+        parent, \
+        left, \
+        right, \
+        cmp, \
+        tree, \
+        result, \
+        __rb_check_elem_, \
+        __rb_check_tmp_ \
+    ) \
+
+
+#define rb_check_tree_cx_m(cx, tree, result) \
+    rb_check_tree_tr_m( \
+        cx##_type_t, \
+        cx##_color_m, \
+        cx##_parent_m, \
+        cx##_left_m, \
+        cx##_right_m, \
+        cx##_cmp_m, \
+        tree, \
+        result \
+    ) \
+
+
+#define rb_check_tree_m(cx, tree, result) \
+    rb_check_tree_tr_m( \
+        cx##_type_t, \
+        rb_color_m, \
+        rb_parent_m, \
+        rb_left_m, \
+        rb_right_m, \
+        cx##_cmp_m, \
+        tree, \
+        result \
     ) \
 
 

@@ -274,13 +274,18 @@ test_insert(int count, int* nodes, int sum, int do_sum)
         rb_value_m(node) = nodes[i];
         rb_insert_m(my, tree, node);
     }
-    if(do_sum) {
-        int tsum = 0;
-        rb_for_m(my, tree, elem, {
-            tsum += rb_value_m(elem);
-        });
-        TA(tsum == sum, "Iterator failed");
-    }
+    int tsum = 0;
+    int elems = 0;
+    rb_for_m(my, tree, elem, {
+        tsum += rb_value_m(elem);
+        elems += 1;
+    });
+    printf("%d == %d, %d == %d\n", count, elems, sum, tsum);
+    TA(elems == count, "Iterator count failed");
+    if(do_sum)
+        TA(tsum == sum, "Iterator sum failed");
+    int consistent = 0;
+    //rb_check_tree_m(my, tree, consistent);
     free(mnodes);
-    return 0;
+    return consistent;
 }
