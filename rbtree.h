@@ -903,8 +903,7 @@ do { \
 { \
     /* If x's parent is a left, y is x's right 'uncle' */ \
     y = right(parent(parent(x))); \
-    /* Null means the node is black by spec */ \
-    if(y != NULL && rb_is_red_m(color(y))) { \
+    if(rb_is_red_m(color(y))) { \
         /* case 1 - change the colors */ \
         rb_make_black_m(color(parent(x))); \
         rb_make_black_m(color(y)); \
