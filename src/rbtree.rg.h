@@ -700,9 +700,12 @@ do {
         x,
         y
 )
-{
+do {
     x = node;
     y = right(node);
+    /* No need to rotate */
+    if(y == NULL)
+        break;
 
     /* Turn y's left sub-tree into x's right sub-tree */
     right(x) = left(y);
@@ -726,7 +729,7 @@ do {
     /* Finally, put x on y's left */
     left(y) = x;
     parent(x) = y;
-}
+} while(0)
 #enddef
 
 #begindef _rb_rotate_left_tr_m(
@@ -903,7 +906,8 @@ do {
 {
     /* If x's parent is a left, y is x's right 'uncle' */
     y = right(parent(parent(x)));
-    if(rb_is_red_m(color(y))) {
+    /* Null means the node is black by spec */
+    if(y != NULL && rb_is_red_m(color(y))) {
         /* case 1 - change the colors */
         rb_make_black_m(color(parent(x)));
         rb_make_black_m(color(y));
@@ -927,16 +931,18 @@ do {
             );
         }
         rb_make_black_m(color(parent(x)));
-        rb_make_red_m(color(parent(parent(x))));
-        rot_right(
-            type,
-            color,
-            parent,
-            left,
-            right,
-            tree,
-            parent(parent(x))
-        );
+        if(parent(parent(x)) != NULL) {
+            rb_make_red_m(color(parent(parent(x))));
+            rot_right(
+                type,
+                color,
+                parent,
+                left,
+                right,
+                tree,
+                parent(parent(x))
+            );
+        }
     }
 }
 #enddef
