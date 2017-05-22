@@ -63,18 +63,20 @@ print_tree(int n, node_t* l, node_t* r) {
     char* lc = "";
     char* rc = "";
     n += 1;
-    node_t* p = rb_parent_m(l);
-    if(p != NULL) {
-        pc = rb_is_black_m(rb_color_m(p)) ? "black" : "red";
-        pv = rb_value_m(p);
-    }
+    node_t* p = NULL;
     if(l != NULL) {
         lc = rb_is_black_m(rb_color_m(l)) ? "black" : "red";
         lv = rb_value_m(l);
+        p = rb_parent_m(l);
     }
     if(r != NULL) {
         rc = rb_is_black_m(rb_color_m(r)) ? "black" : "red";
         rv = rb_value_m(r);
+        p = rb_parent_m(r);
+    }
+    if(p != NULL) {
+        pc = rb_is_black_m(rb_color_m(p)) ? "black" : "red";
+        pv = rb_value_m(p);
     }
     printf(
         "level: %3d parent: %d (%s) left: %d (%s) right: %d (%s)\n",

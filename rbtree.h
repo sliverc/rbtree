@@ -739,8 +739,8 @@ do { \
         node \
 ) \
 { \
-    type* __rb_x_; \
-    type* __rb_y_; \
+    type* __rb_rot_x_; \
+    type* __rb_rot_y_; \
     __rb_rotate_left_tr_m( \
         color, \
         parent, \
@@ -748,8 +748,8 @@ do { \
         right, \
         tree, \
         node, \
-        __rb_x_, \
-        __rb_y_ \
+        __rb_rot_x_, \
+        __rb_rot_y_ \
     ); \
 } \
 
@@ -872,8 +872,8 @@ do { \
         node \
 ) \
 { \
-    type* __rb_x_; \
-    type* __rb_y_; \
+    type* __rb_insf_x_; \
+    type* __rb_insf_y_; \
     __rb_insert_fix_m( \
         type, \
         color, \
@@ -882,8 +882,8 @@ do { \
         right, \
         tree, \
         node, \
-        __rb_x_, \
-        __rb_y_ \
+        __rb_insf_x_, \
+        __rb_insf_y_ \
     ); \
 } \
 
@@ -903,7 +903,8 @@ do { \
 { \
     /* If x's parent is a left, y is x's right 'uncle' */ \
     y = right(parent(parent(x))); \
-    if(rb_is_red_m(color(y))) { \
+    /* Null means the node is black by spec */ \
+    if(y != NULL && rb_is_red_m(color(y))) { \
         /* case 1 - change the colors */ \
         rb_make_black_m(color(parent(x))); \
         rb_make_black_m(color(y)); \

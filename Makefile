@@ -69,5 +69,6 @@ module: $(BUILD)/_rbtree_tests.o
 $(BUILD)/_rbtree_tests.o: $(BUILD)/rbtests.a
 	@cd $(BUILD) && python $(BASE)/src/cffi_build.py
 	@cd $(BUILD) && touch __init__.py
+	@command -v setfattr && setfattr -n user.pax.flags -v "emr"
 
 include $(BASE)/mk/rules.mk
