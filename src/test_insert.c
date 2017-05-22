@@ -250,5 +250,5 @@ test_rotate(void)
 
 int main(void)
 {
-    return test_rotate();
+    return test_insert_static();
 }

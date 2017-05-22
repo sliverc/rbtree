@@ -197,15 +197,25 @@
 #define rb_is_white_m(x)   x == RB_WHITE
 #define rb_is_red_m(x)   !(x & RB_BLACK)
 #define rb_is_black_m(x)   x & RB_BLACK
-#define rb_is_root_m(x)    x & RB_ROOT /* Special black :-p */
+#ifdef NDEBUG
+#   define rb_is_root_m(x)    1
+#else
+#   define rb_is_root_m(x)    x & RB_ROOT /* Special black :-p */
+#endif
 #define rb_needs_copy_m(x) x & RB_COPY
 
 #define rb_make_white_m(x) x = RB_WHITE
 #define rb_make_black_m(x) x |= RB_BLACK
 #define rb_make_red_m(x)   x &= ~RB_BLACK
-#define rb_make_root_m(x)  x = RB_BLACK | RB_ROOT
-#define rb_set_root_m(x)   x |= RB_ROOT
-#define rb_unset_root_m(x) x &= ~RB_ROOT
+#ifdef NDEBUG
+#   define rb_make_root_m(x)  x = RB_BLACK
+#   define rb_set_root_m(x)
+#   define rb_unset_root_m(x)
+#else
+#   define rb_make_root_m(x)  x = RB_BLACK | RB_ROOT
+#   define rb_set_root_m(x)   x |= RB_ROOT
+#   define rb_unset_root_m(x) x &= ~RB_ROOT
+#endif
 #define rb_set_copy_m(x)   x |= RB_COPY
 #define rb_unset_copy_m(x) x &= ~RB_COPY
 
@@ -298,6 +308,7 @@
 // .. code-block:: cpp
 //
 #define _rb_insert_tr_m( \
+        type, \
         color, \
         parent, \
         left, \
@@ -345,6 +356,15 @@ do { \
         RB_A(right(p) == NULL); \
         right(p) = node; \
     } \
+    _rb_insert_fix_m( \
+            type, \
+            color, \
+            parent, \
+            left, \
+            right, \
+            tree, \
+            node \
+    ); \
 } while(0); \
 
 
@@ -363,6 +383,7 @@ do { \
     type* __rb_parent_; \
     int   __rb_result_; \
     _rb_insert_tr_m( \
+        type, \
         color, \
         parent, \
         left, \
@@ -443,6 +464,7 @@ do { \
 // .. code-block:: cpp
 //
 #define __rb_rotate_left_tr_m( \
+        color, \
         parent, \
         left, \
         right, \
@@ -463,9 +485,11 @@ do { \
     parent(y) = parent(x); \
     /* Set the parent to point to y instead of x */ \
     /* First see whether we're at the root */ \
-    if(parent(x) == NULL) \
+    if(parent(x) == NULL) { \
+        rb_unset_root_m(color(tree)); \
+        rb_make_root_m(color(y)); \
         tree = y; \
-    else { \
+    } else { \
         if(x == left(parent(x))) \
             /* x was on the left of its parent */ \
             left(parent(x)) = y; \
@@ -481,6 +505,7 @@ do { \
 
 #define _rb_rotate_left_tr_m( \
         type, \
+        color, \
         parent, \
         left, \
         right, \
@@ -491,6 +516,7 @@ do { \
     type* __rb_x_; \
     type* __rb_y_; \
     __rb_rotate_left_tr_m( \
+        color, \
         parent, \
         left, \
         right, \
@@ -498,13 +524,14 @@ do { \
         node, \
         __rb_x_, \
         __rb_y_ \
-    ) \
+    ); \
 } \
 
 
 #define _rb_rotate_left_m(cx, tree, node) \
     _rb_rotate_left_tr_m( \
         cx##_type_t, \
+        rb_color_m, \
         rb_parent_m, \
         rb_left_m, \
         rb_right_m, \
@@ -515,6 +542,7 @@ do { \
 
 #define _rb_rotate_right_tr_m( \
         type, \
+        color, \
         parent, \
         left, \
         right, \
@@ -523,6 +551,7 @@ do { \
 ) \
     _rb_rotate_left_tr_m( \
         type, \
+        color, \
         parent, \
         right, /* Switched */ \
         left,  /* Switched */ \
@@ -534,6 +563,7 @@ do { \
 #define _rb_rotate_right_m(cx, tree, node) \
     _rb_rotate_right_tr_m( \
         cx##_type_t, \
+        rb_color_m, \
         rb_parent_m, \
         rb_left_m, \
         rb_right_m, \
@@ -571,18 +601,30 @@ do { \
     x = node; \
     while( \
             (x != tree) && \
-            rb_is_red_m(parent(color(x))) \
+            rb_is_red_m(color(parent(x))) \
     ) { \
         if(parent(x) == parent(parent(left(x)))) { \
-            /* If x's parent is a left, y is x's right 'uncle' */ \
-            y = parent(parent(right(x))); \
-            if (rb_is_red_m(color(y))) { \
-                /* case 1 - change the colors */ \
-                rb_make_black_m(color(parent(x))); \
-                /*y->colour = black; \
-                 * x->parent->parent->colour = red;*/ \
-                /* Move x up the tree */ \
-                /*x = x->parent->parent;*/ \
+            _rb_insert_fix_node_m( \
+                type, \
+                color, \
+                parent, \
+                left, \
+                right, \
+                tree, \
+                x, \
+                y \
+            ); \
+        } else { \
+            _rb_insert_fix_node_m( \
+                type, \
+                color, \
+                parent, \
+                right, /* Switched */ \
+                left, /* Switched */ \
+                tree, \
+                x, \
+                y \
+            ); \
         } \
     } \
 } \
@@ -608,8 +650,59 @@ do { \
         right, \
         tree, \
         node, \
-        __rb_x_, \
+        __rb_x, \
         __rb_y_ \
-    ) \
+    ); \
+} \
+
+
+#define _rb_insert_fix_node_m( \
+        type, \
+        color, \
+        parent, \
+        left, \
+        right, \
+        tree, \
+        x, \
+        y \
+) \
+{ \
+    /* If x's parent is a left, y is x's right 'uncle' */ \
+    y = parent(parent(right(x))); \
+    if(rb_is_red_m(color(y))) { \
+        /* case 1 - change the colors */ \
+        rb_make_black_m(color(parent(x))); \
+        rb_make_black_m(color(y)); \
+        rb_make_red_m(color(parent(parent(x)))); \
+        /* Move x up the tree */ \
+        x = parent(parent(x)); \
+    } else { \
+        /* y is a black node */ \
+        if(x == right(parent(x))) { \
+            /* and x is to the right \
+             * case 2 - move x up and rotate */ \
+            x = parent(x); \
+            _rb_rotate_left_tr_m( \
+                type, \
+                color, \
+                parent, \
+                left, \
+                right, \
+                tree, \
+                x \
+            ); \
+        } \
+        rb_make_black_m(color(parent(x))); \
+        rb_make_red_m(color(parent(parent(x)))); \
+        _rb_rotate_right_tr_m( \
+            type, \
+            color, \
+            parent, \
+            left, \
+            right, \
+            tree, \
+            parent(parent(x)) \
+        ); \
+    } \
 } \
 
