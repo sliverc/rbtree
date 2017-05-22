@@ -1,4 +1,5 @@
 #include "testing.h"
+#include <stdlib.h>
 
 rb_new_context_m(my, node_t)
 #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
@@ -261,7 +262,32 @@ test_rotate(void)
     return 0;
 }
 
+int
+test_insert(int count, int* nodes, int sum)
+{
+    node_t* mnodes = malloc(count * sizeof(node_t));
+    node_t* tree = NULL;
+    node_t* node;
+    for(int i = 0; i < count; i++) {
+        node = &mnodes[i];
+        rb_node_init_m(my, node);
+        rb_value_m(node) = nodes[i];
+        rb_insert_m(my, tree, node);
+    }
+    /*int tsum = 0;
+    rb_for_m(my, tree, elem, {
+        tsum += rb_value_m(elem);
+    });
+    TA(tsum == sum, "Iterator failed");
+    printf("%d, %d\n", tsum, sum); */
+    (void)(sum);
+    free(mnodes);
+    return 0;
+}
+
 int main(void)
 {
-    return test_insert_static();
+    int p[3] = {3, 2, 1};
+
+    return test_insert(3, p, 13);
 }

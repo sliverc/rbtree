@@ -551,6 +551,7 @@ do {
     if(tree == NULL) {
         tree = node;
         rb_make_root_m(color(tree));
+        break;
     } else {
         RB_A(rb_is_root_m(color(tree)));
     }
@@ -564,7 +565,7 @@ do {
             break;
         p = c;
         /* Smaller on the left, bigger on the right */
-        c = r > 0 ? left(node) : right(node);
+        c = r > 0 ? left(c) : right(c);
     }
     /* The node is already in the rbtree, we break */
     if(c != NULL)
@@ -581,6 +582,7 @@ do {
         RB_A(right(p) == NULL);
         right(p) = node;
     }
+    print_tree(0, tree, NULL);
     _rb_insert_fix_m(
             type,
             color,
@@ -712,7 +714,6 @@ do {
     /* First see whether we're at the root */
     if(parent(x) == NULL) {
         rb_unset_root_m(color(tree));
-        rb_make_root_m(color(y));
         tree = y;
     } else {
         if(x == left(parent(x)))
@@ -828,13 +829,15 @@ do {
             (x != tree) &&
             rb_is_red_m(color(parent(x)))
     ) {
-        if(parent(x) == parent(parent(left(x)))) {
+        if(parent(x) == left(parent(parent(x)))) {
             _rb_insert_fix_node_m(
                 type,
                 color,
                 parent,
                 left,
                 right,
+                _rb_rotate_left_tr_m,
+                _rb_rotate_right_tr_m,
                 tree,
                 x,
                 y
@@ -846,12 +849,16 @@ do {
                 parent,
                 right, /* Switched */
                 left, /* Switched */
+                _rb_rotate_right_tr_m, /* Switched */
+                _rb_rotate_left_tr_m, /* Switched */
                 tree,
                 x,
                 y
             );
         }
     }
+    /* TODO Move this back to insert if tests are ok */
+    rb_make_root_m(color(tree));
 }
 #enddef
 
@@ -865,7 +872,7 @@ do {
         node
 )
 {
-    type* __rb_x;
+    type* __rb_x_;
     type* __rb_y_;
     __rb_insert_fix_m(
         type,
@@ -875,7 +882,7 @@ do {
         right,
         tree,
         node,
-        __rb_x,
+        __rb_x_,
         __rb_y_
     );
 }
@@ -887,13 +894,15 @@ do {
         parent,
         left,
         right,
+        rot_left,
+        rot_right,
         tree,
         x,
         y
 )
 {
     /* If x's parent is a left, y is x's right 'uncle' */
-    y = parent(parent(right(x)));
+    y = right(parent(parent(x)));
     if(rb_is_red_m(color(y))) {
         /* case 1 - change the colors */
         rb_make_black_m(color(parent(x)));
@@ -907,7 +916,7 @@ do {
             /* and x is to the right
              * case 2 - move x up and rotate */
             x = parent(x);
-            _rb_rotate_left_tr_m(
+            rot_left(
                 type,
                 color,
                 parent,
@@ -919,7 +928,7 @@ do {
         }
         rb_make_black_m(color(parent(x)));
         rb_make_red_m(color(parent(parent(x))));
-        _rb_rotate_right_tr_m(
+        rot_right(
             type,
             color,
             parent,

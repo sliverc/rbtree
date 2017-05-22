@@ -61,6 +61,9 @@ doc: docs  ## Make documentation
 tests: module
 	@pytest
 
+xtests: module
+	@pytest -x -s
+
 module: $(BUILD)/_rbtree_tests.o
 
 $(BUILD)/_rbtree_tests.o: $(BUILD)/rbtests.a
