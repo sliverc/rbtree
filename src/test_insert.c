@@ -263,7 +263,7 @@ test_rotate(void)
 }
 
 int
-test_insert(int count, int* nodes, int sum)
+test_insert(int count, int* nodes, int sum, int do_sum)
 {
     node_t* mnodes = malloc(count * sizeof(node_t));
     node_t* tree = NULL;
@@ -274,20 +274,13 @@ test_insert(int count, int* nodes, int sum)
         rb_value_m(node) = nodes[i];
         rb_insert_m(my, tree, node);
     }
-    /*int tsum = 0;
-    rb_for_m(my, tree, elem, {
-        tsum += rb_value_m(elem);
-    });
-    TA(tsum == sum, "Iterator failed");
-    printf("%d, %d\n", tsum, sum); */
-    (void)(sum);
+    if(do_sum) {
+        int tsum = 0;
+        rb_for_m(my, tree, elem, {
+            tsum += rb_value_m(elem);
+        });
+        TA(tsum == sum, "Iterator failed");
+    }
     free(mnodes);
     return 0;
-}
-
-int main(void)
-{
-    int p[3] = {3, 2, 1};
-
-    return test_insert(3, p, 13);
 }

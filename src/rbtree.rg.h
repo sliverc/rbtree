@@ -334,11 +334,12 @@
     while(!rb_iter_end_tr_m(elem)) {
         code;
         rb_iter_next_tr_m(
+            type,
             parent,
             left,
             right,
             elem
-        )
+        );
     }
 }
 #enddef
@@ -440,35 +441,72 @@
 //
 // .. code-block:: cpp
 //
+#begindef _rb_iter_next_tr_m(
+    parent,
+    left,
+    right,
+    elem,
+    tmp
+)
+do {
+    if(left(elem) != NULL)
+        elem = left(elem);
+    else {
+        if(right(elem) != NULL)
+            elem = right(elem);
+        else {
+            tmp = elem;
+            if(tmp == NULL) {
+                elem = NULL;
+                break;
+            }
+            if(elem == left(tmp)) {
+                elem = right(tmp);
+                if(elem != NULL)
+                    break;
+            }
+            /* Back tracking */
+            /* Move up as long as we are on the right */
+            tmp = parent(elem);
+            while(
+                    tmp != NULL &&
+                    elem == right(tmp)
+            ) {
+                elem = parent(elem);
+                tmp = parent(elem);
+            }
+            if(tmp == NULL) {
+                elem = NULL;
+                break;
+            }
+            elem = right(tmp);
+        }
+    }
+} while(0)
+#enddef
+
 #begindef rb_iter_next_tr_m(
+    type,
     parent,
     left,
     right,
     elem
 )
 {
-    if(left(elem) != NULL)
-        elem = left(elem);
-    else {
-        if(parent(elem) != NULL) {
-            if(left(parent(elem)) == elem)
-                /* Continue right if we are left node */
-                elem = right(parent(elem));
-            else {
-                if(parent(parent(elem)) != NULL)
-                    /* Continue grandparents right if there is a grandparent */
-                    elem = right(parent(parent(elem)));
-                else
-                    /* We are finished */
-                    elem = NULL;
-            }
-        }
-    }
+    type* __rb_next_tmp_;
+    _rb_iter_next_tr_m(
+        parent,
+        left,
+        right,
+        elem,
+        __rb_next_tmp_
+    );
 }
 #enddef
 
 #begindef rb_iter_next_cx_m(cx, iter, elem)
     rb_iter_next_tr_m(
+        cx##_type_t,
         cx##_parent_m,
         cx##_left_m,
         cx##_right_m,
@@ -478,6 +516,7 @@
 
 #begindef rb_iter_next_m(cx, iter, elem)
     rb_iter_next_tr_m(
+        cx##_type_t,
         rb_parent_m,
         rb_left_m,
         rb_right_m,
@@ -582,7 +621,7 @@ do {
         RB_A(right(p) == NULL);
         right(p) = node;
     }
-    print_tree(0, tree, NULL);
+    /* print_tree(0, tree, NULL); */
     _rb_insert_fix_m(
             type,
             color,

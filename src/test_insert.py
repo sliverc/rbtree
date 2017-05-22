@@ -8,17 +8,16 @@ import hypothesis.strategies as st
     st.integers(
         min_value=-2**32 / 2,
         max_value=(2**32 / 2) - 1
-    ),
-    max_size=3
+    )
 ))
 def test_insert(ints):
     """Test if rbtree is consistent after generated inserts."""
     s = sum(ints)
+    do_sum = True
     if abs(s) > (2**32 / 2) - 1:
         s = 0
     c = len(ints)
-    print(ints)
-    lib.test_insert(c, ints, s)
+    lib.test_insert(c, ints, s, do_sum)
 
 
 def test_insert_fix():
@@ -26,7 +25,7 @@ def test_insert_fix():
     ints = [1, 2, 3]
     s = sum(ints)
     c = len(ints)
-    assert(lib.test_insert(c, ints, s) == 0)
+    assert(lib.test_insert(c, ints, s, True) == 0)
 
 
 def test_insert_static():
