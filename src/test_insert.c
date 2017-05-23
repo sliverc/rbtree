@@ -1,4 +1,5 @@
 #include "testing.h"
+
 #include <stdlib.h>
 
 int
@@ -279,16 +280,19 @@ test_insert(int len, int* nodes, int count, int sum, int do_sum)
         my_node_init(node);
         rb_value_m(node) = nodes[i];
         my_insert(&tree, node);
+        print_tree(0, tree, NULL);
+        my_check_tree(tree);
     }
-    print_tree(0, tree, NULL);
     int tsum = 0;
     int elems = 0;
     rb_iter_decl_cx_m(my, iter, elem);
+    printf("elems: ");
     rb_for_cx_m(my, tree, iter, elem) {
+        printf("%d ", rb_value_m(elem));
         tsum += rb_value_m(elem);
         elems += 1;
     };
-    printf("%d == %d, %d == %d\n", count, elems, sum, tsum);
+    printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
     TA(elems == count, "Iterator count failed");
     if(do_sum)
         TA(tsum == sum, "Iterator sum failed");

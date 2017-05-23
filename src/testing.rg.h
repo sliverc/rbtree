@@ -1,22 +1,8 @@
+#include "rbtree.h"
+
 #include <stdio.h>
 #include <string.h>
 
-#begindef RB_A(condition)
-{
-    if(!(condition)) {
-        fprintf(
-            stderr,
-            "%s:%d %s\n",
-            __FILE__,
-            __LINE__,
-            #condition
-        );
-        return 1;
-    }
-}
-#enddef
-
-#include "rbtree.h"
 
 #begindef TA(condition, ...)
 {

@@ -151,11 +151,8 @@
 //
 // .. code-block:: cpp
 //
-#ifndef RB_A
-#   define RB_A(x) assert(x)
-#   include <assert.h>
-#endif
-//
+#include <assert.h>
+
 //
 // Basic traits
 // ============
@@ -473,14 +470,14 @@ do { \
         r  /* result */ \
 ) \
 do { \
-    RB_A(node != NULL); \
-    RB_A(rb_is_white_m(color(node))); \
+    assert(node != NULL && "Cannot insert NULL node"); \
+    assert(rb_is_white_m(color(node)) && "Node already used"); \
     if(tree == NULL) { \
         tree = node; \
         rb_make_root_m(color(tree)); \
         break; \
     } else { \
-        RB_A(rb_is_root_m(color(tree))); \
+        assert(rb_is_root_m(color(tree)) && "Tree is not root"); \
     } \
     c = tree; \
     p = NULL; \
@@ -503,10 +500,10 @@ do { \
  \
     /* Smaller on the left, bigger on the right */ \
     if(r > 0) { \
-        RB_A(left(p) == NULL); \
+        assert(left(p) == NULL); \
         left(p) = node; \
     } else { \
-        RB_A(right(p) == NULL); \
+        assert(right(p) == NULL); \
         right(p) = node; \
     } \
     /* print_tree(0, tree, NULL); */ \
@@ -589,9 +586,9 @@ do { \
             type** tree, \
             type* node \
     ); \
-    int \
+    void \
     cx##_check_tree(type* tree); \
-    int \
+    void \
     cx##_check_tree_rec( \
             type* tree, \
             int depth, \
@@ -682,13 +679,13 @@ do { \
         ); \
         return rb_is_white_m(color(node)); \
     } \
-    int \
+    void \
     cx##_check_tree(type* tree) \
     { \
-        int pathdepth = 0; \
-        return cx##_check_tree_rec(tree, 0, &pathdepth); \
+        int pathdepth = -1; \
+        cx##_check_tree_rec(tree, 0, &pathdepth); \
     } \
-    int \
+    void \
     cx##_check_tree_rec( \
             type* tree, \
             int depth, \
@@ -748,14 +745,56 @@ do { \
 //
 // Check consistency of a tree
 //
-// tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+// node
+//    Node to check
 //
 // result
 //    Zero on success, other on failure
 //
 // .. code-block:: cpp
 //
+#define _rb_check_tree_m( \
+        cx, \
+        type, \
+        color, \
+        parent, \
+        left, \
+        right, \
+        cmp, \
+        node, \
+        depth, \
+        pathdepth, \
+        tmp \
+) \
+{ \
+    if(node == NULL) { \
+        if(pathdepth < 0) \
+            pathdepth = depth; \
+        else \
+            assert(pathdepth == depth); \
+    } else { \
+        tmp = left(node); \
+        if(tmp != NULL) \
+            assert(cmp(tmp, node) < 0); \
+        tmp = right(node); \
+        if(tmp != NULL) \
+            assert(cmp(tmp, node) > 0); \
+        if(rb_is_red_m(color(node))) { \
+            tmp = left(node); \
+            if(tmp != NULL) \
+                assert(rb_is_black_m(color(tmp))); \
+            tmp = right(node); \
+            if(tmp != NULL) \
+                assert(rb_is_black_m(color(tmp))); \
+            cx##_check_tree_rec(left(node), depth, &pathdepth); \
+            cx##_check_tree_rec(right(node), depth, &pathdepth); \
+        } else { \
+            cx##_check_tree_rec(left(node), depth + 1, &pathdepth); \
+            cx##_check_tree_rec(right(node), depth + 1, &pathdepth); \
+        } \
+    } \
+} \
+
 #define rb_check_tree_m( \
         cx, \
         type, \
@@ -764,15 +803,25 @@ do { \
         left, \
         right, \
         cmp, \
-        tree, \
+        node, \
         depth, \
         pathdepth \
 ) \
 { \
-    (void)(tree); \
-    (void)(depth); \
-    (void)(pathdepth); \
-    return 0; \
+    type* __rb_check_tmp_; \
+    _rb_check_tree_m( \
+        cx, \
+        type, \
+        color, \
+        parent, \
+        left, \
+        right, \
+        cmp, \
+        node, \
+        depth, \
+        pathdepth, \
+        __rb_check_tmp_ \
+    ) \
 } \
 
 
@@ -827,8 +876,8 @@ do { \
 ) \
 do { \
     x = node; \
-    y = right(node); \
-    /* No need to rotate */ \
+    y = right(x); \
+    /* Rotation doesn't make sense if y is NULL */ \
     if(y == NULL) \
         break; \
  \
@@ -979,8 +1028,8 @@ do { \
                 parent, \
                 right, /* Switched */ \
                 left, /* Switched */ \
-                _rb_rotate_right_m, /* Switched */ \
-                _rb_rotate_left_m, /* Switched */ \
+                _rb_rotate_left_m, \
+                _rb_rotate_right_m, \
                 tree, \
                 x, \
                 y \
@@ -988,6 +1037,7 @@ do { \
         } \
     } \
     /* TODO Move this back to insert if tests are ok */ \
+    /* TODO Add tmp vars once this works */ \
     rb_make_root_m(color(tree)); \
 } \
 
@@ -1057,8 +1107,8 @@ do { \
                 x \
             ); \
         } \
-        rb_make_black_m(color(parent(x))); \
         if(parent(parent(x)) != NULL) { \
+            rb_make_black_m(color(parent(x))); \
             rb_make_red_m(color(parent(parent(x)))); \
             rot_right( \
                 type, \
