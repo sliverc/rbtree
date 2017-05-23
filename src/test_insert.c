@@ -269,17 +269,18 @@ test_rotate(void)
 }
 
 int
-test_insert(int count, int* nodes, int sum, int do_sum)
+test_insert(int len, int* nodes, int count, int sum, int do_sum)
 {
-    node_t* mnodes = malloc(count * sizeof(node_t));
+    node_t* mnodes = malloc(len * sizeof(node_t));
     node_t* tree = NULL;
     node_t* node;
-    for(int i = 0; i < count; i++) {
+    for(int i = 0; i < len; i++) {
         node = &mnodes[i];
         my_node_init(node);
         rb_value_m(node) = nodes[i];
         my_insert(&tree, node);
     }
+    print_tree(0, tree, NULL);
     int tsum = 0;
     int elems = 0;
     rb_iter_decl_cx_m(my, iter, elem);

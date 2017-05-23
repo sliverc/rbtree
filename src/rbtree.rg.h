@@ -363,8 +363,16 @@
 //
 // .. code-block:: cpp
 //
-#begindef rb_iter_init_m(tree, elem)
-    elem = tree;
+#begindef rb_iter_init_m(left, tree, elem)
+{
+    if(tree == NULL)
+        elem = NULL;
+    else {
+        elem = tree;
+        while(left(elem) != NULL)
+            elem = left(elem);
+    }
+}
 #enddef
 
 // rb_iter_next_m
@@ -388,38 +396,47 @@
     tmp
 )
 do {
-    if(left(elem) != NULL)
-        elem = left(elem);
-    else {
-        if(right(elem) != NULL)
-            elem = right(elem);
-        else {
-            tmp = parent(elem);
-            if(tmp == NULL) {
-                elem = NULL;
-                break;
-            }
-            if(elem == left(tmp)) {
-                if(right(tmp) != NULL) {
-                    elem = right(tmp);
-                    break;
-                }
-            }
-            /* Back tracking */
-            /* Move up as long as we are on the right */
-            while(
-                    tmp != NULL &&
-                    elem == right(tmp)
-            ) {
-                elem = parent(elem);
-                tmp = parent(elem);
-            }
-            if(tmp == NULL) {
-                elem = NULL;
-                break;
-            }
-            elem = right(tmp);
+/*
+ *        if(next.right != null) {
+            next = next.right;
+            while (next.left != null)
+                next = next.left;
+            return r;
         }
+
+        while(true) {
+            if(next.parent == null) {
+                next = null;
+                return r;
+            }
+            if(next.parent.left == next) {
+                next = next.parent;
+               return r;
+            }
+            next = next.parent;
+        }
+     }
+*/
+    tmp = right(elem);
+    if(tmp != NULL) {
+        elem = tmp;
+        while(left(elem) != NULL)
+            elem = left(elem);
+        break;
+    }
+    while(1) {
+        /* Next would be the root, we are done */
+        if(parent(elem) == NULL) {
+            elem = NULL;
+            break;
+        }
+        tmp = parent(elem);
+        /* Are a left node, therefor we are the next node */
+        if(elem == left(tmp)) {
+            elem = tmp;
+            break;
+        }
+        elem = tmp;
     }
     /* TODO: When test works check for shortcuts */
 } while(0)
@@ -639,7 +656,7 @@ do {
     )
     {
         (void)(iter);
-        rb_iter_init_m(tree, *elem);
+        rb_iter_init_m(left, tree, *elem);
     }
     void
     cx##_iter_next(

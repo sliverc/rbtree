@@ -4,7 +4,7 @@ from hypothesis import given
 import hypothesis.strategies as st
 
 
-@given(st.sets(
+@given(st.lists(
     st.integers(
         min_value=-2**32 / 2,
         max_value=(2**32 / 2) - 1
@@ -12,22 +12,25 @@ import hypothesis.strategies as st
 ))
 def test_insert(ints):
     """Test if rbtree is consistent after generated inserts."""
-    ints = list(ints)
-    s = sum(ints)
+    ss = set(ints)
+    sc = len(ss)
+    s = sum(ss)
+    c = len(ints)
     do_sum = True
     if abs(s) > (2**32 / 2) - 1:
         do_sum = False
         s = 0
-    c = len(ints)
-    assert(lib.test_insert(c, ints, s, do_sum) == 0)
+    assert(lib.test_insert(c, ints, sc, s, do_sum) == 0)
 
 
 def test_insert_fix():
     """Test if rbtree is consistent after generated inserts."""
-    ints = [-7, -3, 0, 1]
-    s = sum(ints)
+    ints = [2, 3, 1, 0]
+    ss = set(ints)
+    sc = len(ss)
+    s = sum(ss)
     c = len(ints)
-    assert(lib.test_insert(c, ints, s, True) == 0)
+    assert(lib.test_insert(c, ints, sc, s, True) == 0)
 
 
 def test_insert_static():
