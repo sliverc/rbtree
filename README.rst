@@ -394,19 +394,19 @@ elem
            if(right(elem) != NULL)
                elem = right(elem);
            else {
-               tmp = elem;
+               tmp = parent(elem);
                if(tmp == NULL) {
                    elem = NULL;
                    break;
                }
                if(elem == left(tmp)) {
-                   elem = right(tmp);
-                   if(elem != NULL)
+                   if(right(tmp) != NULL) {
+                       elem = right(tmp);
                        break;
+                   }
                }
                /* Back tracking */
                /* Move up as long as we are on the right */
-               tmp = parent(elem);
                while(
                        tmp != NULL &&
                        elem == right(tmp)

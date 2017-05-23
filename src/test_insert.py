@@ -24,7 +24,7 @@ def test_insert(ints):
 
 def test_insert_fix():
     """Test if rbtree is consistent after generated inserts."""
-    ints = [1, 2, 3]
+    ints = [-7, -3, 0, 1]
     s = sum(ints)
     c = len(ints)
     assert(lib.test_insert(c, ints, s, True) == 0)
