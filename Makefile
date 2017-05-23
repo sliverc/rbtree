@@ -1,4 +1,4 @@
-.PHONY: clean cppcheck headers help todo rbtree doc all tests
+.PHONY: clean cppcheck headers help todo rbtree doc all tests perf
 
 MEMCHECK := valgrind --tool=memcheck
 BASE := $(PWD)
@@ -17,7 +17,6 @@ endif
 
 OBJS := \
 	$(BUILD)/src/rbtree.o
-
 
 TESTS := \
 	$(BUILD)/src/test_traits.o \
@@ -38,11 +37,16 @@ DOCS := \
 ide:
 	$(MAKE) ride 2>&1 | $(BASE)/mk/pfix
 
-ride: docs rbtree module
+ride: docs perf rbtree module
 
-all: rbtree test
+all: perf rbtree test
 
 test: doc cppcheck tests
+
+perf: $(BUILD)/perf
+
+$(BUILD)/perf: $(HEADERS) $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o
+	$(CC) -o $@ $^ $(CFLAGS)
 
 $(TESTS): $(HEADERS)
 
