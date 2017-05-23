@@ -421,6 +421,7 @@ elem
                elem = right(tmp);
            }
        }
+       /* TODO: When test works check for shortcuts */
    } while(0)
    #enddef
    
