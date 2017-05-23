@@ -113,7 +113,7 @@ rb_x_m
 
    .. code-block:: cpp
 
-      rb_node_init_tr_m(
+      rb_node_init_m(
           node_t,
           rb_color_m,
           rb_parent_m,
@@ -134,7 +134,7 @@ Why don't you just generate typed functions from the beginning?
 Why is the iterator so complicated?
    rbtree is part of a larger set of data-structures, some need more
    complicated iterator setups, to make the data-structures interchangeable,
-   all have to follow the iterator protocol. use st_for_m or rb_for_cx_m.
+   all have to follow the iterator protocol. use rb_for_cx_m.
 
 
 Implementation
@@ -171,6 +171,7 @@ Traits used by default (x_m macros)
    #define rb_value_m(x) (x)->value
    
    #begindef rb_new_context_m(cx, type)
+       typedef type cx##_type_t;
        typedef type cx##_iter_t;
    #enddef
    
@@ -297,10 +298,31 @@ node
    }
    #enddef
    
+rb_for_cx_m
+------------
+
+Generates a for loop header using the iterator.
+
+iter
+   The new iterator variable.
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef rb_for_cx_m(cx, tree, iter, elem)
+       for(
+               cx##_iter_init(tree, iter, &elem);
+               elem != NULL;
+               cx##_iter_next(iter, &elem)
+       )
+   #enddef
+   
 rb_iter_decl_m
 ---------------
 
-No bound version.
+Also: rb_iter_decl_cx_m
 
 Declare iterator variables.
 
@@ -315,6 +337,11 @@ elem
    #begindef rb_iter_decl_m(type, iter, elem)
        type* iter = NULL;
        type* elem = NULL;
+   #enddef
+   
+   #begindef rb_iter_decl_cx_m(cx, iter, elem)
+       cx##_type_t* iter = NULL;
+       cx##_type_t* elem = NULL;
    #enddef
    
 rb_iter_init_m
@@ -332,6 +359,7 @@ iter
 
 elem
    The pointer to the current element.
+
 
 .. code-block:: cpp
 
@@ -541,7 +569,7 @@ cx
 type
    The type of the nodes in the red-black tree.
 
-..code-block:: cpp
+.. code-block:: cpp
 
    #begindef rb_bind_decl_cx_m(cx, type)
        rb_new_context_m(cx, type)
@@ -591,7 +619,7 @@ cx
 type
    The type of the nodes in the red-black tree.
 
-..code-block:: cpp
+.. code-block:: cpp
 
    #begindef _rb_bind_impl_tr_m(
            cx,
@@ -858,6 +886,18 @@ node
    }
    #enddef
    
+   #begindef _rb_rotate_left_tr_m(cx, tree, node)
+       _rb_rotate_left_m(
+           cx##_type_t,
+           rb_color_m,
+           rb_parent_m,
+           rb_left_m,
+           rb_right_m,
+           tree,
+           node
+       )
+   #enddef
+   
    #begindef _rb_rotate_right_m(
            type,
            color,
@@ -873,6 +913,18 @@ node
            parent,
            right, /* Switched */
            left,  /* Switched */
+           tree,
+           node
+       )
+   #enddef
+   
+   #begindef _rb_rotate_right_tr_m(cx, tree, node)
+       _rb_rotate_right_m(
+           cx##_type_t,
+           rb_color_m,
+           rb_parent_m,
+           rb_left_m,
+           rb_right_m,
            tree,
            node
        )
