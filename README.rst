@@ -396,27 +396,6 @@ elem
        tmp
    )
    do {
-   /*
-    *        if(next.right != null) {
-               next = next.right;
-               while (next.left != null)
-                   next = next.left;
-               return r;
-           }
-   
-           while(true) {
-               if(next.parent == null) {
-                   next = null;
-                   return r;
-               }
-               if(next.parent.left == next) {
-                   next = next.parent;
-                  return r;
-               }
-               next = next.parent;
-           }
-        }
-   */
        tmp = right(elem);
        if(tmp != NULL) {
            elem = tmp;
@@ -424,7 +403,7 @@ elem
                elem = left(elem);
            break;
        }
-       while(1) {
+       for(;;) {
            /* Next would be the root, we are done */
            if(parent(elem) == NULL) {
                elem = NULL;
@@ -438,7 +417,6 @@ elem
            }
            elem = tmp;
        }
-       /* TODO: When test works check for shortcuts */
    } while(0)
    #enddef
    
