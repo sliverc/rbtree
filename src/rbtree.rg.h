@@ -47,47 +47,69 @@
 // Short
 // -----
 //
+// You have to bind your functions to a context first. The context has two
+// function:
+//
+// * Defining the type the bound function operate on
+//
+// * Allowing function composition. For example my_reduce, will use the
+//   functions my_iter_*.
+//
 // Detailed
 // --------
 //
-// Every function x comes in three flavors
+// Every function x comes in two flavors
 //
-// x_m
-//    These functions only take a context as standard argument, but they assume
-//    you use the default traits (rb_color, rb_parent_m, rb_left_m, rb_right_m).
-//    Therefore you only have to define the type and comparator.
-//
-//    .. code-block:: cpp
-//
-//       rb_new_context_m(my, node_t)
-//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+// cx_x
+//    These functions are bound to a type. Traits and the comparator are mapped
+//    to the context. You have to define the type and the traits for the
+//    context and then you bind the function.
 //
 //    .. code-block:: cpp
 //
-//       rb_node_init_m(my, node);
-//
-//
-// x_cx_m
-//    These functions only take a context as standard argument. Type and traits
-//    are mapped to the context. You have to define the type and the traits for
-//    the context.
-//
-//    .. code-block:: cpp
-//
-//       rb_new_context_m(my, node_t)
 //       #define my_color_m(x) (x)->color
 //       #define my_parent_m(x) (x)->parent
 //       #define my_left_m(x) (x)->left
 //       #define my_right_m(x) (x)->right
 //       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+//       rb_bind_cx_m(my, node_t)
 //
 //    .. code-block:: cpp
 //
-//       rb_node_init_cx_m(my, node);
+//       my_node_init(node);
 //
-// x_tr_m
-//    These functions take a type and traits as standard arguments and are the
-//    most verbose.
+//    There is also a short if you know your are going to use all standard
+//    fields in your struct (color, parent, left right)
+//
+//    .. code-block:: cpp
+//
+//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+//       rb_bind_m(my, node_t)
+//
+//    .. code-block:: cpp
+//
+//       my_node_init(node);
+//
+//    Of course usually you want to split declaration and implementation of the
+//    function so it is. example.h:
+//
+//    .. code-block:: cpp
+//
+//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+//       rb_bind_decl_m(my, node_t)
+//
+//    And example.c:
+//
+//    .. code-block:: cpp
+//
+//       rb_bind_impl_m(my, node_t)
+//
+//       int main(void) { my_node_init(node); return 0; }
+//
+// rb_x_m
+//    These functions are macros and take a type and traits as standard
+//    arguments and are the most verbose. Used to build upon rbtree. For
+//    example prbtree (persistent rbtree) will use these function.
 //
 //    .. code-block:: cpp
 //
@@ -99,12 +121,6 @@
 //           rb_right_m,
 //           node
 //       );
-//
-//
-// Usually you would the x_m functions and add color, parent, left and right
-// fields to the structure used. If you want to use different fields you need
-// to use x_cx_m. The x_tr_m function can usually just be ignored and are only
-// interesting if you are extending the functionality of rbtree.
 //
 // Questions
 // =========
@@ -118,7 +134,7 @@
 // Why is the iterator so complicated?
 //    rbtree is part of a larger set of data-structures, some need more
 //    complicated iterator setups, to make the data-structures interchangeable,
-//    all have to follow the iterator protocol. use rb_for_m or rb_for_cx_m.
+//    all have to follow the iterator protocol. use st_for_m or rb_for_cx_m.
 //
 //
 // Implementation
@@ -155,7 +171,7 @@
 #define rb_value_m(x) (x)->value
 
 #begindef rb_new_context_m(cx, type)
-    typedef type cx##_type_t;
+    typedef type cx##_iter_t;
 #enddef
 
 // Comparators
@@ -253,10 +269,10 @@
 //    The right trait of the nodes in the rbtree is a pointer to the right
 //    branch of the node.
 //
-// rb_node_init_tr_m
-// -----------------
+// rb_node_init_m
+// --------------
 //
-// Also: rb_node_init_cx_m, rb_node_init_m
+// Bound: cx##_node_init
 //
 // Initializes a node by setting the color to RB_WHITE and all pointers to
 // NULL.
@@ -266,8 +282,7 @@
 //
 // .. code-block:: cpp
 //
-#begindef rb_node_init_tr_m(
-        type,
+#begindef rb_node_init_m(
         color,
         parent,
         left,
@@ -282,99 +297,12 @@
 }
 #enddef
 
-#begindef test(x)
-    x
-#enddef
-
-#begindef rb_node_init_cx_m(cx, node)
-    rb_node_init_tr_m(
-        void,
-        cx##_color_m,
-        cx##_parent_m,
-        cx##_left_m,
-        cx##_right_m,
-        node
-    )
-#enddef
-
-#begindef rb_node_init_m(cx, node)
-    rb_node_init_cx_m(rb, node)
-#enddef
-
-// rb_for_tr_m
-// ------------
+// rb_iter_decl_m
+// ---------------
 //
-// Also: rb_for_cx_m, rb_for_m
+// No bound version.
 //
-// tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
-//
-// elem
-//    The pointer to the current element.
-//
-// code
-//    Code-block to execute on each element.
-//
-// Be aware the name you choose for elem will be defined as a variable.
-//
-// .. code-block:: cpp
-//
-#begindef rb_for_tr_m(
-        type,
-        parent,
-        left,
-        right,
-        tree,
-        elem,
-        code
-)
-{
-    rb_iter_decl_tr_m(type, elem);
-    rb_iter_init_tr_m(tree, elem);
-    while(!rb_iter_end_tr_m(elem)) {
-        code
-        rb_iter_next_tr_m(
-            type,
-            parent,
-            left,
-            right,
-            elem
-        );
-    }
-}
-#enddef
-
-#begindef rb_for_cx_m(cx, tree, elem, code)
-    rb_for_tr_m(
-        cx##_type_t,
-        cx##_parent_m,
-        cx##_left_m,
-        cx##_right_m,
-        tree,
-        elem,
-        code
-    )
-#enddef
-
-#begindef rb_for_m(cx, tree, elem, code)
-    rb_for_tr_m(
-        cx##_type_t,
-        rb_parent_m,
-        rb_left_m,
-        rb_right_m,
-        tree,
-        elem,
-        code
-    )
-#enddef
-
-
-// rb_iter_decl_tr_m
-// -----------------
-//
-// Also: rb_iter_decl_cx_m, rb_init_decl_m
-//
-// Declare iterator variable.
+// Declare iterator variables.
 //
 // iter
 //    The new iterator variable.
@@ -384,22 +312,15 @@
 //
 // .. code-block:: cpp
 //
-#begindef rb_iter_decl_tr_m(type, elem)
+#begindef rb_iter_decl_m(type, iter, elem)
+    type* iter = NULL;
     type* elem = NULL;
 #enddef
 
-#begindef rb_iter_decl_cx_m(cx, iter, elem)
-    cx##_type_t* elem = NULL;
-#enddef
-
-#begindef rb_iter_decl_m(cx, iter, elem)
-    cx##_type_t* elem = NULL;
-#enddef
-
-// rb_iter_init_tr_m
-// -----------------
+// rb_iter_init_m
+// --------------
 //
-// Also: rb_iter_init_cx_m, rb_iter_init_m
+// Bound: cx##_iter_init
 //
 // Initialize iterator. It will point to the first element.
 //
@@ -407,41 +328,31 @@
 //    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // iter
-//    The new iterator variable
+//    The iterator.
 //
 // elem
 //    The pointer to the current element.
 //
 // .. code-block:: cpp
 //
-#begindef rb_iter_init_tr_m(tree, elem)
+#begindef rb_iter_init_m(tree, elem)
     elem = tree;
 #enddef
 
-#begindef rb_iter_init_cx_m(cx, tree, iter, elem)
-    elem = tree;
-#enddef
-
-#begindef rb_iter_init_m(cx, tree, iter, elem)
-    elem = tree;
-#enddef
-
-// rb_iter_next_tr_m
-// -----------------
+// rb_iter_next_m
+// --------------
 //
-// Also: rb_iter_next_cx_m, rb_iter_next_m
+// Bound: cx##_iter_next
 //
-// Initialize iterator. It will point to the first element.
-//
-// iter
-//    The new iterator variable
+// Initialize iterator. It will point to the first element. The element fill be
+// NULL, if the iteration is at the end.
 //
 // elem
 //    The pointer to the current element.
 //
 // .. code-block:: cpp
 //
-#begindef _rb_iter_next_tr_m(
+#begindef _rb_iter_next_m(
     parent,
     left,
     right,
@@ -485,7 +396,7 @@ do {
 } while(0)
 #enddef
 
-#begindef rb_iter_next_tr_m(
+#begindef rb_iter_next_m(
     type,
     parent,
     left,
@@ -494,7 +405,7 @@ do {
 )
 {
     type* __rb_next_tmp_;
-    _rb_iter_next_tr_m(
+    _rb_iter_next_m(
         parent,
         left,
         right,
@@ -504,57 +415,10 @@ do {
 }
 #enddef
 
-#begindef rb_iter_next_cx_m(cx, iter, elem)
-    rb_iter_next_tr_m(
-        cx##_type_t,
-        cx##_parent_m,
-        cx##_left_m,
-        cx##_right_m,
-        elem
-    )
-#enddef
-
-#begindef rb_iter_next_m(cx, iter, elem)
-    rb_iter_next_tr_m(
-        cx##_type_t,
-        rb_parent_m,
-        rb_left_m,
-        rb_right_m,
-        elem
-    )
-#enddef
-
-// rb_iter_end_tr_m
-// -----------------
+// rb_insert_m
+// ------------
 //
-// Also: rb_iter_end_cx_m, rb_iter_end_m
-//
-// True if iterator is at the end.
-//
-// iter
-//    The new iterator variable
-//
-// elem
-//    The pointer to the current element.
-//
-// .. code-block:: cpp
-//
-#begindef rb_iter_end_tr_m(elem)
-    (elem == NULL)
-#enddef
-
-#begindef rb_iter_end_cx_m(cx, iter, elem)
-    (elem == NULL)
-#enddef
-
-#begindef rb_iter_end_m(cx, iter, elem)
-    (elem == NULL)
-#enddef
-
-// rb_insert_tr_m
-// --------------
-//
-// Also: rb_insert_cx_m, rb_insert_m
+// Bound: cx##_insert
 //
 // Insert the node into the tree. This function might replace the root node
 // (tree). If an equal node exists in the tree node will note added an will
@@ -571,7 +435,7 @@ do {
 //
 // .. code-block:: cpp
 //
-#begindef _rb_insert_tr_m(
+#begindef _rb_insert_m(
         type,
         color,
         parent,
@@ -634,7 +498,7 @@ do {
 } while(0);
 #enddef
 
-#begindef rb_insert_tr_m(
+#begindef rb_insert_m(
         type,
         color,
         parent,
@@ -648,7 +512,7 @@ do {
     type* __rb_current_;
     type* __rb_parent_;
     int   __rb_result_;
-    _rb_insert_tr_m(
+    _rb_insert_m(
         type,
         color,
         parent,
@@ -664,36 +528,199 @@ do {
 }
 #enddef
 
-#begindef rb_insert_cx_m(cx, tree, node)
-    rb_insert_tr_m(
-        cx##_type_t,
+// rb_bind_decl_m
+// --------------
+//
+// Bind rbtree functions to a context. This only generates declarations.
+//
+// rb_bind_decl_cx_m is just an alias for consistency.
+//
+// cx
+//    Name of the new context.
+//
+// type
+//    The type of the nodes in the red-black tree.
+//
+// ..code-block:: cpp
+//
+#begindef rb_bind_decl_cx_m(cx, type)
+    rb_new_context_m(cx, type)
+    void
+    cx##_iter_init(
+            type* tree,
+            cx##_iter_t* iter,
+            type** elem
+    );
+    void
+    cx##_iter_next(
+            cx##_iter_t* iter,
+            type** elem
+    );
+    void
+    cx##_node_init(
+            type* node
+    );
+    int
+    cx##_insert(
+            type** tree,
+            type* node
+    );
+    int
+    cx##_check_tree(type* tree);
+    int
+    cx##_check_tree_rec(
+            type* tree,
+            int depth,
+            int *pathdepth
+    );
+#enddef
+#define rb_bind_decl_m(cx, type) rb_bind_decl_cx_m(cx, type)
+
+// rb_bind_impl_m
+// --------------
+//
+// Bind rbtree functions to a context. This only generates implementations.
+//
+// rb_bind_impl_m uses the standard traits: rb_color_m, rb_parent_m,
+// rb_left_m, rb_right_m, whereas rb_bind_impl_cx_m expects you to create:
+// cx##_color_m, cx##_parent_m, cx##_left_m, cx##_right_m.
+//
+// cx
+//    Name of the new context.
+//
+// type
+//    The type of the nodes in the red-black tree.
+//
+// ..code-block:: cpp
+//
+#begindef _rb_bind_impl_tr_m(
+        cx,
+        type,
+        color,
+        parent,
+        left,
+        right,
+        cmp
+)
+    void
+    cx##_iter_init(
+            type* tree,
+            cx##_iter_t* iter,
+            type** elem
+    )
+    {
+        (void)(iter);
+        rb_iter_init_m(tree, *elem);
+    }
+    void
+    cx##_iter_next(
+            cx##_iter_t* iter,
+            type** elem
+    )
+    {
+        (void)(iter);
+        rb_iter_next_m(
+            type,
+            parent,
+            left,
+            right,
+            *elem
+        )
+    }
+    void
+    cx##_node_init(
+            type* node
+    )
+    {
+        rb_node_init_m(
+                color,
+                parent,
+                left,
+                right,
+                node
+        );
+    }
+    int
+    cx##_insert(
+            type** tree,
+            type* node
+    )
+    {
+        rb_insert_m(
+            type,
+            color,
+            parent,
+            left,
+            right,
+            cmp,
+            *tree,
+            node
+        );
+        return rb_is_white_m(color(node));
+    }
+    int
+    cx##_check_tree(type* tree)
+    {
+        int pathdepth = 0;
+        return cx##_check_tree_rec(tree, 0, &pathdepth);
+    }
+    int
+    cx##_check_tree_rec(
+            type* tree,
+            int depth,
+            int *pathdepth
+    ) rb_check_tree_m(
+        cx,
+        type,
+        color,
+        parent,
+        left,
+        right,
+        cmp,
+        tree,
+        depth,
+        *pathdepth
+    )
+#enddef
+
+#begindef rb_bind_impl_cx_m(cx, type)
+    _rb_bind_impl_tr_m(
+        cx,
+        type,
         cx##_color_m,
         cx##_parent_m,
         cx##_left_m,
         cx##_right_m,
-        cx##_cmp_m,
-        tree,
-        node
+        cx##_cmp_m
     )
 #enddef
 
-#begindef rb_insert_m(cx, tree, node)
-    rb_insert_tr_m(
-        cx##_type_t,
+#begindef rb_bind_impl_m(cx, type)
+    _rb_bind_impl_tr_m(
+        cx,
+        type,
         rb_color_m,
         rb_parent_m,
         rb_left_m,
         rb_right_m,
-        cx##_cmp_m,
-        tree,
-        node
+        cx##_cmp_m
     )
 #enddef
 
-// rb_check_tree_tr_m
-// ------------------
+#begindef rb_bind_cx_m(cx, type)
+    rb_bind_decl_cx_m(cx, type)
+    rb_bind_impl_cx_m(cx, type)
+#enddef
+
+#begindef rb_bind_m(cx, type)
+    rb_bind_decl_m(cx, type)
+    rb_bind_impl_m(cx, type)
+#enddef
+
+// rb_check_tree_m
+// ----------------
 //
-// Also: rb_check_tree_cx_m, rb_check_tree_m
+// Recursive: only works bound cx##_check_tree
 //
 // Check consistency of a tree
 //
@@ -705,7 +732,8 @@ do {
 //
 // .. code-block:: cpp
 //
-#begindef _rb_check_tree_tr_m(
+#begindef rb_check_tree_m(
+        cx,
         type,
         color,
         parent,
@@ -713,104 +741,15 @@ do {
         right,
         cmp,
         tree,
-        result,
-        elem,
-        tmp
+        depth,
+        pathdepth
 )
 {
-    result = 0;
-    rb_for_tr_m(
-        type,
-        parent,
-        left,
-        right,
-        tree,
-        elem,
-        {
-            (void)(elem);
-            (void)(tmp);
-            if(tree == elem) {
-                if(!rb_is_root_m(color(elem))) {
-                    result = 1;
-                    break;
-                }
-            } if(rb_is_red_m(color(elem))) {
-                tmp = left(elem);
-                if(tmp != NULL) {
-                    if(rb_is_red_m(color(tmp))) {
-                        result = 1;
-                        break;
-                    }
-                }
-                tmp =right(elem);
-                if(tmp != NULL) {
-                    if(rb_is_red_m(color(tmp))) {
-                        result = 1;
-                        break;
-                    }
-                }
-            }
-            tmp = left(elem);
-            if(tmp != NULL) {
-                if((cmp(tmp, elem)) < 0) {
-                    result = 1;
-                    break;
-                }
-            }
-        }
-    );
+    (void)(tree);
+    (void)(depth);
+    (void)(pathdepth);
+    return 0;
 }
-#enddef
-
-#begindef rb_check_tree_tr_m(
-        type,
-        color,
-        parent,
-        left,
-        right,
-        cmp,
-        tree,
-        result
-)
-    type* __rb_check_tmp_;
-    _rb_check_tree_tr_m(
-        type,
-        color,
-        parent,
-        left,
-        right,
-        cmp,
-        tree,
-        result,
-        __rb_check_elem_,
-        __rb_check_tmp_
-    )
-#enddef
-
-#begindef rb_check_tree_cx_m(cx, tree, result)
-    rb_check_tree_tr_m(
-        cx##_type_t,
-        cx##_color_m,
-        cx##_parent_m,
-        cx##_left_m,
-        cx##_right_m,
-        cx##_cmp_m,
-        tree,
-        result
-    )
-#enddef
-
-#begindef rb_check_tree_m(cx, tree, result)
-    rb_check_tree_tr_m(
-        cx##_type_t,
-        rb_color_m,
-        rb_parent_m,
-        rb_left_m,
-        rb_right_m,
-        cx##_cmp_m,
-        tree,
-        result
-    )
 #enddef
 
 // Private
@@ -818,16 +757,16 @@ do {
 //
 // Functions that are used internally.
 //
-// _rb_rotate_left_tr_m
-// ---------------------
+// _rb_rotate_left_m
+// ------------------
 //
-// Also: _rb_rotate_right_tr_m
+// Internal: not bound
 //
 // A rotation is a local operation in a search tree that preserves in-order
 // traversal key ordering. Used to fix insert/deletion discrepancies. This
 // operation might change the current root.
 //
-// _rb_rotate_right_tr_m is _rb_rotate_left_tr_m where left and right had been
+// _rb_rotate_right_m is _rb_rotate_left_m where left and right had been
 // switched.
 //
 // tree
@@ -852,7 +791,7 @@ do {
 //
 // .. code-block:: cpp
 //
-#begindef __rb_rotate_left_tr_m(
+#begindef __rb_rotate_left_m(
         color,
         parent,
         left,
@@ -894,7 +833,7 @@ do {
 } while(0)
 #enddef
 
-#begindef _rb_rotate_left_tr_m(
+#begindef _rb_rotate_left_m(
         type,
         color,
         parent,
@@ -906,7 +845,7 @@ do {
 {
     type* __rb_rot_x_;
     type* __rb_rot_y_;
-    __rb_rotate_left_tr_m(
+    __rb_rotate_left_m(
         color,
         parent,
         left,
@@ -919,19 +858,7 @@ do {
 }
 #enddef
 
-#begindef _rb_rotate_left_m(cx, tree, node)
-    _rb_rotate_left_tr_m(
-        cx##_type_t,
-        rb_color_m,
-        rb_parent_m,
-        rb_left_m,
-        rb_right_m,
-        tree,
-        node
-    )
-#enddef
-
-#begindef _rb_rotate_right_tr_m(
+#begindef _rb_rotate_right_m(
         type,
         color,
         parent,
@@ -940,7 +867,7 @@ do {
         tree,
         node
 )
-    _rb_rotate_left_tr_m(
+    _rb_rotate_left_m(
         type,
         color,
         parent,
@@ -951,20 +878,10 @@ do {
     )
 #enddef
 
-#begindef _rb_rotate_right_m(cx, tree, node)
-    _rb_rotate_right_tr_m(
-        cx##_type_t,
-        rb_color_m,
-        rb_parent_m,
-        rb_left_m,
-        rb_right_m,
-        tree,
-        node
-    )
-#enddef
-
-// _rb_insert_fix_tr_m
-// ---------------------
+// _rb_insert_fix_m
+// ----------------
+//
+// Internal: not bound
 //
 // After insert new node is labelled red, and possibly destroys the red-black
 // property. The main loop moves up the tree, restoring the red-black property.
@@ -1001,8 +918,8 @@ do {
                 parent,
                 left,
                 right,
-                _rb_rotate_left_tr_m,
-                _rb_rotate_right_tr_m,
+                _rb_rotate_left_m,
+                _rb_rotate_right_m,
                 tree,
                 x,
                 y
@@ -1014,8 +931,8 @@ do {
                 parent,
                 right, /* Switched */
                 left, /* Switched */
-                _rb_rotate_right_tr_m, /* Switched */
-                _rb_rotate_left_tr_m, /* Switched */
+                _rb_rotate_right_m, /* Switched */
+                _rb_rotate_left_m, /* Switched */
                 tree,
                 x,
                 y

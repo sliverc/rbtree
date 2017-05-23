@@ -53,6 +53,10 @@ struct node_s {
     node_t* right;
 };
 
+
+#define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+rb_bind_decl_m(my, node_t)
+
 static
 void
 print_tree(int n, node_t* l, node_t* r) {

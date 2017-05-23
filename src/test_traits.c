@@ -1,11 +1,16 @@
 #include "testing.h"
 
-rb_new_context_m(my, node_t)
-#define my_color_m(x) (x)->color
-#define my_parent_m(x) (x)->parent
-#define my_left_m(x) (x)->left
-#define my_right_m(x) (x)->right
-#define my_cmp_m(x) rb_value_m(x)
+#define mx_color_m(x) (x)->color
+#define mx_parent_m(x) (x)->parent
+#define mx_left_m(x) (x)->left
+#define mx_right_m(x) (x)->right
+#define mx_cmp_m(x, y) rb_value_cmp_m(x, y)
+
+rb_bind_cx_m(mx, node_t)
+
+#define mz_cmp_m(x, y) rb_value_cmp_m(x, y)
+rb_bind_m(mz, node_t)
+
 
 static
 int
@@ -40,23 +45,12 @@ test_traits(void)
 
     T(test_set_traits(node));
 
-    rb_node_init_m(rb, node);
+    my_node_init(node);
     T(assert_init_traits(node));
 
     T(test_set_traits(node));
 
-    rb_node_init_cx_m(rb, node);
-    T(assert_init_traits(node));
-
-    T(test_set_traits(node));
-
-    rb_node_init_cx_m(my, node);
-    T(assert_init_traits(node));
-
-    T(test_set_traits(node));
-
-    rb_node_init_tr_m(
-        node_t,
+    rb_node_init_m(
         rb_color_m,
         rb_parent_m,
         rb_left_m,

@@ -15,12 +15,17 @@ else
 include $(BASE)/mk/dev.mk
 endif
 
+OBJS := \
+	$(BUILD)/src/rbtree.o
+
+
 TESTS := \
 	$(BUILD)/src/test_traits.o \
 	$(BUILD)/src/test_insert.o
 
 HEADERS := \
-	$(BUILD)/src/rbtree.h
+	$(BUILD)/src/rbtree.h \
+	$(BUILD)/src/testing.h
 
 DOCS := \
 	$(BUILD)/src/rbtree.rg.h.rst \
@@ -39,9 +44,11 @@ all: rbtree test
 
 test: doc cppcheck tests
 
-$(TESTS): $(HEADERS) $(BUILD)/src/testing.h
+$(TESTS): $(HEADERS)
 
-$(BUILD)/rbtests.a: $(TESTS)
+$(OBJS): $(HEADERS)
+
+$(BUILD)/rbtests.a: $(OBJS) $(TESTS)
 
 headers: $(HEADERS)  ## Make headers
 
