@@ -102,6 +102,7 @@ cx_x
 
    .. code-block:: cpp
 
+      #include "example.h"
       rb_bind_impl_m(my, node_t)
 
       int main(void) { my_node_init(node); return 0; }
