@@ -4,6 +4,7 @@ set logscale y2
 set ylabel "clock"
 set y2label "log(clock)"
 set xlabel "size"
+set key left top
 set title "rbtree vs sglib insert performance\nless is better"
 plot 'log' i 0 u 1:2 w lines title "rbtree",\
      'log' i 1 u 1:2 w lines title "sglib",\
