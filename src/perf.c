@@ -6,7 +6,7 @@
 #include <time.h>
 #include <math.h>
 
-#define MSIZE 1000000
+#define MSIZE 10000000
 
 node_t mnodes[MSIZE];
 
@@ -39,7 +39,7 @@ main(void)
         my_node_init(node);
         rb_value_m(node) = rand();
     }
-    printf("\"clock\" \"rbtree\" \"rbtree (log)\"\n");
+    printf("\"rbtree\"\n");
     start = clock();
     for(int i = 0; i < MSIZE; i++) {
         my_insert(&tree, &mnodes[i]);
@@ -55,7 +55,7 @@ main(void)
         node = &mnodes[i];
         my_node_init(node);
     }
-    printf("\n\n\"clock\" \"sglib\" \"sglib (log)\"\n");
+    printf("\n\n\"sglib\"\n");
     start = clock();
     for(int i = 0; i < MSIZE; i++) {
         sglib_node_t_add(&tree, &mnodes[i]);
@@ -66,5 +66,6 @@ main(void)
             start = clock();
         }
     }
+    printf("\n\n");
     return 0;
 }

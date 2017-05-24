@@ -48,8 +48,13 @@ test: doc cppcheck tests  # Test only
 perf: $(BUILD)/perf
 
 plot: perf  ## Plot performance comparison
-	cd $(BUILD) && ./perf > log
-	cd $(BUILD) && gnuplot -c $(BASE)/mk/plot > plot.png
+	cd $(BUILD) && ./perf > log1
+	cd $(BUILD) && ./perf > log2
+	cd $(BUILD) && ./perf > log3
+	cd $(BUILD) && ./perf > log4
+	cd $(BUILD) && ./perf > log5
+	cd $(BUILD) &&  $(BASE)/mk/avg log1 log2 log3 log4 log5 > log
+	cd $(BUILD) && gnuplot -c $(BASE)/mk/plot > $(BASE)/perf01.png
 
 $(BUILD)/perf: $(HEADERS) $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o
 	$(CC) -o $@ $^ $(CFLAGS)
