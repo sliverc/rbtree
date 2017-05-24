@@ -1,13 +1,15 @@
-.PHONY: clean cppcheck headers help todo rbtree doc all tests perf
+.PHONY: clean cppcheck headers help todo rbtree doc all tests perf plot
 
 MEMCHECK := valgrind --tool=memcheck
 BASE := $(PWD)
 BUILD := $(BASE)/build
 PYTHONPATH := $(BASE)
+GDFONTPATH := /usr/share/fonts/ttf-dejavu
 
 export BUILD
 export BASE
 export PYTHONPATH
+export GDFONTPATH
 
 ifeq ($(RELEASE),True)
 include $(BASE)/mk/rel.mk
@@ -39,11 +41,15 @@ ide:
 
 ride: docs perf rbtree module
 
-all: perf rbtree test
+all: perf rbtree test  ## Make everything
 
-test: doc cppcheck tests
+test: doc cppcheck tests  # Test only
 
 perf: $(BUILD)/perf
+
+plot: perf  ## Plot performance comparison
+	cd $(BUILD) && ./perf > log
+	cd $(BUILD) && gnuplot -c $(BASE)/mk/plot > plot.png
 
 $(BUILD)/perf: $(HEADERS) $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o
 	$(CC) -o $@ $^ $(CFLAGS)

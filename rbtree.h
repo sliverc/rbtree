@@ -1036,8 +1036,6 @@ do { \
             ); \
         } \
     } \
-    /* TODO Move this back to insert if tests are ok */ \
-    /* TODO Add tmp vars once this works */ \
     rb_make_root_m(color(tree)); \
 } \
 
