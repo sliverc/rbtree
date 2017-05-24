@@ -18,7 +18,8 @@ include $(BASE)/mk/dev.mk
 endif
 
 OBJS := \
-	$(BUILD)/src/rbtree.o
+	$(BUILD)/src/rbtree.o \
+	$(BUILD)/src/perf.o
 
 TESTS := \
 	$(BUILD)/src/test_traits.o \
@@ -58,7 +59,7 @@ plot: perf  ## Plot performance comparison
 	cd $(BUILD) &&  $(BASE)/mk/avg log1 log2 log3 log4 log5 log6 log7 > log
 	cd $(BUILD) && gnuplot -c $(BASE)/mk/plot > $(BASE)/perf01.png
 
-$(BUILD)/perf: $(HEADERS) $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o
+$(BUILD)/perf: $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TESTS): $(HEADERS)
