@@ -136,6 +136,13 @@ Why is the iterator so complicated?
    complicated iterator setups, to make the data-structures interchangeable,
    all have to follow the iterator protocol. use rb_for_cx_m.
 
+Performance
+===========
+
+.. image:: https://github.com/ganwell/rbtree/raw/master/perf01.png
+   :width: 90%
+   :align: center
+   :alt: insert
 
 Implementation
 ==============
