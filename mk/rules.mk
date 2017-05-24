@@ -14,9 +14,7 @@ STRPCMD:= strip --strip-debug
 endif
 
 ifeq ($(UNAME_S),Darwin)
-CFLAGS += -I/usr/local/opt/openssl/include
 LDFLAGS += -Wl,-dead_strip
-LDFLAGS += -L/usr/local/opt/openssl/lib
 else
 CFLAGS += -pthread
 LDFLAGS += -Wl,--gc-sections

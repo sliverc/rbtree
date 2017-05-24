@@ -59,7 +59,7 @@ plot: perf  ## Plot performance comparison
 	cd $(BUILD) && gnuplot -c $(BASE)/mk/plot > $(BASE)/perf01.png
 
 $(BUILD)/perf: $(HEADERS) $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(TESTS): $(HEADERS)
 
@@ -70,29 +70,30 @@ $(BUILD)/rbtests.a: $(OBJS) $(TESTS)
 headers: $(HEADERS)  ## Make headers
 
 docs: $(DOCS)
-	@cp -f $(BUILD)/src/rbtree.rg.h.rst $(BASE)/README.rst
-	@git add $(BASE)/README.rst
+	cp -f $(BUILD)/src/rbtree.rg.h.rst $(BASE)/README.rst
+	git add $(BASE)/README.rst
 
 rbtree: $(BUILD)/src/rbtree.h ## Make rbtree.h
-	@cp -f $(BUILD)/src/rbtree.h $(BASE)/rbtree.h
-	@git add $(BASE)/rbtree.h
+	cp -f $(BUILD)/src/rbtree.h $(BASE)/rbtree.h
+	git add $(BASE)/rbtree.h
 
 doc: docs  ## Make documentation
-	@command -v rst2html && \
+	command -v rst2html && \
 		rst2html $(BUILD)/src/rbtree.rg.h.rst $(BUILD)/rbtree.html || \
 		rst2html.py $(BUILD)/src/rbtree.rg.h.rst $(BUILD)/rbtree.html
 
 tests: module
-	@pytest
+	pytest
 
 xtests: module
-	@pytest -x -s
+	pytest -x -s
 
 module: $(BUILD)/_rbtree_tests.o
 
 $(BUILD)/_rbtree_tests.o: $(BUILD)/rbtests.a
-	@cd $(BUILD) && python $(BASE)/src/cffi_build.py
-	@cd $(BUILD) && touch __init__.py
-	@command -v setfattr && setfattr -n user.pax.flags -v "emr" $(BUILD)/*.so
+	cd $(BUILD) && python $(BASE)/src/cffi_build.py
+	cd $(BUILD) && touch __init__.py
+	command -v setfattr && \
+		setfattr -n user.pax.flags -v "emr" $(BUILD)/*.so || true
 
 include $(BASE)/mk/rules.mk
