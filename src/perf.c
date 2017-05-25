@@ -31,14 +31,19 @@ main(void)
     node_t* tree = NULL;
     node_t* node;
     clock_t start, end;
-    double cpu_time_used = 0;
+    double cpu_time_used = 0.1;
     (void)(cpu_time_used);
-     
+    fprintf(stderr, "preheat: ");
+    for(int i = 0; i < 200000000; i++)
+        cpu_time_used = cpu_time_used * cpu_time_used;
+    fprintf(stderr, "%d\n", (int) cpu_time_used);
+    fprintf(stderr, "prepare: ");
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
         my_node_init(node);
         rb_value_m(node) = rand();
     }
+    fprintf(stderr, "rbtree\n");
     printf("\"rbtree\"\n");
     start = clock();
     for(int i = 0; i < MSIZE; i++) {
@@ -46,15 +51,17 @@ main(void)
         if((i % 10000) == 0) {
             end = clock();
             cpu_time_used = (double) (end - start);
-            printf("%d %f %f\n", i, cpu_time_used, log(cpu_time_used));
+            printf("%d %f\n", i, cpu_time_used);
             start = clock();
         }
     }
+    fprintf(stderr, "prepare: ");
     tree = NULL;
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
         my_node_init(node);
     }
+    fprintf(stderr, "sglib\n");
     printf("\n\n\"sglib\"\n");
     start = clock();
     for(int i = 0; i < MSIZE; i++) {
@@ -62,7 +69,7 @@ main(void)
         if((i % 10000) == 0) {
             end = clock();
             cpu_time_used = (double) (end - start);
-            printf("%d %f %f\n", i, cpu_time_used, log(cpu_time_used));
+            printf("%d %f\n", i, cpu_time_used);
             start = clock();
         }
     }

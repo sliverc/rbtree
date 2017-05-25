@@ -25,6 +25,6 @@ while True:
         for line in lines:
             split = line.split(" ")
             avg += float(split[1])
-        print(avg / 4.0)
+        print(avg / float(_len))
     else:
-        print(lines[0])
+        sys.stdout.write(lines[0])

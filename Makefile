@@ -53,7 +53,9 @@ plot: perf  ## Plot performance comparison
 	cd $(BUILD) && ./perf > log3
 	cd $(BUILD) && ./perf > log4
 	cd $(BUILD) && ./perf > log5
-	cd $(BUILD) &&  $(BASE)/mk/avg log1 log2 log3 log4 log5 > log
+	cd $(BUILD) && ./perf > log6
+	cd $(BUILD) && ./perf > log7
+	cd $(BUILD) &&  $(BASE)/mk/avg log1 log2 log3 log4 log5 log6 log7 > log
 	cd $(BUILD) && gnuplot -c $(BASE)/mk/plot > $(BASE)/perf01.png
 
 $(BUILD)/perf: $(HEADERS) $(BUILD)/src/perf.o $(BUILD)/src/rbtree.o

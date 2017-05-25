@@ -1,4 +1,4 @@
-set terminal png font DejaVuSans 13 size 1200,900
+set terminal png font "DejaVuSans,13" size 1200,900
 set y2tics
 set logscale y2
 set ylabel "clock"
