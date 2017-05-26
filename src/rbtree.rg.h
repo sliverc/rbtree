@@ -450,8 +450,10 @@ do {
 // Bound: cx##_insert
 //
 // Insert the node into the tree. This function might replace the root node
-// (tree). If an equal node exists in the tree node will note added an will
-// still be RB_WHITE.
+// (tree). If an equal node exists in the tree, the node will not be added and
+// will still be RB_WHITE.
+//
+// The bound function will return 0 on success.
 //
 // cmp
 //    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
@@ -460,7 +462,7 @@ do {
 //    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
-//    The node to initialize.
+//    The node to insert.
 //
 // .. code-block:: cpp
 //
@@ -553,6 +555,80 @@ do {
         __rb_current_,
         __rb_parent_,
         __rb_result_
+    )
+}
+#enddef
+
+// rb_delete_m
+// ------------
+//
+// Bound: cx##_delete
+//
+// Insert delete a node from the tree. This function acts on an actual tree
+// node. If you don't have it use rb_find_m first.
+//
+// node
+//    The node to delete.
+//
+// .. code-block:: cpp
+//
+#begindef _rb_delete_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        tree,
+        node,
+        x,
+        y
+)
+do {
+    assert(tree != NULL && "Cannot remove node from empty tree");
+    assert(node != NULL && "Cannot insert NULL node");
+    assert(!rb_is_white_m(color(node)) && "Node not in a tree");
+    /* This node has at least one NULL node, delete is simple */
+    if(left(node) == NULL || right(node) == NULL) {
+        if(left(node) == NULL)
+            x = right(node);
+        else
+            x = left(node);
+        if(parent(x) == NULL)
+            tree = x;
+        else {
+            if(node = left(parent(node)))
+                left(parent(node)) = x;
+            else
+                right(parent(node)) = x;
+        }
+    } else {
+    }
+
+} while(0);
+#enddef
+
+#begindef rb_delete_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        tree,
+        node
+)
+{
+    type* __rb_del_x_;
+    type* __rb_del_y_;
+    _rb_delete_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        tree,
+        node,
+        __rb_del_x_,
+        __rb_del_y_,
     )
 }
 #enddef
