@@ -481,7 +481,7 @@ do {
     }
     c = tree;
     p = NULL;
-    r = 1;
+    r = 0;
     while(c != NULL) {
         /* The node is already in the rbtree, we break */
         r = cmp(c, node);
@@ -492,7 +492,7 @@ do {
         c = r > 0 ? left(c) : right(c);
     }
     /* The node is already in the rbtree, we break */
-    if(r == 0)
+    if(c != NULL)
         break;
 
     parent(node) = p;
@@ -530,9 +530,9 @@ do {
         node
 )
 {
-    type* __rb_current_;
-    type* __rb_parent_;
-    int   __rb_result_;
+    type* __rb_ins_current_;
+    type* __rb_ins_parent_;
+    int   __rb_ins_result_;
     _rb_insert_m(
         type,
         color,
@@ -542,9 +542,9 @@ do {
         cmp,
         tree,
         node,
-        __rb_current_,
-        __rb_parent_,
-        __rb_result_
+        __rb_ins_current_,
+        __rb_ins_parent_,
+        __rb_ins_result_
     )
 }
 #enddef
@@ -574,47 +574,87 @@ do {
         x,
         y
 )
-do {
-    (void)(x);
-    assert(tree != NULL && "Cannot remove node from empty tree");
-    assert(node != NULL && "Cannot insert NULL node");
-    assert((
-        parent(node) != NULL ||
-        left(node) != NULL ||
-        right(node) != NULL ||
-        rb_is_black_m(color(node))
-    ) && "Node is not in a tree");
-    /* This node has at least one NULL node, delete is simple */
-    if(left(node) == NULL || right(node) == NULL)
-        /* The node is suitable for deletion */
-        y = node;
-    else {
-        /* We need to find another node for deletion that as only one child */
-        y = right(node);
-        while(left(y) != NULL)
-            y = left(y);
-    }
-
-    /* If there is child that is not NULL assign it to x.
-     * x might still be NULL. */
-    if(parent(y) != NULL) {
-        if (left(y) != NULL) {
-            parent(left(y)) = parent(y);
-            left(parent(y)) = left(y);
-        } else {
-            parent(right(y)) = parent(y);
-            right(parent(y)) = left(y);
+{
+    do {
+        assert(tree != NULL && "Cannot remove node from empty tree");
+        assert(node != NULL && "Cannot insert NULL node");
+        assert((
+            parent(node) != NULL ||
+            left(node) != NULL ||
+            right(node) != NULL ||
+            rb_is_black_m(color(node))
+        ) && "Node is not in a tree");
+        /* This node has at least one NULL node, delete is simple */
+        if(left(node) == NULL || right(node) == NULL)
+            /* The node is suitable for deletion */
+            y = node;
+        else {
+            /* We need to find another node for deletion that as
+             * only one child */
+            y = right(node);
+            while(left(y) != NULL)
+                y = left(y);
         }
+
+        /* If there is child that is not NULL assign it to x.
+         * x might still be NULL. */
+        x = left(y);
+        if(parent(y) != NULL) {
+            if (x != NULL)
+                /* TODO is it impossible to get in here? */
+                parent(x) = parent(y);
+            else {
+                x = right(y);
+                if(x != NULL)
+                    parent(x) = parent(y);
+            }
+            if(y == left(parent(y)))
+                left(parent(y)) = x;
+            else
+                right(parent(y)) = x;
+        } else {
+            tree = NULL;
+            break;
+        }
+        if(x != NULL) {
+            _rb_delete_fix_m(
+                    type,
+                    color,
+                    parent,
+                    left,
+                    right,
+                    tree,
+                    x
+            );
+        } else {
+            _rb_delete_fix_m(
+                    type,
+                    color,
+                    parent,
+                    left,
+                    right,
+                    tree,
+                    parent(y)
+            );
+        }
+        /* Replace y with node */
         if(y != node) {
-            /* Replace y with node */
+            if(parent(node) != NULL) {
+                if(node == left(parent(node)))
+                    left(parent(node)) = y;
+                else
+                    right(parent(node)) = y;
+            }
             parent(y) = parent(node);
             left(y) = left(node);
             right(y) = right(node);
         }
-    } else {
-        tree = NULL;
-    }
-} while(0);
+    } while(0);
+    parent(node) = NULL;
+    left(node) = NULL;
+    right(node) = NULL;
+    color(node) = 0;
+}
 #enddef
 
 #begindef rb_delete_m(
@@ -1096,14 +1136,14 @@ do {
 //
 // Internal: not bound
 //
-// After insert new node is labelled red, and possibly destroys the red-black
+// After insert new node is labeled red, and possibly destroys the red-black
 // property. The main loop moves up the tree, restoring the red-black property.
 //
 // tree
 //    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
-//    The node to initialize.
+//    The start-node to fix.
 //
 // .. code-block:: cpp
 //
@@ -1234,6 +1274,168 @@ do {
                 parent(parent(x))
             );
         }
+    }
+}
+#enddef
+
+// _rb_delete_fix_m
+// ----------------
+//
+// Internal: not bound
+//
+// TODO
+//
+// tree
+//    The root node of the tree. Pointer to NULL represents an empty tree.
+//
+// node
+//    The start-node to fix.
+//
+// .. code-block:: cpp
+//
+#begindef __rb_delete_fix_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        tree,
+        node,
+        x,
+        y
+)
+{
+    x = node;
+    while(
+            (x != tree) &&
+            rb_is_black_m(color(parent(x)))
+    ) {
+        if(x == left(parent(x))) {
+            _rb_delete_fix_node_m(
+                type,
+                color,
+                parent,
+                left,
+                right,
+                _rb_rotate_left_m,
+                _rb_rotate_right_m,
+                tree,
+                x,
+                y
+            );
+        } else {
+            _rb_delete_fix_node_m(
+                type,
+                color,
+                parent,
+                right, /* Switched */
+                left, /* Switched */
+                _rb_rotate_left_m,
+                _rb_rotate_right_m,
+                tree,
+                x,
+                y
+            );
+        }
+    }
+    if(x != NULL) /* Null already means black */
+        rb_make_black_m(color(x));
+}
+#enddef
+
+#begindef _rb_delete_fix_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        tree,
+        node
+)
+{
+    type* __rb_delf_x_;
+    type* __rb_delf_y_;
+    __rb_delete_fix_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        tree,
+        node,
+        __rb_delf_x_,
+        __rb_delf_y_
+    );
+}
+#enddef
+
+#begindef _rb_delete_fix_node_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        rot_left,
+        rot_right,
+        tree,
+        x,
+        y
+)
+{
+    /* If x's parent is a left, y is x's right 'uncle' */
+    y = right(parent(x));
+    /* Null means the node is black by spec */
+    if(rb_is_red_m(color(y))) {
+        /* case 1 - change the colors and rotate */
+        rb_make_black_m(color(y));
+        rb_make_red_m(color(parent(x)));
+        rot_left(
+            type,
+            color,
+            parent,
+            left,
+            right,
+            tree,
+            parent(x)
+        );
+        y = right(parent(x));
+    }
+    if((
+            rb_is_black_m(color(left(x))) &&
+            rb_is_black_m(color(right(x)))
+    )) {
+        /* case 2 - make this node red if below is a black layer */
+        rb_make_red_m(color(y));
+        x = parent(x);
+    } else {
+        /* TODO comment these cases */
+        if(rb_is_black_m(color(right(y)))) {
+            rb_make_black_m(color(left(y)));
+            rb_make_red_m(color(y));
+            rot_right(
+                type,
+                color,
+                parent,
+                left,
+                right,
+                tree,
+                y
+            );
+            y = right(parent(x));
+        }
+        color(y) = color(parent(x));
+        rb_make_black_m(color(parent(x)));
+        rb_make_black_m(color(right(y)));
+        rot_left(
+            type,
+            color,
+            parent,
+            left,
+            right,
+            tree,
+            parent(x)
+        );
+        x = tree;
     }
 }
 #enddef
