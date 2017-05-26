@@ -616,7 +616,7 @@ do { \
             tree = NULL; \
             break; \
         } \
-        if(x != NULL) { \
+        /*if(x != NULL) { \
             _rb_delete_fix_m( \
                     type, \
                     color, \
@@ -636,7 +636,7 @@ do { \
                     tree, \
                     parent(y) \
             ); \
-        } \
+        }*/ \
         /* Replace y with node */ \
         if(y != node) { \
             if(parent(node) != NULL) { \
