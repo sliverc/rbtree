@@ -12,20 +12,27 @@ test_insert_static(void)
         node = &mnodes[i];
         rb_value_m(node) = i;
         my_node_init(node);
-        TA(rb_color_m(node) == RB_WHITE, "Node not white after init");
+        TA((
+            rb_parent_m(node) == NULL &&
+            rb_left_m(node) == NULL &&
+            rb_right_m(node) == NULL &&
+            rb_color_m(node) == 0
+        ), "Node not properly initialized");
     }
     node = &mnodes[0];
     my_insert(&tree, node);
-    TA(rb_is_root_m(rb_color_m(node)), "Node not root after first insert");
+    TA(rb_parent_m(node) == NULL, "Node not root after first insert");
     TA(rb_is_black_m(rb_color_m(node)), "Node not black after first insert");
 
     node = &mnodes[1];
     rb_value_m(node) = 0;
     my_insert(&tree, node);
-    TA(
-        rb_is_white_m(rb_color_m(node)),
-        "Equal node should not have been inserted"
-    );
+        TA((
+            rb_parent_m(node) == NULL &&
+            rb_left_m(node) == NULL &&
+            rb_right_m(node) == NULL &&
+            rb_color_m(node) == 0
+        ), "Node should not have been added");
     TA(tree == &mnodes[0], "Equal node should not have been inserted");
 
     rb_value_m(node) = 1;
@@ -279,6 +286,12 @@ test_insert(int len, int* nodes, int count, int sum, int do_sum)
         node = &mnodes[i];
         my_node_init(node);
         rb_value_m(node) = nodes[i];
+        TA((
+            rb_parent_m(node) == NULL &&
+            rb_left_m(node) == NULL &&
+            rb_right_m(node) == NULL &&
+            rb_color_m(node) == 0
+        ), "Node not  properly initialized");
         my_insert(&tree, node);
         //print_tree(0, tree, NULL);
         my_check_tree(tree);

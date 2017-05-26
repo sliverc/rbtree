@@ -221,33 +221,16 @@
 //
 // .. code-block:: cpp
 //
-#define RB_WHITE  0
 #define RB_BLACK (1 << 0)
 #define RB_ROOT  (1 << 1)
 #define RB_COPY  (1 << 2) /* Used in future for persistent rbtrees */
 
-#define rb_is_white_m(x)   (x == RB_WHITE)
 #define rb_is_red_m(x)   (!(x & RB_BLACK))
 #define rb_is_black_m(x)   (x & RB_BLACK)
-#ifdef NDEBUG
-#   define rb_is_root_m(x)  1
-#else
-#   define rb_is_root_m(x) (x & RB_ROOT) /* Special black :-p */
-#endif
-#define rb_needs_copy_m(x) (x & RB_COPY
+#define rb_needs_copy_m(x) (x & RB_COPY)
 
-#define rb_make_white_m(x) x = RB_WHITE
 #define rb_make_black_m(x) x |= RB_BLACK
 #define rb_make_red_m(x)   x &= ~RB_BLACK
-#ifdef NDEBUG
-#   define rb_make_root_m(x)  x = RB_BLACK
-#   define rb_set_root_m(x)
-#   define rb_unset_root_m(x)
-#else
-#   define rb_make_root_m(x)  x = RB_BLACK | RB_ROOT
-#   define rb_set_root_m(x)   x |= RB_ROOT
-#   define rb_unset_root_m(x) x &= ~RB_ROOT
-#endif
 #define rb_set_copy_m(x)   x |= RB_COPY
 #define rb_unset_copy_m(x) x &= ~RB_COPY
 
@@ -296,7 +279,7 @@
         node
 )
 {
-    rb_make_white_m(color(node));
+    color(node) = 0;
     parent(node) = NULL;
     left(node) = NULL;
     right(node) = NULL;
@@ -481,17 +464,24 @@ do {
 )
 do {
     assert(node != NULL && "Cannot insert NULL node");
-    assert(rb_is_white_m(color(node)) && "Node already used");
+    assert(((
+        parent(node) == NULL &&
+        left(node) == NULL &&
+        right(node) == NULL
+    ) || rb_is_black_m(color(node))) && "Node already used");
     if(tree == NULL) {
         tree = node;
-        rb_make_root_m(color(tree));
+        rb_make_black_m(color(tree));
         break;
     } else {
-        assert(rb_is_root_m(color(tree)) && "Tree is not root");
+        assert((
+            parent(tree) == NULL &&
+            rb_is_black_m(color(tree))
+        ) && "Tree is not root");
     }
     c = tree;
     p = NULL;
-    r = 0;
+    r = 1;
     while(c != NULL) {
         /* The node is already in the rbtree, we break */
         r = cmp(c, node);
@@ -502,7 +492,7 @@ do {
         c = r > 0 ? left(c) : right(c);
     }
     /* The node is already in the rbtree, we break */
-    if(c != NULL)
+    if(r == 0)
         break;
 
     parent(node) = p;
@@ -565,7 +555,8 @@ do {
 // Bound: cx##_delete
 //
 // Insert delete a node from the tree. This function acts on an actual tree
-// node. If you don't have it use rb_find_m first.
+// node. If you don't have it use rb_find_m first. The root node (tree) can
+// change.
 //
 // node
 //    The node to delete.
@@ -584,26 +575,45 @@ do {
         y
 )
 do {
+    (void)(x);
     assert(tree != NULL && "Cannot remove node from empty tree");
     assert(node != NULL && "Cannot insert NULL node");
-    assert(!rb_is_white_m(color(node)) && "Node not in a tree");
+    assert((
+        parent(node) != NULL ||
+        left(node) != NULL ||
+        right(node) != NULL ||
+        rb_is_black_m(color(node))
+    ) && "Node is not in a tree");
     /* This node has at least one NULL node, delete is simple */
-    if(left(node) == NULL || right(node) == NULL) {
-        if(left(node) == NULL)
-            x = right(node);
-        else
-            x = left(node);
-        if(parent(x) == NULL)
-            tree = x;
-        else {
-            if(node = left(parent(node)))
-                left(parent(node)) = x;
-            else
-                right(parent(node)) = x;
-        }
-    } else {
+    if(left(node) == NULL || right(node) == NULL)
+        /* The node is suitable for deletion */
+        y = node;
+    else {
+        /* We need to find another node for deletion that as only one child */
+        y = right(node);
+        while(left(y) != NULL)
+            y = left(y);
     }
 
+    /* If there is child that is not NULL assign it to x.
+     * x might still be NULL. */
+    if(parent(y) != NULL) {
+        if (left(y) != NULL) {
+            parent(left(y)) = parent(y);
+            left(parent(y)) = left(y);
+        } else {
+            parent(right(y)) = parent(y);
+            right(parent(y)) = left(y);
+        }
+        if(y != node) {
+            /* Replace y with node */
+            parent(y) = parent(node);
+            left(y) = left(node);
+            right(y) = right(node);
+        }
+    } else {
+        tree = NULL;
+    }
 } while(0);
 #enddef
 
@@ -628,7 +638,7 @@ do {
         tree,
         node,
         __rb_del_x_,
-        __rb_del_y_,
+        __rb_del_y_
     )
 }
 #enddef
@@ -667,6 +677,11 @@ do {
     );
     int
     cx##_insert(
+            type** tree,
+            type* node
+    );
+    void
+    cx##_delete(
             type** tree,
             type* node
     );
@@ -761,8 +776,26 @@ do {
             *tree,
             node
         );
-        return rb_is_white_m(color(node));
+        return (
+            parent(node) != NULL ||
+            left(node) != NULL ||
+            right(node) != NULL ||
+            *tree == node
+        );
     }
+    void
+    cx##_delete(
+            type** tree,
+            type* node
+    ) rb_delete_m(
+        type,
+        color,
+        parent,
+        left,
+        right,
+        *tree,
+        node
+    )
     void
     cx##_check_tree(type* tree)
     {
@@ -973,10 +1006,9 @@ do {
     parent(y) = parent(x);
     /* Set the parent to point to y instead of x */
     /* First see whether we're at the root */
-    if(parent(x) == NULL) {
-        rb_unset_root_m(color(tree));
+    if(parent(x) == NULL)
         tree = y;
-    } else {
+    else {
         if(x == left(parent(x)))
             /* x was on the left of its parent */
             left(parent(x)) = y;
@@ -1120,7 +1152,7 @@ do {
             );
         }
     }
-    rb_make_root_m(color(tree));
+    rb_make_black_m(color(tree));
 }
 #enddef
 

@@ -6,6 +6,7 @@
 
 #begindef TA(condition, ...)
 {
+    assert(condition);
     if(!(condition)) {
         fprintf(
             stderr,
