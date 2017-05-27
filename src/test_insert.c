@@ -300,16 +300,25 @@ test_insert(int len, int* nodes, int count, int sum, int do_sum)
     int elems = 0;
     rb_iter_decl_cx_m(my, iter, elem);
     //printf("elems: ");
+    node = tree;
     rb_for_cx_m(my, tree, iter, elem) {
         //printf("%d ", rb_value_m(elem));
         tsum += rb_value_m(elem);
         elems += 1;
     };
-    //printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
+    TA(node == tree, "Iter changed tree");
+    //printf("\nf%d == %d, %d == %d\n", count, elems, sum, tsum);
     TA(elems == count, "Iterator count failed");
     if(do_sum)
         TA(tsum == sum, "Iterator sum failed");
-    int consistent = 0;
+    tsum = 0;
+    elems = 0;
+    recursive_sum(&tsum, &elems, tree);
+    TA(node == tree, "Sum changed tree");
+    //printf("\na%d == %d, %d == %d\n", count, elems, sum, tsum);
+    TA(elems == count, "Iterator count failed");
+    if(do_sum)
+        TA(tsum == sum, "Iterator sum failed");
     free(mnodes);
-    return consistent;
+    return 0;
 }

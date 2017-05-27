@@ -6,8 +6,8 @@ import hypothesis.strategies as st
 
 @given(st.lists(
     st.integers(
-        min_value=-2**32 / 2,
-        max_value=(2**32 / 2) - 1
+        min_value=-(2 ** 16),
+        max_value=2 ** 16
     )
 ))
 def test_insert(ints):
@@ -25,7 +25,7 @@ def test_insert(ints):
 
 def test_insert_fix():
     """Test if rbtree is consistent after generated inserts."""
-    ints = [-1073741822, 0, 2, 1073741827, 1, 0]
+    ints = [-1, 0, 2, 4, 1, 0]
     ss = set(ints)
     sc = len(ss)
     s = sum(ss)

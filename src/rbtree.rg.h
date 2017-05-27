@@ -398,7 +398,7 @@ do {
             break;
         }
         tmp = parent(elem);
-        /* Are a left node, therefor we are the next node */
+        /* Are a left node, therefore we are the next node */
         if(elem == left(tmp)) {
             elem = tmp;
             break;
@@ -596,59 +596,46 @@ do {
                 y = left(y);
         }
 
-        /* If there is child that is not NULL assign it to x.
-         * x might still be NULL. */
-        x = left(y);
-        if(parent(y) != NULL) {
-            if (x != NULL)
-                /* TODO is it impossible to get in here? */
-                parent(x) = parent(y);
-            else {
-                x = right(y);
-                if(x != NULL)
-                    parent(x) = parent(y);
-            }
-            if(y == left(parent(y)))
-                left(parent(y)) = x;
-            else
-                right(parent(y)) = x;
-        } else {
-            tree = NULL;
-            break;
-        }
-        if(x != NULL) {
-            _rb_delete_fix_m(
-                    type,
-                    color,
-                    parent,
-                    left,
-                    right,
-                    tree,
-                    x
-            );
-        } else {
-            _rb_delete_fix_m(
-                    type,
-                    color,
-                    parent,
-                    left,
-                    right,
-                    tree,
-                    parent(y)
-            );
-        }
-        /* Replace y with node */
+        /* Switch y and node, results in switching the data */
         if(y != node) {
+            /* Attach to new parent */
             if(parent(node) != NULL) {
                 if(node == left(parent(node)))
                     left(parent(node)) = y;
                 else
                     right(parent(node)) = y;
-            }
+            } else
+                tree = y;
+            /* Switch all pointers */
+            x = parent(y);
             parent(y) = parent(node);
-            left(y) = left(node);
-            right(y) = right(node);
+            parent(node) = x;
+            x = left(node);
+            if(x == y)
+                x = node;
+            left(node) = left(y);
+            left(y) = x;
+            x = right(node);
+            if(x == y)
+                x = node;
+            right(node) = right(y);
+            right(y) = x;
         }
+
+        /* If node (y) has a child we have to attach it to the parent */
+        if(left(node) != NULL)
+            x = left(node);
+        else
+            x = right(node);
+
+        if(parent(node) != NULL) {
+            if(node == left(parent(node)))
+                left(parent(node)) = x;
+            else
+                right(parent(node)) = x;
+        } else
+            tree = x;
+
     } while(0);
     parent(node) = NULL;
     left(node) = NULL;
@@ -1437,5 +1424,110 @@ do {
         );
         x = tree;
     }
+}
+#enddef
+
+// _rb_switch_node_m
+// ------------
+//
+// Internal not bound.
+//
+// Switch two nodes.
+//
+// tree
+//    The root node of the tree. Pointer to NULL represents an empty tree.
+//
+// x
+//    The node to switch.
+//
+// y
+//    The node to switch.
+//
+// .. code-block:: cpp
+//
+#begindef __rb_switch_node_m(
+        type,
+        parent,
+        left,
+        right,
+        tree,
+        x,
+        y,
+        t /* tmp parent */
+)
+{
+    if(x != y) {
+        /* Switch parents */
+        if(y == parent(x)) {
+            parent(x) = parent(y);
+            parent(y) = x;
+        } else if(x == parent(y)) {
+            parent(y) = parent(x);
+            parent(x) = y;
+        } else {
+            t = parent(x);
+            parent(x) = parent(y);
+            parent(y) = t;
+        }
+        /* Switch childs */
+        t = left(x);
+        left(x) = left(y);
+        left(y) = t;
+        t = right(x);
+        right(x) = right(y);
+        right(y) = t;
+        /* Fix parents */
+        t = parent(x);
+        if(t == parent(y)) {
+            /* Siblings */
+            if(x == left(t)) {
+                left(t) = y;
+                right(t) = x;
+            } else {
+                left(t) = x;
+                right(t) = y;
+            }
+        } else {
+            if(t != NULL) {
+                if(y == left(t))
+                    left(t) = x;
+                else
+                    right(t) = x;
+            } else
+                tree = x;
+            t = parent(y);
+            if(t != NULL) {
+                if(x == left(t))
+                    left(t) = y;
+                else
+                    right(t) = y;
+            } else
+                tree = y;
+        }
+    }
+}
+#enddef
+
+#begindef _rb_switch_node_m(
+        type,
+        parent,
+        left,
+        right,
+        tree,
+        node,
+        new
+)
+{
+    type *__rb_repl_tmp_;
+    __rb_switch_node_m(
+        type,
+        parent,
+        left,
+        right,
+        tree,
+        node,
+        new,
+        __rb_repl_tmp_ /* t */
+    )
 }
 #enddef

@@ -46,9 +46,10 @@ rb_bind_decl_m(my, node_t)
 static
 void
 print_tree(int n, node_t* l, node_t* r) {
-    int pv = -1;
-    int lv = -1;
-    int rv = -1;
+    /* TODO this written very stupidly */
+    int pv = -91;
+    int lv = -91;
+    int rv = -91;
     char* pc = "";
     char* lc = "";
     char* rc = "";
@@ -82,4 +83,16 @@ print_tree(int n, node_t* l, node_t* r) {
         print_tree(n, rb_left_m(l), rb_right_m(l));
     if(r != NULL)
         print_tree(n, rb_left_m(r), rb_right_m(r));
+}
+
+static
+void
+recursive_sum(int* sum, int* elems, node_t* node)
+{
+    if(node == NULL)
+        return;
+    *sum += rb_value_m(node);
+    *elems += 1;
+    recursive_sum(sum, elems, rb_left_m(node));
+    recursive_sum(sum, elems, rb_right_m(node));
 }
