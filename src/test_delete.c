@@ -66,6 +66,22 @@ test_switch(int len, int* nodes, int sum, int do_sum)
     ), "Node is not in a tree");
     x = &mnodes[len - 1];
     y = &mnodes[len - 2];
+    node_t x1;
+    node_t y1;
+    node_t xpm;
+    node_t ypm;
+    node_t* xp;
+    node_t* yp;
+    memcpy(&x1, x, sizeof(node_t));
+    memcpy(&y1, y, sizeof(node_t));
+    if(rb_parent_m(x)) {
+        xp = rb_parent_m(x);
+        memcpy(&xpm, xp, sizeof(node_t));
+    }
+    if(rb_parent_m(y)) {
+        yp = rb_parent_m(y);
+        memcpy(&ypm, yp, sizeof(node_t));
+    }
     //print_tree(0, tree, NULL);
     _rb_switch_node_m(
         node_t,
@@ -76,6 +92,16 @@ test_switch(int len, int* nodes, int sum, int do_sum)
         x,
         y
     );
+    TA((
+        memcmp(x, &x1, sizeof(node_t)) != 0 ||
+        xp == NULL ||
+        memcmp(xp, &xpm, sizeof(node_t)) != 0
+    ), "No switch happened");
+    TA((
+        memcmp(y, &y1, sizeof(node_t)) != 0 ||
+        yp == NULL ||
+        memcmp(yp, &ypm, sizeof(node_t)) != 0
+    ), "No switch happened");
     int tsum = 0;
     int elems = 0;
     recursive_sum(&tsum, &elems, tree);
