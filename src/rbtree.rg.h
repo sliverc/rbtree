@@ -1504,6 +1504,15 @@ do {
             } else
                 tree = y;
         }
+        /* Fix other nodes */
+        if (left(x) != NULL)
+            parent(left(x)) = x;
+        if (left(y) != NULL)
+            parent(left(y)) = y;
+        if (right(x) != NULL)
+            parent(right(x)) = x;
+        if (right(y) != NULL)
+            parent(right(y)) = y;
     }
 }
 #enddef

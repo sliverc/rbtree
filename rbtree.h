@@ -1445,7 +1445,77 @@ do { \
 //
 // .. code-block:: cpp
 //
-#include "shrink.h"
+#define __rb_switch_node_m( \
+        type, \
+        parent, \
+        left, \
+        right, \
+        tree, \
+        x, \
+        y, \
+        t /* tmp parent */ \
+) \
+{ \
+    if(x != y) { \
+        /* Switch parents */ \
+        if(y == parent(x)) { \
+            parent(x) = parent(y); \
+            parent(y) = x; \
+        } else if(x == parent(y)) { \
+            parent(y) = parent(x); \
+            parent(x) = y; \
+        } else { \
+            t = parent(x); \
+            parent(x) = parent(y); \
+            parent(y) = t; \
+        } \
+        /* Switch childs */ \
+        t = left(x); \
+        left(x) = left(y); \
+        left(y) = t; \
+        t = right(x); \
+        right(x) = right(y); \
+        right(y) = t; \
+        /* Fix parents */ \
+        t = parent(x); \
+        if(t == parent(y)) { \
+            /* Siblings */ \
+            if(x == left(t)) { \
+                left(t) = y; \
+                right(t) = x; \
+            } else { \
+                left(t) = x; \
+                right(t) = y; \
+            } \
+        } else { \
+            if(t != NULL) { \
+                if(y == left(t)) \
+                    left(t) = x; \
+                else \
+                    right(t) = x; \
+            } else \
+                tree = x; \
+            t = parent(y); \
+            if(t != NULL) { \
+                if(x == left(t)) \
+                    left(t) = y; \
+                else \
+                    right(t) = y; \
+            } else \
+                tree = y; \
+        } \
+        /* Fix other nodes */ \
+        if (left(x) != NULL) \
+            parent(left(x)) = x; \
+        if (left(y) != NULL) \
+            parent(left(y)) = y; \
+        if (right(x) != NULL) \
+            parent(right(x)) = x; \
+        if (right(y) != NULL) \
+            parent(right(y)) = y; \
+    } \
+} \
+
 
 #define _rb_switch_node_m( \
         type, \
