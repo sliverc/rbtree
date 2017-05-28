@@ -46,6 +46,10 @@ int
 test_switch(int len, int* nodes, int sum, int do_sum)
 {
     node_t* mnodes = malloc(len * sizeof(node_t));
+    int* expect_in_order = malloc(len * sizeof(int));
+    int* actual_in_order = malloc(len * sizeof(int));
+    int value;
+    int i;
     node_t* tree = NULL;
     node_t* node;
     node_t* x;
@@ -66,56 +70,44 @@ test_switch(int len, int* nodes, int sum, int do_sum)
     ), "Node is not in a tree");
     x = &mnodes[len - 1];
     y = &mnodes[len - 2];
-    node_t x1;
-    node_t y1;
-    node_t xpm;
-    node_t ypm;
-    node_t* xp;
-    node_t* yp;
-    memcpy(&x1, x, sizeof(node_t));
-    memcpy(&y1, y, sizeof(node_t));
-    if(rb_parent_m(x)) {
-        xp = rb_parent_m(x);
-        memcpy(&xpm, xp, sizeof(node_t));
+    rb_iter_decl_cx_m(my, iter, elem);
+    i = 0;
+    rb_for_cx_m(my, tree, iter, elem) {
+        expect_in_order[i] = rb_value_m(elem);
+        i += 1;
     }
-    if(rb_parent_m(y)) {
-        yp = rb_parent_m(y);
-        memcpy(&ypm, yp, sizeof(node_t));
+    value = rb_value_m(x);
+    rb_value_m(x) = rb_value_m(y);
+    rb_value_m(y) = value;
+    {
+        _rb_switch_node_m(
+            node_t,
+            rb_parent_m,
+            rb_left_m,
+            rb_right_m,
+            tree,
+            x,
+            y
+        );
     }
-    //print_tree(0, tree, NULL);
-    _rb_switch_node_m(
-        node_t,
-        rb_parent_m,
-        rb_left_m,
-        rb_right_m,
-        tree,
-        x,
-        y
+    i = 0;
+    rb_for_cx_m(my, tree, iter, elem) {
+        actual_in_order[i] = rb_value_m(elem);
+        i += 1;
+    }
+    TA(
+        memcmp(expect_in_order, actual_in_order, len * sizeof(int)) == 0,
+        "Not in correct order"
     );
-    TA((
-        memcmp(x, &x1, sizeof(node_t)) != 0 ||
-        xp == NULL ||
-        memcmp(xp, &xpm, sizeof(node_t)) != 0
-    ), "No switch happened");
-    TA((
-        memcmp(y, &y1, sizeof(node_t)) != 0 ||
-        yp == NULL ||
-        memcmp(yp, &ypm, sizeof(node_t)) != 0
-    ), "No switch happened");
     int tsum = 0;
     int elems = 0;
     recursive_sum(&tsum, &elems, tree);
-    /* print_tree(0, tree, NULL); *
-     * printf("\n%d == %d, %d == %d\n", len, elems, sum, tsum); */
     TA(elems == len, "Iterator count failed");
     if(do_sum)
         TA(tsum == sum, "Iterator sum failed");
     int consistent = 0;
+    free(actual_in_order);
+    free(expect_in_order);
     free(mnodes);
     return consistent;
-}
-
-int main(void) {
-    int i[2] = {0, 1};
-    return test_delete(2, i, 1, 0, 1);
 }
