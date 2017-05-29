@@ -6,11 +6,12 @@ int
 test_delete(int len, int* nodes, int count, int sum, int do_sum)
 {
     int ret = 0;
+    int i = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
     do {
         node_t* tree = NULL;
         node_t* node;
-        for(int i = 0; i < len; i++) {
+        for(i = 0; i < len; i++) {
             node = &mnodes[i];
             my_node_init(node);
             rb_value_m(node) = nodes[i];
@@ -24,8 +25,8 @@ test_delete(int len, int* nodes, int count, int sum, int do_sum)
                 rb_color_m(node) != 0
         ), "Node is not in a tree");
         node = &mnodes[len - 1];
-        print_tree(0, tree, NULL);
-        my_delete(&tree, node);
+        //print_tree(0, tree, NULL);
+        my_delete_node(&tree, node);
         BA((
             rb_parent_m(node) == NULL &&
             rb_left_m(node) == NULL &&
@@ -35,8 +36,18 @@ test_delete(int len, int* nodes, int count, int sum, int do_sum)
         int tsum = 0;
         int elems = 0;
         recursive_sum(&tsum, &elems, tree);
-        printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
+        //printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
         BA(elems == count, "Iterator count failed");
+        if(do_sum)
+            BA(tsum == sum, "Iterator sum failed");
+        rb_iter_decl_cx_m(my, iter, elem);
+        i = 0;
+        tsum = 0;
+        rb_for_cx_m(my, tree, iter, elem) {
+            tsum += rb_value_m(elem);
+            i += 1;
+        }
+        BA(i == count, "Iterator count failed");
         if(do_sum)
             BA(tsum == sum, "Iterator sum failed");
     } while(0);
@@ -99,6 +110,7 @@ test_switch(int len, int* nodes, int sum, int do_sum)
             actual_in_order[i] = rb_value_m(elem);
             i += 1;
         }
+        BA(i == len, "Iterator count failed");
         BA(
             memcmp(expect_in_order, actual_in_order, len * sizeof(int)) == 0,
             "Not in correct order"

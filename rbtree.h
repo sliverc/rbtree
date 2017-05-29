@@ -549,21 +549,24 @@ do { \
 } \
 
 
-// rb_delete_m
+// rb_delete_node_m
 // ------------
 //
-// Bound: cx##_delete
+// Bound: cx##_delete_node
 //
 // Insert delete a node from the tree. This function acts on an actual tree
-// node. If you don't have it use rb_find_m first. The root node (tree) can
-// change.
+// node. If you don't have it use rb_find_m first or rb_delete_m. The root node
+// (tree) can change.
+//
+// tree
+//    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
 //    The node to delete.
 //
 // .. code-block:: cpp
 //
-#define _rb_delete_m( \
+#define _rb_delete_node_m( \
         type, \
         color, \
         parent, \
@@ -596,31 +599,15 @@ do { \
                 y = left(y); \
         } \
  \
-        /* Switch y and node, results in switching the data */ \
-        if(y != node) { \
-            /* Attach to new parent */ \
-            if(parent(node) != NULL) { \
-                if(node == left(parent(node))) \
-                    left(parent(node)) = y; \
-                else \
-                    right(parent(node)) = y; \
-            } else \
-                tree = y; \
-            /* Switch all pointers */ \
-            x = parent(y); \
-            parent(y) = parent(node); \
-            parent(node) = x; \
-            x = left(node); \
-            if(x == y) \
-                x = node; \
-            left(node) = left(y); \
-            left(y) = x; \
-            x = right(node); \
-            if(x == y) \
-                x = node; \
-            right(node) = right(y); \
-            right(y) = x; \
-        } \
+        _rb_switch_node_m( \
+            type, \
+            parent, \
+            left, \
+            right, \
+            tree, \
+            node, \
+            y \
+        ) \
  \
         /* If node (y) has a child we have to attach it to the parent */ \
         if(left(node) != NULL) \
@@ -644,7 +631,7 @@ do { \
 } \
 
 
-#define rb_delete_m( \
+#define rb_delete_node_m( \
         type, \
         color, \
         parent, \
@@ -656,7 +643,7 @@ do { \
 { \
     type* __rb_del_x_; \
     type* __rb_del_y_; \
-    _rb_delete_m( \
+    _rb_delete_node_m( \
         type, \
         color, \
         parent, \
@@ -708,7 +695,7 @@ do { \
             type* node \
     ); \
     void \
-    cx##_delete( \
+    cx##_delete_node( \
             type** tree, \
             type* node \
     ); \
@@ -811,10 +798,10 @@ do { \
         ); \
     } \
     void \
-    cx##_delete( \
+    cx##_delete_node( \
             type** tree, \
             type* node \
-    ) rb_delete_m( \
+    ) rb_delete_node_m( \
         type, \
         color, \
         parent, \
