@@ -121,6 +121,7 @@ test_switch(int len, int* nodes, int sum, int do_sum)
         BA(elems == len, "Iterator count failed");
         if(do_sum)
             BA(tsum == sum, "Iterator sum failed");
+        //my_check_tree(tree);
     } while(0);
     free(actual_in_order);
     free(expect_in_order);

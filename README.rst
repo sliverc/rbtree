@@ -623,6 +623,20 @@ node
            } else
                tree = x;
    
+       if(x == NULL)
+           x = node;
+   
+       _rb_delete_fix_m(
+               type,
+               color,
+               parent,
+               left,
+               right,
+               tree,
+               x
+       )
+   
+   
        } while(0);
        parent(node) = NULL;
        left(node) = NULL;
@@ -1355,10 +1369,13 @@ node
            x,
            y
    )
-   {
+   do {
        /* If x's parent is a left, y is x's right 'uncle' */
        y = right(parent(x));
-       /* Null means the node is black by spec */
+       if(y == NULL) {
+           x = parent(x);
+           break;
+       }
        if(rb_is_red_m(color(y))) {
            /* case 1 - change the colors and rotate */
            rb_make_black_m(color(y));
@@ -1374,16 +1391,26 @@ node
            );
            y = right(parent(x));
        }
+       if(y == NULL) {
+           x = parent(x);
+           break;
+       }
+       /* NULL is black by spec. */
        if((
-               rb_is_black_m(color(left(x))) &&
-               rb_is_black_m(color(right(x)))
+               (
+                   left(y) == NULL ||
+                   rb_is_black_m(color(left(y)))
+               ) && (
+                   right(y) == NULL ||
+                   rb_is_black_m(color(right(y)))
+               )
        )) {
            /* case 2 - make this node red if below is a black layer */
            rb_make_red_m(color(y));
            x = parent(x);
        } else {
-           /* TODO comment these cases */
-           if(rb_is_black_m(color(right(y)))) {
+           /* NULL is black by spec. */
+           if(right(y) == NULL || rb_is_black_m(color(right(y)))) {
                rb_make_black_m(color(left(y)));
                rb_make_red_m(color(y));
                rot_right(
@@ -1411,7 +1438,7 @@ node
            );
            x = tree;
        }
-   }
+   } while(0)
    #enddef
    
 _rb_switch_node_m
