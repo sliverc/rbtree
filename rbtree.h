@@ -622,7 +622,13 @@ do { \
             node, \
             y \
         ) \
+        char tcol = color(y); \
+        color(y) = color(x); \
+        color(x) = tcol; \
  \
+        left(node) = NULL; \
+        right(node) = NULL; \
+        parent(node) = y; \
         _rb_delete_fix_m( \
                 type, \
                 color, \
@@ -630,7 +636,7 @@ do { \
                 left, \
                 right, \
                 tree, \
-                y \
+                node \
         ); \
  \
  \
