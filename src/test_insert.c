@@ -279,46 +279,49 @@ test_rotate(void)
 int
 test_insert(int len, int* nodes, int count, int sum, int do_sum)
 {
+    int ret = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
-    node_t* tree = NULL;
-    node_t* node;
-    for(int i = 0; i < len; i++) {
-        node = &mnodes[i];
-        my_node_init(node);
-        rb_value_m(node) = nodes[i];
-        TA((
-            rb_parent_m(node) == NULL &&
-            rb_left_m(node) == NULL &&
-            rb_right_m(node) == NULL &&
-            rb_color_m(node) == 0
-        ), "Node not  properly initialized");
-        my_insert(&tree, node);
-        //print_tree(0, tree, NULL);
-        my_check_tree(tree);
-    }
-    int tsum = 0;
-    int elems = 0;
-    rb_iter_decl_cx_m(my, iter, elem);
-    //printf("elems: ");
-    node = tree;
-    rb_for_cx_m(my, tree, iter, elem) {
-        //printf("%d ", rb_value_m(elem));
-        tsum += rb_value_m(elem);
-        elems += 1;
-    };
-    TA(node == tree, "Iter changed tree");
-    //printf("\nf%d == %d, %d == %d\n", count, elems, sum, tsum);
-    TA(elems == count, "Iterator count failed");
-    if(do_sum)
-        TA(tsum == sum, "Iterator sum failed");
-    tsum = 0;
-    elems = 0;
-    recursive_sum(&tsum, &elems, tree);
-    TA(node == tree, "Sum changed tree");
-    //printf("\na%d == %d, %d == %d\n", count, elems, sum, tsum);
-    TA(elems == count, "Iterator count failed");
-    if(do_sum)
-        TA(tsum == sum, "Iterator sum failed");
+    do {
+        node_t* tree = NULL;
+        node_t* node;
+        for(int i = 0; i < len; i++) {
+            node = &mnodes[i];
+            my_node_init(node);
+            rb_value_m(node) = nodes[i];
+            BA((
+                rb_parent_m(node) == NULL &&
+                rb_left_m(node) == NULL &&
+                rb_right_m(node) == NULL &&
+                rb_color_m(node) == 0
+            ), "Node not  properly initialized");
+            my_insert(&tree, node);
+            //print_tree(0, tree, NULL);
+            my_check_tree(tree);
+        }
+        int tsum = 0;
+        int elems = 0;
+        rb_iter_decl_cx_m(my, iter, elem);
+        //printf("elems: ");
+        node = tree;
+        rb_for_cx_m(my, tree, iter, elem) {
+            //printf("%d ", rb_value_m(elem));
+            tsum += rb_value_m(elem);
+            elems += 1;
+        };
+        BA(node == tree, "Iter changed tree");
+        //printf("\nf%d == %d, %d == %d\n", count, elems, sum, tsum);
+        BA(elems == count, "Iterator count failed");
+        if(do_sum)
+            BA(tsum == sum, "Iterator sum failed");
+        tsum = 0;
+        elems = 0;
+        recursive_sum(&tsum, &elems, tree);
+        BA(node == tree, "Sum changed tree");
+        //printf("\na%d == %d, %d == %d\n", count, elems, sum, tsum);
+        BA(elems == count, "Iterator count failed");
+        if(do_sum)
+            BA(tsum == sum, "Iterator sum failed");
+    } while(0);
     free(mnodes);
-    return 0;
+    return ret;
 }

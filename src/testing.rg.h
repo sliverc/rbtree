@@ -20,6 +20,23 @@
 }
 #enddef
 
+#begindef BA(condition, ...)
+{
+    if(!(condition)) {
+        fprintf(
+            stderr,
+            "%s:%d ",
+            __FILE__,
+            __LINE__
+        );
+        fprintf(stderr, __VA_ARGS__);
+        fprintf(stderr, "\n");
+        ret = 1;
+        break;
+    }
+}
+#enddef
+
 #begindef T(test)
 {
     int __testing_tmp_ret_ = test;
