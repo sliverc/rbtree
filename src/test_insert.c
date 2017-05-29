@@ -277,7 +277,7 @@ test_rotate(void)
 }
 
 int
-test_insert(int len, int* nodes, int count, int sum, int do_sum)
+test_insert(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
 {
     int ret = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
@@ -300,14 +300,18 @@ test_insert(int len, int* nodes, int count, int sum, int do_sum)
         }
         int tsum = 0;
         int elems = 0;
+        int fail = 0;
         rb_iter_decl_cx_m(my, iter, elem);
         //printf("elems: ");
         node = tree;
         rb_for_cx_m(my, tree, iter, elem) {
             //printf("%d ", rb_value_m(elem));
+            if(sorted[elems] != rb_value_m(elem))
+                fail = 1;
             tsum += rb_value_m(elem);
             elems += 1;
         };
+        BA(fail == 0, "Not correctly sorted");
         BA(node == tree, "Iter changed tree");
         //printf("\nf%d == %d, %d == %d\n", count, elems, sum, tsum);
         BA(elems == count, "Iterator count failed");

@@ -23,12 +23,14 @@ def test_delete(ints):
     ints = deduplicate(ints)
     c = len(ints)
     assume(c > 1)
-    s = sum(ints[:-1])
+    dl = ints[:-1]
+    s = sum(dl)
+    ss = sorted(dl)
     do_sum = True
     if abs(s) > (2**32 / 2) - 1:
         do_sum = False
         s = 0
-    assert(lib.test_delete(c, ints, c - 1, s, do_sum) == 0)
+    assert(lib.test_delete(c, ints, ss, c - 1, s, do_sum) == 0)
 
 
 @given(st.lists(

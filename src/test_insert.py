@@ -4,6 +4,13 @@ from hypothesis import given
 import hypothesis.strategies as st
 
 
+def deduplicate(seq):
+    """Deduplicate a list."""
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
+
 @given(st.lists(
     st.integers(
         min_value=-(2 ** 16),
@@ -12,7 +19,7 @@ import hypothesis.strategies as st
 ))
 def test_insert(ints):
     """Test if rbtree is consistent after generated inserts."""
-    ss = set(ints)
+    ss = sorted(deduplicate(ints))
     sc = len(ss)
     s = sum(ss)
     c = len(ints)
@@ -20,17 +27,17 @@ def test_insert(ints):
     if abs(s) > (2**32 / 2) - 1:
         do_sum = False
         s = 0
-    assert(lib.test_insert(c, ints, sc, s, do_sum) == 0)
+    assert(lib.test_insert(c, ints, ss, sc, s, do_sum) == 0)
 
 
 def test_insert_fix():
     """Test if rbtree is consistent after generated inserts."""
     ints = [-1, 0, 2, 4, 1, 0]
-    ss = set(ints)
+    ss = sorted(deduplicate(ints))
     sc = len(ss)
     s = sum(ss)
     c = len(ints)
-    assert(lib.test_insert(c, ints, sc, s, True) == 0)
+    assert(lib.test_insert(c, ints, ss, sc, s, True) == 0)
 
 
 def test_insert_static():

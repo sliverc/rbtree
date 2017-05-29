@@ -599,16 +599,6 @@ do {
                 y = left(y);
         }
 
-        _rb_switch_node_m(
-            type,
-            parent,
-            left,
-            right,
-            tree,
-            node,
-            y
-        )
-
         /* If node (y) has a child we have to attach it to the parent */
         if(left(node) != NULL)
             x = left(node);
@@ -623,18 +613,25 @@ do {
         } else
             tree = x;
 
-    if(x == NULL)
-        x = node;
-
-    _rb_delete_fix_m(
+        _rb_switch_node_m(
             type,
-            color,
             parent,
             left,
             right,
             tree,
-            x
-    )
+            node,
+            y
+        )
+
+        _rb_delete_fix_m(
+                type,
+                color,
+                parent,
+                left,
+                right,
+                tree,
+                y
+        );
 
 
     } while(0);
@@ -1395,7 +1392,7 @@ do {
         x = parent(x);
         break;
     }
-    /* NULL is black by spec. */
+    /* TODO check if needed. NULL is black by spec. */
     if((
             (
                 left(y) == NULL ||
@@ -1409,8 +1406,7 @@ do {
         rb_make_red_m(color(y));
         x = parent(x);
     } else {
-        /* NULL is black by spec. */
-        if(right(y) == NULL || rb_is_black_m(color(right(y)))) {
+        if(rb_is_black_m(color(right(y)))) {
             rb_make_black_m(color(left(y)));
             rb_make_red_m(color(y));
             rot_right(

@@ -3,8 +3,9 @@
 #include <stdlib.h>
 
 int
-test_delete(int len, int* nodes, int count, int sum, int do_sum)
+test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
 {
+    (void)(sorted);
     int ret = 0;
     int i = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
@@ -36,20 +37,27 @@ test_delete(int len, int* nodes, int count, int sum, int do_sum)
         int tsum = 0;
         int elems = 0;
         recursive_sum(&tsum, &elems, tree);
-        //printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
+        //my_check_tree(tree);
         BA(elems == count, "Iterator count failed");
+        //printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
         if(do_sum)
             BA(tsum == sum, "Iterator sum failed");
         rb_iter_decl_cx_m(my, iter, elem);
         i = 0;
         tsum = 0;
+        int fail = 0;
         rb_for_cx_m(my, tree, iter, elem) {
+            if(sorted[i] != rb_value_m(elem))
+                fail = 1;
             tsum += rb_value_m(elem);
+            BA(i < count, "Iterator count failed");
             i += 1;
         }
+        BA(fail == 0, "Not correctly sorted");
         BA(i == count, "Iterator count failed");
         if(do_sum)
             BA(tsum == sum, "Iterator sum failed");
+        my_check_tree(tree);
     } while(0);
     free(mnodes);
     return ret;
@@ -121,10 +129,18 @@ test_switch(int len, int* nodes, int sum, int do_sum)
         BA(elems == len, "Iterator count failed");
         if(do_sum)
             BA(tsum == sum, "Iterator sum failed");
-        //my_check_tree(tree);
     } while(0);
     free(actual_in_order);
     free(expect_in_order);
     free(mnodes);
     return ret;
+}
+
+int
+main(void)
+{
+    int nodes[3] = {-1073741824, 1073741825, 0};
+    int sorted[2] = {-1073741824, 1073741825};
+    return test_delete(3, nodes, sorted, 2, 1, 1);
+
 }
