@@ -13,8 +13,8 @@ def deduplicate(seq):
 
 @given(st.lists(
     st.integers(
-        min_value=-(2 ** 16),
-        max_value=2 ** 16
+        min_value=-(2 ** 30),
+        max_value=2 ** 30
     )
 ))
 def test_insert(ints):

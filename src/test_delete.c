@@ -12,16 +12,16 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
     do {
         node_t* tree;
         my_tree_init(&tree);
-        node_t* node;
+        node_t* node = NULL;
         for(i = 0; i < len; i++) {
             node = &mnodes[i];
             my_node_init(node);
             rb_value_m(node) = nodes[i];
-            printf("%d ", nodes[i]);
+            //printf("%d ", nodes[i]);
             my_insert(&tree, node);
             my_check_tree(tree);
         }
-        printf("\n");
+        //printf("\n");
         BA((
                 rb_parent_m(node) != my_nil_ptr ||
                 rb_left_m(node) != my_nil_ptr ||
@@ -77,7 +77,7 @@ test_switch(int len, int* nodes, int sum, int do_sum)
         int i;
         node_t* tree;
         my_tree_init(&tree);
-        node_t* node;
+        node_t* node = NULL;
         node_t* x;
         node_t* y;
 

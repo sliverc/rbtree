@@ -289,8 +289,7 @@
 //
 // Bound: cx##_node_init
 //
-// Initializes a node by setting the color to RB_WHITE and all pointers to
-// NULL.
+// Initializes a node by setting the color to 0 and all pointers to nil.
 //
 // node
 //    The node to initialize.
@@ -428,7 +427,7 @@ do {
             break;
         }
         tmp = parent(elem);
-        /* Are a left node, therefore we are the next node */
+        /* tmp is a left node, therefore it is the next node */
         if(elem == left(tmp)) {
             elem = tmp;
             break;
@@ -542,7 +541,6 @@ do {
         assert(right(p) == nil);
         right(p) = node;
     }
-    /* print_tree(0, tree, NULL); */
     _rb_insert_fix_m(
             type,
             nil,
@@ -598,7 +596,7 @@ do {
 // (tree) can change.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The node to delete.
@@ -647,9 +645,9 @@ do {
         node,
         y
     )
-    char tcol = color(node);
+    char __rb_del_col_tmp_ = (char) color(node);
     color(node) = color(y);
-    color(y) = tcol;
+    color(y) = __rb_del_col_tmp_;
 
     /* If node (y) has a child we have to attach it to the parent */
     if(left(node) != nil)
@@ -657,6 +655,7 @@ do {
     else
         x = right(node);
 
+    /* Remove node from the tree */
     parent(x) = parent(node);
     if(parent(node) != nil) {
         if(y == left(parent(node)))
@@ -877,9 +876,9 @@ do {
             node
         );
         return (
-            parent(node) != NULL ||
-            left(node) != NULL ||
-            right(node) != NULL ||
+            parent(node) != cx##_nil_ptr ||
+            left(node) != cx##_nil_ptr ||
+            right(node) != cx##_nil_ptr ||
             *tree == node
         );
     }
@@ -985,7 +984,6 @@ do {
         tmp
 )
 {
-    /* TODO check parents */
     type* nil = cx##_nil_ptr;
     if(node == nil) {
         if(pathdepth < 0)
@@ -994,11 +992,15 @@ do {
             assert(pathdepth == depth);
     } else {
         tmp = left(node);
-        if(tmp != nil)
+        if(tmp != nil) {
+            assert(parent(tmp) == node);
             assert(cmp(tmp, node) < 0);
+        }
         tmp = right(node);
-        if(tmp != nil)
+        if(tmp != nil) {
+            assert(parent(tmp) == node);
             assert(cmp(tmp, node) > 0);
+        }
         if(rb_is_red_m(color(node))) {
             tmp = left(node);
             if(tmp != nil)
@@ -1063,7 +1065,7 @@ do {
 // switched.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The node to initialize.
@@ -1098,7 +1100,7 @@ do {
 do {
     x = node;
     y = right(x);
-    /* Rotation doesn't make sense if y is NULL */
+    /* Rotation doesn't make sense if y is nil */
     if(y == nil)
         break;
 
@@ -1210,7 +1212,7 @@ do {
 // property. The main loop moves up the tree, restoring the red-black property.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The start-node to fix.
@@ -1311,20 +1313,14 @@ do {
         y
 )
 {
-    /* If x's parent is a left, y is x's right 'uncle' */
     y = right(parent(parent(x)));
     if(rb_is_red_m(color(y))) {
-        /* case 1 - change the colors */
         rb_make_black_m(color(parent(x)));
         rb_make_black_m(color(y));
         rb_make_red_m(color(parent(parent(x))));
-        /* Move x up the tree */
         x = parent(parent(x));
     } else {
-        /* y is a black node */
         if(x == right(parent(x))) {
-            /* and x is to the right
-             * case 2 - move x up and rotate */
             x = parent(x);
             rot_left(
                 type,
@@ -1337,7 +1333,6 @@ do {
                 x
             );
         }
-        /* No need to rotate if grandparent is nil */
         if(parent(parent(x)) != nil) {
             rb_make_black_m(color(parent(x)));
             rb_make_red_m(color(parent(parent(x))));
@@ -1364,7 +1359,7 @@ do {
 // TODO
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The start-node to fix.
@@ -1419,8 +1414,7 @@ do {
             );
         }
     }
-    if(x != NULL) /* Null already means black */
-        rb_make_black_m(color(x));
+    rb_make_black_m(color(x));
 }
 #enddef
 
@@ -1466,10 +1460,8 @@ do {
         y
 )
 do {
-    /* If x's parent is a left, y is x's right 'uncle' */
     y = right(parent(x));
     if(rb_is_red_m(color(y))) {
-        /* case 1 - change the colors and rotate */
         rb_make_black_m(color(y));
         rb_make_red_m(color(parent(x)));
         rot_left(
@@ -1488,7 +1480,6 @@ do {
             rb_is_black_m(color(left(y))) &&
             rb_is_black_m(color(right(y)))
     ) {
-        /* case 2 - make this node red if below is a black layer */
         rb_make_red_m(color(y));
         x = parent(x);
     } else {
@@ -1533,7 +1524,7 @@ do {
 // Switch two nodes.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // x
 //    The node to switch.

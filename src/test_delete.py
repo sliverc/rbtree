@@ -13,8 +13,8 @@ def deduplicate(seq):
 
 @given(st.lists(
     st.integers(
-        min_value=-2**32 / 8,
-        max_value=(2**32 / 8) - 1
+        min_value=-2**30,
+        max_value=(2**30) - 1
     ),
     min_size=2
 ))
@@ -35,8 +35,8 @@ def test_delete(ints):
 
 @given(st.lists(
     st.integers(
-        min_value=-2**32 / 2,
-        max_value=(2**32 / 2) - 1
+        min_value=-2**30,
+        max_value=(2**30) - 1
     ),
     min_size=2
 ))
