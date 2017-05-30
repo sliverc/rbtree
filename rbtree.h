@@ -93,6 +93,7 @@
 //
 //    .. code-block:: cpp
 //
+//       my_tree_init(&tree);
 //       my_node_init(node);
 //
 //    There is also a short if you know your are going to use all standard
@@ -105,6 +106,7 @@
 //
 //    .. code-block:: cpp
 //
+//       my_tree_init(&tree);
 //       my_node_init(node);
 //
 //    Of course usually you want to split declaration and implementation of the
@@ -129,16 +131,19 @@
 //    arguments and are the most verbose. Used to build upon rbtree. For
 //    example prbtree (persistent rbtree) will use these function.
 //
+//    To use the rb_x_m functions you also need to initialize the nil pointer.
+//
 //    .. code-block:: cpp
 //
+//       tree = my_nil_ptr;
 //       rb_node_init_m(
-//           NULL,
+//           my_nil_ptr,
 //           rb_color_m,
 //           rb_parent_m,
 //           rb_left_m,
 //           rb_right_m,
-//           node
-//       );
+//           my_nil_ptr
+//       ); // Instead of my_tree_init in the bound functions
 //
 // Questions
 // =========
@@ -195,6 +200,7 @@
 #define rb_new_context_m(cx, type) \
     typedef type cx##_type_t; \
     typedef type cx##_iter_t; \
+    extern cx##_type_t* cx##_nil_ptr; \
 
 
 // Comparators
@@ -366,7 +372,7 @@
 //    The iterator.
 //
 // elem
-//    The pointer to the current element. If elem is NULL the tree is empty.
+//    The pointer to the current element.
 //
 //
 // .. code-block:: cpp
@@ -390,12 +396,11 @@
 //
 // Bound: cx##_iter_next
 //
-// It will point to the next element. The element will be NULL, if the
-// iteration is at the end.
+// Initialize iterator. It will point to the first element. The element fill be
+// NULL, if the iteration is at the end.
 //
 // elem
-//    The pointer to the current element. If elem is null, the iterator is at
-//    the end.
+//    The pointer to the current element.
 //
 // .. code-block:: cpp
 //
@@ -591,7 +596,7 @@ do { \
 // (tree) can change.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The node to delete.
@@ -651,8 +656,7 @@ do { \
         x = right(node); \
  \
     /* Remove node from the tree */ \
-    if(x != nil) \
-        parent(x) = parent(node); \
+    parent(x) = parent(node); \
     if(parent(node) != nil) { \
         if(y == left(parent(node))) \
             left(parent(node)) = x; \
@@ -727,6 +731,10 @@ do { \
 #define rb_bind_decl_cx_m(cx, type) \
     rb_new_context_m(cx, type) \
     void \
+    cx##_tree_init( \
+            type** tree \
+    ); \
+    void \
     cx##_iter_init( \
             type* tree, \
             cx##_iter_t* iter, \
@@ -788,6 +796,23 @@ do { \
         right, \
         cmp \
 ) \
+    cx##_type_t cx##_nil_mem; \
+    cx##_type_t* cx##_nil_ptr = &cx##_nil_mem; \
+    void \
+    cx##_tree_init( \
+            type** tree \
+    ) \
+    { \
+        rb_node_init_m( \
+                cx##_nil_ptr, \
+                color, \
+                parent, \
+                left, \
+                right, \
+                cx##_nil_ptr \
+        ); \
+        *tree = cx##_nil_ptr; \
+    } \
     void \
     cx##_iter_init( \
             type* tree, \
@@ -797,7 +822,7 @@ do { \
     { \
         (void)(iter); \
         rb_iter_init_m( \
-            NULL, \
+            cx##_nil_ptr, \
             left, \
             tree, \
             *elem \
@@ -811,7 +836,7 @@ do { \
     { \
         (void)(iter); \
         rb_iter_next_m( \
-            NULL, \
+            cx##_nil_ptr, \
             type, \
             parent, \
             left, \
@@ -825,7 +850,7 @@ do { \
     ) \
     { \
         rb_node_init_m( \
-                NULL, \
+                cx##_nil_ptr, \
                 color, \
                 parent, \
                 left, \
@@ -841,7 +866,7 @@ do { \
     { \
         rb_insert_m( \
             type, \
-            NULL, \
+            cx##_nil_ptr, \
             color, \
             parent, \
             left, \
@@ -851,9 +876,9 @@ do { \
             node \
         ); \
         return ( \
-            parent(node) != NULL || \
-            left(node) != NULL || \
-            right(node) != NULL || \
+            parent(node) != cx##_nil_ptr || \
+            left(node) != cx##_nil_ptr || \
+            right(node) != cx##_nil_ptr || \
             *tree == node \
         ); \
     } \
@@ -863,7 +888,7 @@ do { \
             type* node \
     ) rb_delete_node_m( \
         type, \
-        NULL, \
+        cx##_nil_ptr, \
         color, \
         parent, \
         left, \
@@ -959,7 +984,7 @@ do { \
         tmp \
 ) \
 { \
-    type* nil = NULL; \
+    type* nil = cx##_nil_ptr; \
     if(node == nil) { \
         if(pathdepth < 0) \
             pathdepth = depth; \
@@ -1040,7 +1065,7 @@ do { \
 // switched.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The node to initialize.
@@ -1133,7 +1158,7 @@ do { \
 #define _rb_rotate_left_tr_m(cx, tree, node) \
     _rb_rotate_left_m( \
         cx##_type_t, \
-        NULL, \
+        cx##_nil_ptr, \
         rb_color_m, \
         rb_parent_m, \
         rb_left_m, \
@@ -1168,7 +1193,7 @@ do { \
 #define _rb_rotate_right_tr_m(cx, tree, node) \
     _rb_rotate_right_m( \
         cx##_type_t, \
-        NULL, \
+        cx##_nil_ptr, \
         rb_color_m, \
         rb_parent_m, \
         rb_left_m, \
@@ -1187,7 +1212,7 @@ do { \
 // property. The main loop moves up the tree, restoring the red-black property.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The start-node to fix.
@@ -1289,7 +1314,7 @@ do { \
 ) \
 { \
     y = right(parent(parent(x))); \
-    if(y != nil && rb_is_red_m(color(y))) { \
+    if(rb_is_red_m(color(y))) { \
         rb_make_black_m(color(parent(x))); \
         rb_make_black_m(color(y)); \
         rb_make_red_m(color(parent(parent(x)))); \
@@ -1334,7 +1359,7 @@ do { \
 // TODO
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // node
 //    The start-node to fix.
@@ -1499,7 +1524,7 @@ do { \
 // Switch two nodes.
 //
 // tree
-//    The root node of the tree. Pointer to NULL represents an empty tree.
+//    The root node of the tree.
 //
 // x
 //    The node to switch.
