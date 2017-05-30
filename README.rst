@@ -2,6 +2,17 @@
 Red-Black Tree
 ==============
 
+* Textbook implementation
+* Has parent pointers
+* No optimizations
+* Composable
+* Readable
+* Generic
+* Still fast
+* Easy to use, a bit complex to extend because it is generic [1]_
+
+.. [1] My rgc preprocessor and its MACRO_DEBUG mode are very helpful.
+
 WORK IN PROGRESS
 ================
 
@@ -76,6 +87,7 @@ cx_x
 
    .. code-block:: cpp
 
+      my_tree_init(&tree);
       my_node_init(node);
 
    There is also a short if you know your are going to use all standard
@@ -88,6 +100,7 @@ cx_x
 
    .. code-block:: cpp
 
+      my_tree_init(&tree);
       my_node_init(node);
 
    Of course usually you want to split declaration and implementation of the
@@ -112,6 +125,8 @@ rb_x_m
    arguments and are the most verbose. Used to build upon rbtree. For
    example prbtree (persistent rbtree) will use these function.
 
+   To use the rb_x_m functions you also need to initialize the nil pointer.
+
    .. code-block:: cpp
 
       rb_node_init_m(
@@ -120,8 +135,8 @@ rb_x_m
           rb_parent_m,
           rb_left_m,
           rb_right_m,
-          node
-      );
+          my_nil_ptr
+      ); // Instead of my_tree_init in the bound functions
 
 Questions
 =========
@@ -221,16 +236,16 @@ in the rbtree. This way we can assert if a node is added twice.
 
 .. code-block:: cpp
 
-   #define RB_BLACK (1 << 0)
+   #define RB_RED   (1 << 0)
    #define RB_ROOT  (1 << 1)
    #define RB_COPY  (1 << 2) /* Used in future for persistent rbtrees */
    
-   #define rb_is_red_m(x)   (!(x & RB_BLACK))
-   #define rb_is_black_m(x)   (x & RB_BLACK)
+   #define rb_is_red_m(x)     (x & RB_RED)
+   #define rb_is_black_m(x) (!(x & RB_RED))
    #define rb_needs_copy_m(x) (x & RB_COPY)
    
-   #define rb_make_black_m(x) x |= RB_BLACK
-   #define rb_make_red_m(x)   x &= ~RB_BLACK
+   #define rb_make_black_m(x) x &= ~RB_RED
+   #define rb_make_red_m(x)   x |= RB_RED
    #define rb_set_copy_m(x)   x |= RB_COPY
    #define rb_unset_copy_m(x) x &= ~RB_COPY
    
@@ -242,6 +257,9 @@ once:
 
 type
    The type of the nodes in the red-black tree.
+
+nil
+   A pointer to the nil object.
 
 color
    The color trait of the nodes in the rbtree.
@@ -692,6 +710,10 @@ type
    #begindef rb_bind_decl_cx_m(cx, type)
        rb_new_context_m(cx, type)
        void
+       cx##_tree_init(
+               type** tree
+       );
+       void
        cx##_iter_init(
                type* tree,
                cx##_iter_t* iter,
@@ -753,6 +775,22 @@ type
            right,
            cmp
    )
+       cx##_type_t cx##_nil_mem;
+       cx##_type_t* cx##_nil_ptr = &cx##_nil_mem;
+       void
+       cx##_tree_init(
+               type** tree
+       )
+       {
+           *tree = NULL;
+           rb_node_init_m(
+                   color,
+                   parent,
+                   left,
+                   right,
+                   cx##_nil_ptr
+           );
+       }
        void
        cx##_iter_init(
                type* tree,

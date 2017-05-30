@@ -10,7 +10,8 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
     int i = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
     do {
-        node_t* tree = NULL;
+        node_t* tree;
+        my_tree_init(&tree);
         node_t* node;
         for(i = 0; i < len; i++) {
             node = &mnodes[i];
@@ -73,7 +74,8 @@ test_switch(int len, int* nodes, int sum, int do_sum)
     do {
         int value;
         int i;
-        node_t* tree = NULL;
+        node_t* tree;
+        my_tree_init(&tree);
         node_t* node;
         node_t* x;
         node_t* y;
