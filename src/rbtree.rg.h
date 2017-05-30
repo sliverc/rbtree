@@ -493,7 +493,6 @@ do {
 )
 do {
     assert(node != NULL && "Cannot insert NULL node");
-    assert(node != nil && "Cannot insert nil node");
     assert(((
         parent(node) == nil &&
         left(node) == nil &&
