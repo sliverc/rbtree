@@ -28,8 +28,7 @@ SGLIB_DEFINE_RBTREE_FUNCTIONS(
 int
 main(void)
 {
-    node_t* tree;
-    my_tree_init(&tree);
+    node_t* tree = NULL;
     node_t* node;
     clock_t start, end;
     double cpu_time_used = 0.1;

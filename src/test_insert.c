@@ -6,8 +6,7 @@ int
 test_insert_static(void)
 {
     node_t mnodes[5];
-    node_t* tree;
-    my_tree_init(&tree);
+    node_t* tree = NULL;
     node_t* node;
     for(int i = 0; i < 5; i++) {
         node = &mnodes[i];
@@ -40,7 +39,7 @@ test_insert_static(void)
     for(int i = 0; i < 2; i++) {
         my_node_init(tree);
         my_node_init(node);
-        my_tree_init(&tree);
+        tree = NULL;
         my_insert(&tree, &mnodes[0]);
         my_insert(&tree, node);
         TA(
@@ -55,7 +54,7 @@ test_insert_static(void)
 
     my_node_init(tree);
     my_node_init(node);
-    my_tree_init(&tree);
+    tree = NULL;
     my_insert(&tree, &mnodes[0]);
     rb_value_m(node) = -1;
     my_insert(&tree, node);
@@ -71,7 +70,7 @@ test_insert_static(void)
     my_node_init(tree);
     my_node_init(node);
     rb_value_m(node) = 1;
-    my_tree_init(&tree);
+    tree = NULL;
     my_insert(&tree, &mnodes[1]);
     my_insert(&tree, &mnodes[0]);
     my_insert(&tree, &mnodes[2]);
@@ -283,8 +282,7 @@ test_insert(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
     int ret = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
     do {
-        node_t* tree;
-        my_tree_init(&tree);
+        node_t* tree = NULL;
         node_t* node;
         for(int i = 0; i < len; i++) {
             node = &mnodes[i];

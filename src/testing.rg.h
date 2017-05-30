@@ -57,6 +57,7 @@ struct node_s {
 };
 
 
+#define my_nil_ptr NULL
 #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
 rb_bind_decl_m(my, node_t)
 

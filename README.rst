@@ -93,7 +93,6 @@ cx_x
 
    .. code-block:: cpp
 
-      my_tree_init(&tree);
       my_node_init(node);
 
    There is also a short if you know your are going to use all standard
@@ -106,7 +105,6 @@ cx_x
 
    .. code-block:: cpp
 
-      my_tree_init(&tree);
       my_node_init(node);
 
    Of course usually you want to split declaration and implementation of the
@@ -131,19 +129,16 @@ rb_x_m
    arguments and are the most verbose. Used to build upon rbtree. For
    example prbtree (persistent rbtree) will use these function.
 
-   To use the rb_x_m functions you also need to initialize the nil pointer.
-
    .. code-block:: cpp
 
-      tree = my_nil_ptr;
       rb_node_init_m(
-          my_nil_ptr,
+          NULL,
           rb_color_m,
           rb_parent_m,
           rb_left_m,
           rb_right_m,
-          my_nil_ptr
-      ); // Instead of my_tree_init in the bound functions
+          node
+      );
 
 Questions
 =========
@@ -200,7 +195,6 @@ Traits used by default (x_m macros)
    #begindef rb_new_context_m(cx, type)
        typedef type cx##_type_t;
        typedef type cx##_iter_t;
-       extern cx##_type_t* cx##_nil_ptr;
    #enddef
    
 Comparators
@@ -372,7 +366,7 @@ iter
    The iterator.
 
 elem
-   The pointer to the current element.
+   The pointer to the current element. If elem is NULL the tree is empty.
 
 
 .. code-block:: cpp
@@ -396,11 +390,12 @@ rb_iter_next_m
 
 Bound: cx##_iter_next
 
-Initialize iterator. It will point to the first element. The element fill be
-NULL, if the iteration is at the end.
+It will point to the next element. The element will be NULL, if the
+iteration is at the end.
 
 elem
-   The pointer to the current element.
+   The pointer to the current element. If elem is null, the iterator is at
+   the end.
 
 .. code-block:: cpp
 
@@ -596,7 +591,7 @@ node. If you don't have it use rb_find_m first or rb_delete_m. The root node
 (tree) can change.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to NULL represents an empty tree.
 
 node
    The node to delete.
@@ -656,7 +651,8 @@ node
            x = right(node);
    
        /* Remove node from the tree */
-       parent(x) = parent(node);
+       if(x != nil)
+           parent(x) = parent(node);
        if(parent(node) != nil) {
            if(y == left(parent(node)))
                left(parent(node)) = x;
@@ -731,10 +727,6 @@ type
    #begindef rb_bind_decl_cx_m(cx, type)
        rb_new_context_m(cx, type)
        void
-       cx##_tree_init(
-               type** tree
-       );
-       void
        cx##_iter_init(
                type* tree,
                cx##_iter_t* iter,
@@ -796,23 +788,6 @@ type
            right,
            cmp
    )
-       cx##_type_t cx##_nil_mem;
-       cx##_type_t* cx##_nil_ptr = &cx##_nil_mem;
-       void
-       cx##_tree_init(
-               type** tree
-       )
-       {
-           rb_node_init_m(
-                   cx##_nil_ptr,
-                   color,
-                   parent,
-                   left,
-                   right,
-                   cx##_nil_ptr
-           );
-           *tree = cx##_nil_ptr;
-       }
        void
        cx##_iter_init(
                type* tree,
@@ -822,7 +797,7 @@ type
        {
            (void)(iter);
            rb_iter_init_m(
-               cx##_nil_ptr,
+               NULL,
                left,
                tree,
                *elem
@@ -836,7 +811,7 @@ type
        {
            (void)(iter);
            rb_iter_next_m(
-               cx##_nil_ptr,
+               NULL,
                type,
                parent,
                left,
@@ -850,7 +825,7 @@ type
        )
        {
            rb_node_init_m(
-                   cx##_nil_ptr,
+                   NULL,
                    color,
                    parent,
                    left,
@@ -866,7 +841,7 @@ type
        {
            rb_insert_m(
                type,
-               cx##_nil_ptr,
+               NULL,
                color,
                parent,
                left,
@@ -876,9 +851,9 @@ type
                node
            );
            return (
-               parent(node) != cx##_nil_ptr ||
-               left(node) != cx##_nil_ptr ||
-               right(node) != cx##_nil_ptr ||
+               parent(node) != NULL ||
+               left(node) != NULL ||
+               right(node) != NULL ||
                *tree == node
            );
        }
@@ -888,7 +863,7 @@ type
                type* node
        ) rb_delete_node_m(
            type,
-           cx##_nil_ptr,
+           NULL,
            color,
            parent,
            left,
@@ -984,7 +959,7 @@ result
            tmp
    )
    {
-       type* nil = cx##_nil_ptr;
+       type* nil = NULL;
        if(node == nil) {
            if(pathdepth < 0)
                pathdepth = depth;
@@ -1065,7 +1040,7 @@ _rb_rotate_right_m is _rb_rotate_left_m where left and right had been
 switched.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to NULL represents an empty tree.
 
 node
    The node to initialize.
@@ -1158,7 +1133,7 @@ node
    #begindef _rb_rotate_left_tr_m(cx, tree, node)
        _rb_rotate_left_m(
            cx##_type_t,
-           cx##_nil_ptr,
+           NULL,
            rb_color_m,
            rb_parent_m,
            rb_left_m,
@@ -1193,7 +1168,7 @@ node
    #begindef _rb_rotate_right_tr_m(cx, tree, node)
        _rb_rotate_right_m(
            cx##_type_t,
-           cx##_nil_ptr,
+           NULL,
            rb_color_m,
            rb_parent_m,
            rb_left_m,
@@ -1212,7 +1187,7 @@ After insert new node is labeled red, and possibly destroys the red-black
 property. The main loop moves up the tree, restoring the red-black property.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to NULL represents an empty tree.
 
 node
    The start-node to fix.
@@ -1314,7 +1289,7 @@ node
    )
    {
        y = right(parent(parent(x)));
-       if(rb_is_red_m(color(y))) {
+       if(y != nil && rb_is_red_m(color(y))) {
            rb_make_black_m(color(parent(x)));
            rb_make_black_m(color(y));
            rb_make_red_m(color(parent(parent(x))));
@@ -1359,7 +1334,7 @@ Internal: not bound
 TODO
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to NULL represents an empty tree.
 
 node
    The start-node to fix.
@@ -1524,7 +1499,7 @@ Internal not bound.
 Switch two nodes.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to NULL represents an empty tree.
 
 x
    The node to switch.
