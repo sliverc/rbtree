@@ -11,26 +11,26 @@ def deduplicate(seq):
     return [x for x in seq if not (x in seen or seen_add(x))]
 
 
-#@given(st.lists(
-#    st.integers(
-#        min_value=-2**32 / 2,
-#        max_value=(2**32 / 2) - 1
-#    ),
-#    min_size=2
-#))
-#def test_delete(ints):
-#    """Test if rbtree is consistent after generated inserts and one deleted."""
-#    ints = deduplicate(ints)
-#    c = len(ints)
-#    assume(c > 1)
-#    dl = ints[:-1]
-#    s = sum(dl)
-#    ss = sorted(dl)
-#    do_sum = True
-#    if abs(s) > (2**32 / 2) - 1:
-#        do_sum = False
-#        s = 0
-#    assert(lib.test_delete(c, ints, ss, c - 1, s, do_sum) == 0)
+@given(st.lists(
+    st.integers(
+        min_value=-2**32 / 8,
+        max_value=(2**32 / 8) - 1
+    ),
+    min_size=2
+))
+def test_delete(ints):
+    """Test if rbtree is consistent after generated inserts and one deleted."""
+    ints = deduplicate(ints)
+    c = len(ints)
+    assume(c > 1)
+    dl = ints[:-1]
+    s = sum(dl)
+    ss = sorted(dl)
+    do_sum = True
+    if abs(s) > (2**32 / 4) - 1:
+        do_sum = False
+        s = 0
+    assert(lib.test_delete(c, ints, ss, c - 1, s, do_sum) == 0)
 
 
 @given(st.lists(

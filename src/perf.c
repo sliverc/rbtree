@@ -57,7 +57,7 @@ main(void)
         }
     }
     fprintf(stderr, "prepare: ");
-    my_tree_init(&tree);
+    tree = NULL;
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
         my_node_init(node);

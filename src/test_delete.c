@@ -17,28 +17,30 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
             node = &mnodes[i];
             my_node_init(node);
             rb_value_m(node) = nodes[i];
+            printf("%d ", nodes[i]);
             my_insert(&tree, node);
             my_check_tree(tree);
         }
+        printf("\n");
         BA((
-                rb_parent_m(node) != NULL ||
-                rb_left_m(node) != NULL ||
-                rb_right_m(node) != NULL ||
+                rb_parent_m(node) != my_nil_ptr ||
+                rb_left_m(node) != my_nil_ptr ||
+                rb_right_m(node) != my_nil_ptr ||
                 rb_color_m(node) != 0
         ), "Node is not in a tree");
         node = &mnodes[len - 1];
         //print_tree(0, tree, NULL);
         my_delete_node(&tree, node);
         BA((
-            rb_parent_m(node) == NULL &&
-            rb_left_m(node) == NULL &&
-            rb_right_m(node) == NULL &&
+            rb_parent_m(node) == my_nil_ptr &&
+            rb_left_m(node) == my_nil_ptr &&
+            rb_right_m(node) == my_nil_ptr &&
             rb_color_m(node) == 0
         ), "Node not properly cleared");
         int tsum = 0;
         int elems = 0;
+        my_check_tree(tree);
         recursive_sum(&tsum, &elems, tree);
-        //my_check_tree(tree);
         BA(elems == count, "Iterator count failed");
         //printf("\n%d == %d, %d == %d\n", count, elems, sum, tsum);
         if(do_sum)
@@ -58,7 +60,6 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
         BA(i == count, "Iterator count failed");
         if(do_sum)
             BA(tsum == sum, "Iterator sum failed");
-        my_check_tree(tree);
     } while(0);
     free(mnodes);
     return ret;
@@ -88,9 +89,9 @@ test_switch(int len, int* nodes, int sum, int do_sum)
             my_check_tree(tree);
         }
         BA((
-                rb_parent_m(node) != NULL ||
-                rb_left_m(node) != NULL ||
-                rb_right_m(node) != NULL ||
+                rb_parent_m(node) != my_nil_ptr ||
+                rb_left_m(node) != my_nil_ptr ||
+                rb_right_m(node) != my_nil_ptr ||
                 rb_color_m(node) != 0
         ), "Node is not in a tree");
         x = &mnodes[len - 1];
@@ -107,6 +108,7 @@ test_switch(int len, int* nodes, int sum, int do_sum)
         {
             _rb_switch_node_m(
                 node_t,
+                my_nil_ptr,
                 rb_parent_m,
                 rb_left_m,
                 rb_right_m,
@@ -141,8 +143,8 @@ test_switch(int len, int* nodes, int sum, int do_sum)
 int
 main(void)
 {
-    int nodes[3] = {-1073741824, 1073741825, 0};
-    int sorted[2] = {-1073741824, 1073741825};
-    return test_delete(3, nodes, sorted, 2, 1, 1);
+    int nodes[3] = {-1, 1, 0};
+    int sorted[2] = {-1, 1};
+    return test_delete(3, nodes, sorted, 2, 0, 1);
 
 }

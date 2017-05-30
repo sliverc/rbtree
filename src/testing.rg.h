@@ -63,7 +63,6 @@ rb_bind_decl_m(my, node_t)
 static
 void
 print_tree(int n, node_t* l, node_t* r) {
-    /* TODO this written very stupidly */
     int pv = -91;
     int lv = -91;
     int rv = -91;
@@ -71,18 +70,18 @@ print_tree(int n, node_t* l, node_t* r) {
     char* lc = "";
     char* rc = "";
     n += 1;
-    node_t* p = NULL;
-    if(l != NULL) {
+    node_t* p = my_nil_ptr;
+    if(l != my_nil_ptr) {
         lc = rb_is_black_m(rb_color_m(l)) ? "black" : "red";
         lv = rb_value_m(l);
         p = rb_parent_m(l);
     }
-    if(r != NULL) {
+    if(r != my_nil_ptr) {
         rc = rb_is_black_m(rb_color_m(r)) ? "black" : "red";
         rv = rb_value_m(r);
         p = rb_parent_m(r);
     }
-    if(p != NULL) {
+    if(p != my_nil_ptr) {
         pc = rb_is_black_m(rb_color_m(p)) ? "black" : "red";
         pv = rb_value_m(p);
     }
@@ -96,9 +95,9 @@ print_tree(int n, node_t* l, node_t* r) {
         rv,
         rc
     );
-    if(l != NULL)
+    if(l != my_nil_ptr)
         print_tree(n, rb_left_m(l), rb_right_m(l));
-    if(r != NULL)
+    if(r != my_nil_ptr)
         print_tree(n, rb_left_m(r), rb_right_m(r));
 }
 
@@ -106,7 +105,7 @@ static
 void
 recursive_sum(int* sum, int* elems, node_t* node)
 {
-    if(node == NULL)
+    if(node == my_nil_ptr)
         return;
     *sum += rb_value_m(node);
     *elems += 1;

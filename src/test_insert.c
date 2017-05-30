@@ -14,25 +14,25 @@ test_insert_static(void)
         rb_value_m(node) = i;
         my_node_init(node);
         TA((
-            rb_parent_m(node) == NULL &&
-            rb_left_m(node) == NULL &&
-            rb_right_m(node) == NULL &&
+            rb_parent_m(node) == my_nil_ptr &&
+            rb_left_m(node) == my_nil_ptr &&
+            rb_right_m(node) == my_nil_ptr &&
             rb_color_m(node) == 0
         ), "Node not properly initialized");
     }
     node = &mnodes[0];
     my_insert(&tree, node);
-    TA(rb_parent_m(node) == NULL, "Node not root after first insert");
+    TA(rb_parent_m(node) == my_nil_ptr, "Node not root after first insert");
     TA(rb_is_black_m(rb_color_m(node)), "Node not black after first insert");
 
     node = &mnodes[1];
     rb_value_m(node) = 0;
     my_insert(&tree, node);
         TA((
-            rb_parent_m(node) == NULL &&
-            rb_left_m(node) == NULL &&
-            rb_right_m(node) == NULL &&
-            rb_color_m(node) == 0
+            rb_parent_m(node) == my_nil_ptr &&
+            rb_left_m(node) == my_nil_ptr &&
+            rb_right_m(node) == my_nil_ptr &&
+            rb_is_black_m(rb_color_m(node))
         ), "Node should not have been added");
     TA(tree == &mnodes[0], "Equal node should not have been inserted");
 
@@ -226,7 +226,7 @@ test_rotate(void)
     rb_parent_m(node_m(Ny)) = node_m(Nx);
     T(assert_right(n));
     TA(
-        rb_parent_m(node_m(Nx)) == NULL,
+        rb_parent_m(node_m(Nx)) == my_nil_ptr,
         "Not rotated right"
     );
     _rb_rotate_left_tr_m(my, tree, node);
@@ -236,7 +236,7 @@ test_rotate(void)
     );
     T(assert_left(n));
     TA(
-        rb_parent_m(node_m(Ny))  == NULL,
+        rb_parent_m(node_m(Ny))  == my_nil_ptr,
         "Not rotated left"
     );
     tree = node_m(Ny);
@@ -248,7 +248,7 @@ test_rotate(void)
     );
     T(assert_right(n));
     TA(
-        rb_parent_m(node_m(Nx)) == NULL,
+        rb_parent_m(node_m(Nx)) == my_nil_ptr,
         "Not rotated right"
     );
     /* Test with extra root */
@@ -291,9 +291,9 @@ test_insert(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
             my_node_init(node);
             rb_value_m(node) = nodes[i];
             BA((
-                rb_parent_m(node) == NULL &&
-                rb_left_m(node) == NULL &&
-                rb_right_m(node) == NULL &&
+                rb_parent_m(node) == my_nil_ptr &&
+                rb_left_m(node) == my_nil_ptr &&
+                rb_right_m(node) == my_nil_ptr &&
                 rb_color_m(node) == 0
             ), "Node not properly initialized");
             my_insert(&tree, node);
