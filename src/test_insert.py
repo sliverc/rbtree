@@ -1,4 +1,4 @@
-"""Test if we can set traits (yes it is a stupid test)."""
+"""Test if we can insert into the tree."""
 from build._rbtree_tests import lib
 from hypothesis import given
 import hypothesis.strategies as st

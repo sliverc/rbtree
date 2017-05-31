@@ -635,6 +635,7 @@ do {
         while(left(y) != nil)
             y = left(y);
     }
+
     _rb_switch_node_m(
         type,
         nil,
@@ -763,7 +764,7 @@ do {
     cx##_check_tree(type* tree);
     void
     cx##_check_tree_rec(
-            type* tree,
+            type* node,
             int depth,
             int *pathdepth
     );
@@ -904,7 +905,7 @@ do {
     }
     void
     cx##_check_tree_rec(
-            type* tree,
+            type* node,
             int depth,
             int *pathdepth
     ) rb_check_tree_m(
@@ -915,7 +916,7 @@ do {
         left,
         right,
         cmp,
-        tree,
+        node,
         depth,
         *pathdepth
     )
@@ -993,12 +994,12 @@ do {
     } else {
         tmp = left(node);
         if(tmp != nil) {
-            assert(parent(tmp) == node);
+            /*assert(parent(tmp) == node);*/
             assert(cmp(tmp, node) < 0);
         }
         tmp = right(node);
         if(tmp != nil) {
-            assert(parent(tmp) == node);
+            /*assert(parent(tmp) == node);*/
             assert(cmp(tmp, node) > 0);
         }
         if(rb_is_red_m(color(node))) {
@@ -1097,35 +1098,33 @@ do {
         x,
         y
 )
-do {
+{
     x = node;
     y = right(x);
-    /* Rotation doesn't make sense if y is nil */
-    if(y == nil)
-        break;
 
     /* Turn y's left sub-tree into x's right sub-tree */
     right(x) = left(y);
     if(left(y) != nil)
         parent(left(y)) = x;
     /* y's new parent was x's parent */
-    parent(y) = parent(x);
+    if(y != nil)
+        parent(y) = parent(x);
     /* Set the parent to point to y instead of x */
     /* First see whether we're at the root */
-    if(parent(x) == nil)
-        tree = y;
-    else {
+    if(parent(x) != nil) {
         if(x == left(parent(x)))
             /* x was on the left of its parent */
             left(parent(x)) = y;
         else
             /* x must have been on the right */
             right(parent(x)) = y;
-    }
+    } else
+        tree = y;
     /* Finally, put x on y's left */
     left(y) = x;
-    parent(x) = y;
-} while(0)
+    if(x != nil)
+        parent(x) = y;
+}
 #enddef
 
 #begindef _rb_rotate_left_m(
@@ -1382,7 +1381,7 @@ do {
     x = node;
     while(
             (x != tree) &&
-            rb_is_black_m(color(parent(x)))
+            rb_is_black_m(color(x))
     ) {
         if(x == left(parent(x))) {
             _rb_delete_fix_node_m(
@@ -1459,7 +1458,7 @@ do {
         x,
         y
 )
-do {
+{
     y = right(parent(x));
     if(rb_is_red_m(color(y))) {
         rb_make_black_m(color(y));
@@ -1513,7 +1512,7 @@ do {
         );
         x = tree;
     }
-} while(0)
+}
 #enddef
 
 // _rb_switch_node_m

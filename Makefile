@@ -24,6 +24,7 @@ OBJS := \
 TESTS := \
 	$(BUILD)/src/test_traits.o \
 	$(BUILD)/src/test_delete.o \
+	$(BUILD)/src/test_tree.o \
 	$(BUILD)/src/test_insert.o
 
 HEADERS := \
@@ -38,7 +39,9 @@ DOCS := \
 	$(BUILD)/src/test_insert.h.rst \
 	$(BUILD)/src/test_insert.c.rst \
 	$(BUILD)/src/test_delete.h.rst \
-	$(BUILD)/src/test_delete.c.rst
+	$(BUILD)/src/test_delete.c.rst \
+	$(BUILD)/src/test_tree.h.rst \
+	$(BUILD)/src/test_tree.c.rst
 
 ide:
 	$(MAKE) ride 2>&1 | $(BASE)/mk/pfix
