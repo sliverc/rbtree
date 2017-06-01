@@ -31,12 +31,6 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
         node = &mnodes[len - 1];
         //print_tree(0, tree, NULL);
         my_delete_node(&tree, node);
-        BA((
-            rb_parent_m(node) == my_nil_ptr &&
-            rb_left_m(node) == my_nil_ptr &&
-            rb_right_m(node) == my_nil_ptr &&
-            rb_color_m(node) == 0
-        ), "Node not properly cleared");
         int tsum = 0;
         int elems = 0;
         my_check_tree(tree);
@@ -143,8 +137,8 @@ test_switch(int len, int* nodes, int sum, int do_sum)
 int
 main(void)
 {
-    int nodes[3] = {-1, 1, 0};
-    int sorted[2] = {-1, 1};
-    return test_delete(3, nodes, sorted, 2, 0, 1);
+    int nodes[5] = {0, 1, 2, -2, -1};
+    int sorted[4] = {-2, 0, 1, 2};
+    return test_delete(5, nodes, sorted, 4, 1, 1);
 
 }

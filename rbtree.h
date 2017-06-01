@@ -636,37 +636,23 @@ do { \
             y = left(y); \
     } \
  \
-    _rb_switch_node_m( \
-        type, \
-        nil, \
-        parent, \
-        left, \
-        right, \
-        tree, \
-        node, \
-        y \
-    ) \
-    char __rb_del_col_tmp_ = (char) color(node); \
-    color(node) = color(y); \
-    color(y) = __rb_del_col_tmp_; \
- \
     /* If node (y) has a child we have to attach it to the parent */ \
-    if(left(node) != nil) \
-        x = left(node); \
+    if(left(y) != nil) \
+        x = left(y); \
     else \
-        x = right(node); \
+        x = right(y); \
  \
     /* Remove node from the tree */ \
-    parent(x) = parent(node); \
-    if(parent(node) != nil) { \
-        if(y == left(parent(node))) \
-            left(parent(node)) = x; \
+    parent(x) = parent(y); \
+    if(parent(y) != nil) { \
+        if(y == left(parent(y))) \
+            left(parent(y)) = x; \
         else \
-            right(parent(node)) = x; \
+            right(parent(y)) = x; \
     } else \
         tree = x; \
  \
-    if(rb_is_black_m(color(node))) { \
+    if(rb_is_black_m(color(y))) { \
         _rb_delete_fix_m( \
                 type, \
                 nil, \
@@ -679,10 +665,26 @@ do { \
         ); \
     } \
  \
-    parent(node) = nil; \
-    left(node) = nil; \
-    right(node) = nil; \
-    color(node) = 0; \
+    if(node != y) { \
+        if(parent(node) == nil) { \
+            tree = y; \
+            parent(y) = nil; \
+        } else { \
+            if(node == left(parent(node))) \
+                left(parent(node)) = y; \
+            if(node == right(parent(node))) \
+                right(parent(node)) = y; \
+        } \
+        if(left(node) != nil) \
+            parent(left(node)) = y; \
+        if(right(node) != nil) \
+            parent(right(node)) = y; \
+        parent(y) = parent(node); \
+        left(y) = left(node); \
+        right(y) = right(node); \
+        color(y) = color(node); \
+    } \
+ \
 } \
 
 
@@ -994,12 +996,12 @@ do { \
     } else { \
         tmp = left(node); \
         if(tmp != nil) { \
-            /*assert(parent(tmp) == node);*/ \
+            assert(parent(tmp) == node); \
             assert(cmp(tmp, node) < 0); \
         } \
         tmp = right(node); \
         if(tmp != nil) { \
-            /*assert(parent(tmp) == node);*/ \
+            assert(parent(tmp) == node); \
             assert(cmp(tmp, node) > 0); \
         } \
         if(rb_is_red_m(color(node))) { \
@@ -1107,8 +1109,7 @@ do { \
     if(left(y) != nil) \
         parent(left(y)) = x; \
     /* y's new parent was x's parent */ \
-    if(y != nil) \
-        parent(y) = parent(x); \
+    parent(y) = parent(x); \
     /* Set the parent to point to y instead of x */ \
     /* First see whether we're at the root */ \
     if(parent(x) != nil) { \
@@ -1122,8 +1123,7 @@ do { \
         tree = y; \
     /* Finally, put x on y's left */ \
     left(y) = x; \
-    if(x != nil) \
-        parent(x) = y; \
+    parent(x) = y; \
 } \
 
 
@@ -1332,20 +1332,18 @@ do { \
                 x \
             ); \
         } \
-        if(parent(parent(x)) != nil) { \
-            rb_make_black_m(color(parent(x))); \
-            rb_make_red_m(color(parent(parent(x)))); \
-            rot_right( \
-                type, \
-                nil, \
-                color, \
-                parent, \
-                left, \
-                right, \
-                tree, \
-                parent(parent(x)) \
-            ); \
-        } \
+        rb_make_black_m(color(parent(x))); \
+        rb_make_red_m(color(parent(parent(x)))); \
+        rot_right( \
+            type, \
+            nil, \
+            color, \
+            parent, \
+            left, \
+            right, \
+            tree, \
+            parent(parent(x)) \
+        ); \
     } \
 } \
 
