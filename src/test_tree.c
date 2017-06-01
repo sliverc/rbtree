@@ -5,7 +5,7 @@ node_t* tree;
 void
 test_init(void)
 {
-    my_tree_init(&tree);
+    tree = NULL;
 }
 
 void

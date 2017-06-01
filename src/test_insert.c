@@ -6,32 +6,31 @@ int
 test_insert_static(void)
 {
     node_t mnodes[5];
-    node_t* tree;
-    my_tree_init(&tree);
+    node_t* tree = NULL;
     node_t* node;
     for(int i = 0; i < 5; i++) {
         node = &mnodes[i];
         rb_value_m(node) = i;
         my_node_init(node);
         TA((
-            rb_parent_m(node) == my_nil_ptr &&
-            rb_left_m(node) == my_nil_ptr &&
-            rb_right_m(node) == my_nil_ptr &&
+            rb_parent_m(node) == NULL &&
+            rb_left_m(node) == NULL &&
+            rb_right_m(node) == NULL &&
             rb_color_m(node) == 0
         ), "Node not properly initialized");
     }
     node = &mnodes[0];
     my_insert(&tree, node);
-    TA(rb_parent_m(node) == my_nil_ptr, "Node not root after first insert");
+    TA(rb_parent_m(node) == NULL, "Node not root after first insert");
     TA(rb_is_black_m(rb_color_m(node)), "Node not black after first insert");
 
     node = &mnodes[1];
     rb_value_m(node) = 0;
     my_insert(&tree, node);
         TA((
-            rb_parent_m(node) == my_nil_ptr &&
-            rb_left_m(node) == my_nil_ptr &&
-            rb_right_m(node) == my_nil_ptr &&
+            rb_parent_m(node) == NULL &&
+            rb_left_m(node) == NULL &&
+            rb_right_m(node) == NULL &&
             rb_is_black_m(rb_color_m(node))
         ), "Node should not have been added");
     TA(tree == &mnodes[0], "Equal node should not have been inserted");
@@ -40,7 +39,7 @@ test_insert_static(void)
     for(int i = 0; i < 2; i++) {
         my_node_init(tree);
         my_node_init(node);
-        my_tree_init(&tree);
+        tree = NULL;
         my_insert(&tree, &mnodes[0]);
         my_insert(&tree, node);
         TA(
@@ -55,7 +54,7 @@ test_insert_static(void)
 
     my_node_init(tree);
     my_node_init(node);
-    my_tree_init(&tree);
+    tree = NULL;
     my_insert(&tree, &mnodes[0]);
     rb_value_m(node) = -1;
     my_insert(&tree, node);
@@ -71,7 +70,7 @@ test_insert_static(void)
     my_node_init(tree);
     my_node_init(node);
     rb_value_m(node) = 1;
-    my_tree_init(&tree);
+    tree = NULL;
     my_insert(&tree, &mnodes[1]);
     my_insert(&tree, &mnodes[0]);
     my_insert(&tree, &mnodes[2]);
@@ -226,7 +225,7 @@ test_rotate(void)
     rb_parent_m(node_m(Ny)) = node_m(Nx);
     T(assert_right(n));
     TA(
-        rb_parent_m(node_m(Nx)) == my_nil_ptr,
+        rb_parent_m(node_m(Nx)) == NULL,
         "Not rotated right"
     );
     _rb_rotate_left_tr_m(my, tree, node);
@@ -236,7 +235,7 @@ test_rotate(void)
     );
     T(assert_left(n));
     TA(
-        rb_parent_m(node_m(Ny))  == my_nil_ptr,
+        rb_parent_m(node_m(Ny))  == NULL,
         "Not rotated left"
     );
     tree = node_m(Ny);
@@ -248,7 +247,7 @@ test_rotate(void)
     );
     T(assert_right(n));
     TA(
-        rb_parent_m(node_m(Nx)) == my_nil_ptr,
+        rb_parent_m(node_m(Nx)) == NULL,
         "Not rotated right"
     );
     /* Test with extra root */
@@ -283,17 +282,16 @@ test_insert(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
     int ret = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
     do {
-        node_t* tree;
-        my_tree_init(&tree);
+        node_t* tree = NULL;
         node_t* node;
         for(int i = 0; i < len; i++) {
             node = &mnodes[i];
             my_node_init(node);
             rb_value_m(node) = nodes[i];
             BA((
-                rb_parent_m(node) == my_nil_ptr &&
-                rb_left_m(node) == my_nil_ptr &&
-                rb_right_m(node) == my_nil_ptr &&
+                rb_parent_m(node) == NULL &&
+                rb_left_m(node) == NULL &&
+                rb_right_m(node) == NULL &&
                 rb_color_m(node) == 0
             ), "Node not properly initialized");
             my_insert(&tree, node);

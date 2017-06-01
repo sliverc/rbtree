@@ -131,19 +131,15 @@
 //    arguments and are the most verbose. Used to build upon rbtree. For
 //    example prbtree (persistent rbtree) will use these function.
 //
-//    To use the rb_x_m functions you also need to initialize the nil pointer.
-//
 //    .. code-block:: cpp
 //
-//       tree = my_nil_ptr;
 //       rb_node_init_m(
-//           my_nil_ptr,
 //           rb_color_m,
 //           rb_parent_m,
 //           rb_left_m,
 //           rb_right_m,
-//           my_nil_ptr
-//       ); // Instead of my_tree_init in the bound functions
+//           node
+//       );
 //
 // Questions
 // =========
@@ -737,10 +733,6 @@ do {
 #begindef rb_bind_decl_cx_m(cx, type)
     rb_new_context_m(cx, type)
     void
-    cx##_tree_init(
-            type** tree
-    );
-    void
     cx##_iter_init(
             type* tree,
             cx##_iter_t* iter,
@@ -803,14 +795,6 @@ do {
         cmp
 )
     cx##_type_t* cx##_nil_ptr = NULL;
-    void
-    cx##_tree_init(
-            type** tree
-    )
-    {
-        my_nil_ptr = NULL;
-        *tree = cx##_nil_ptr;
-    }
     void
     cx##_iter_init(
             type* tree,

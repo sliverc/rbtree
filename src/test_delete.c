@@ -10,8 +10,7 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
     int i = 0;
     node_t* mnodes = malloc(len * sizeof(node_t));
     do {
-        node_t* tree;
-        my_tree_init(&tree);
+        node_t* tree = NULL;
         node_t* node = NULL;
         for(i = 0; i < len; i++) {
             node = &mnodes[i];
@@ -23,9 +22,9 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
         }
         //printf("\n");
         BA((
-                rb_parent_m(node) != my_nil_ptr ||
-                rb_left_m(node) != my_nil_ptr ||
-                rb_right_m(node) != my_nil_ptr ||
+                rb_parent_m(node) != NULL ||
+                rb_left_m(node) != NULL ||
+                rb_right_m(node) != NULL ||
                 rb_color_m(node) != 0
         ), "Node is not in a tree");
         node = &mnodes[len - 1];
@@ -69,8 +68,7 @@ test_switch(int len, int* nodes, int sum, int do_sum)
     do {
         int value;
         int i;
-        node_t* tree;
-        my_tree_init(&tree);
+        node_t* tree = NULL;
         node_t* node = NULL;
         node_t* x;
         node_t* y;
@@ -83,9 +81,9 @@ test_switch(int len, int* nodes, int sum, int do_sum)
             my_check_tree(tree);
         }
         BA((
-                rb_parent_m(node) != my_nil_ptr ||
-                rb_left_m(node) != my_nil_ptr ||
-                rb_right_m(node) != my_nil_ptr ||
+                rb_parent_m(node) != NULL ||
+                rb_left_m(node) != NULL ||
+                rb_right_m(node) != NULL ||
                 rb_color_m(node) != 0
         ), "Node is not in a tree");
         x = &mnodes[len - 1];
@@ -102,7 +100,7 @@ test_switch(int len, int* nodes, int sum, int do_sum)
         {
             _rb_switch_node_m(
                 node_t,
-                my_nil_ptr,
+                NULL,
                 rb_parent_m,
                 rb_left_m,
                 rb_right_m,

@@ -29,7 +29,6 @@ class GenTree(GenericStateMachine):
 
     def __init__(self):
         self.comparison = set()
-        self.hist = []
         lib.test_init()
 
     def steps(self):
@@ -54,8 +53,8 @@ class GenTree(GenericStateMachine):
             lib.test_remove(value.node)
             self.comparison.remove(value)
             assert value not in self.comparison
+            value.node = None
         elif action == 'add':
-            self.hist.append(value)
             node = Node(ffi.new("node_t*"), value)
             lib.test_add(node.node)
             self.comparison.add(node)

@@ -31,9 +31,9 @@ static
 int
 assert_init_traits(node_t* node)
 {
-    TA(rb_left_m(node) == my_nil_ptr, "Left not nil after init");
-    TA(rb_right_m(node) == my_nil_ptr, "Right not nil after init");
-    TA(rb_parent_m(node) == my_nil_ptr, "Parent not nil after init");
+    TA(rb_left_m(node) == NULL, "Left not nil after init");
+    TA(rb_right_m(node) == NULL, "Right not nil after init");
+    TA(rb_parent_m(node) == NULL, "Parent not nil after init");
     return 0;
 }
 
@@ -51,7 +51,7 @@ test_traits(void)
     T(test_set_traits(node));
 
     rb_node_init_m(
-        my_nil_ptr,
+        NULL,
         rb_color_m,
         rb_parent_m,
         rb_left_m,
