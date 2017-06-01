@@ -665,6 +665,8 @@ do {
         );
     }
 
+    /* This code is here instead of copying the data, if we own the memory we
+     * could do rb_value_m(node) = rb_value_m(y) */
     if(node != y) {
         if(parent(node) == nil) {
             tree = y;
@@ -1103,7 +1105,6 @@ do {
 {
     x = node;
     y = right(x);
-
     /* Turn y's left sub-tree into x's right sub-tree */
     right(x) = left(y);
     if(left(y) != nil)
@@ -1377,41 +1378,43 @@ do {
 )
 {
     x = node;
-    while(
-            (x != tree) &&
-            rb_is_black_m(color(x))
-    ) {
-        if(x == left(parent(x))) {
-            _rb_delete_fix_node_m(
-                type,
-                nil,
-                color,
-                parent,
-                left,
-                right,
-                _rb_rotate_left_m,
-                _rb_rotate_right_m,
-                tree,
-                x,
-                y
-            );
-        } else {
-            _rb_delete_fix_node_m(
-                type,
-                nil,
-                color,
-                parent,
-                right, /* Switched */
-                left, /* Switched */
-                _rb_rotate_left_m,
-                _rb_rotate_right_m,
-                tree,
-                x,
-                y
-            );
+    if(x != nil) {
+        while(
+                (x != tree) &&
+                rb_is_black_m(color(x))
+        ) {
+            if(x == left(parent(x))) {
+                _rb_delete_fix_node_m(
+                    type,
+                    nil,
+                    color,
+                    parent,
+                    left,
+                    right,
+                    _rb_rotate_left_m,
+                    _rb_rotate_right_m,
+                    tree,
+                    x,
+                    y
+                );
+            } else {
+                _rb_delete_fix_node_m(
+                    type,
+                    nil,
+                    color,
+                    parent,
+                    right, /* Switched */
+                    left, /* Switched */
+                    _rb_rotate_left_m,
+                    _rb_rotate_right_m,
+                    tree,
+                    x,
+                    y
+                );
+            }
         }
+        rb_make_black_m(color(x));
     }
-    rb_make_black_m(color(x));
 }
 #enddef
 

@@ -665,6 +665,8 @@ do { \
         ); \
     } \
  \
+    /* This code is here instead of copying the data, if we own the memory we \
+     * could do rb_value_m(node) = rb_value_m(y) */ \
     if(node != y) { \
         if(parent(node) == nil) { \
             tree = y; \
@@ -1103,28 +1105,26 @@ do { \
 { \
     x = node; \
     y = right(x); \
-    if(y != nil) { \
-        /* Turn y's left sub-tree into x's right sub-tree */ \
-        right(x) = left(y); \
-        if(left(y) != nil) \
-            parent(left(y)) = x; \
-        /* y's new parent was x's parent */ \
-        parent(y) = parent(x); \
-        /* Set the parent to point to y instead of x */ \
-        /* First see whether we're at the root */ \
-        if(parent(x) != nil) { \
-            if(x == left(parent(x))) \
-                /* x was on the left of its parent */ \
-                left(parent(x)) = y; \
-            else \
-                /* x must have been on the right */ \
-                right(parent(x)) = y; \
-        } else \
-            tree = y; \
-        /* Finally, put x on y's left */ \
-        left(y) = x; \
-        parent(x) = y; \
-    } \
+    /* Turn y's left sub-tree into x's right sub-tree */ \
+    right(x) = left(y); \
+    if(left(y) != nil) \
+        parent(left(y)) = x; \
+    /* y's new parent was x's parent */ \
+    parent(y) = parent(x); \
+    /* Set the parent to point to y instead of x */ \
+    /* First see whether we're at the root */ \
+    if(parent(x) != nil) { \
+        if(x == left(parent(x))) \
+            /* x was on the left of its parent */ \
+            left(parent(x)) = y; \
+        else \
+            /* x must have been on the right */ \
+            right(parent(x)) = y; \
+    } else \
+        tree = y; \
+    /* Finally, put x on y's left */ \
+    left(y) = x; \
+    parent(x) = y; \
 } \
 
 
@@ -1378,41 +1378,43 @@ do { \
 ) \
 { \
     x = node; \
-    while( \
-            (x != tree) && \
-            rb_is_black_m(color(x)) \
-    ) { \
-        if(x == left(parent(x))) { \
-            _rb_delete_fix_node_m( \
-                type, \
-                nil, \
-                color, \
-                parent, \
-                left, \
-                right, \
-                _rb_rotate_left_m, \
-                _rb_rotate_right_m, \
-                tree, \
-                x, \
-                y \
-            ); \
-        } else { \
-            _rb_delete_fix_node_m( \
-                type, \
-                nil, \
-                color, \
-                parent, \
-                right, /* Switched */ \
-                left, /* Switched */ \
-                _rb_rotate_left_m, \
-                _rb_rotate_right_m, \
-                tree, \
-                x, \
-                y \
-            ); \
+    if(x != nil) { \
+        while( \
+                (x != tree) && \
+                rb_is_black_m(color(x)) \
+        ) { \
+            if(x == left(parent(x))) { \
+                _rb_delete_fix_node_m( \
+                    type, \
+                    nil, \
+                    color, \
+                    parent, \
+                    left, \
+                    right, \
+                    _rb_rotate_left_m, \
+                    _rb_rotate_right_m, \
+                    tree, \
+                    x, \
+                    y \
+                ); \
+            } else { \
+                _rb_delete_fix_node_m( \
+                    type, \
+                    nil, \
+                    color, \
+                    parent, \
+                    right, /* Switched */ \
+                    left, /* Switched */ \
+                    _rb_rotate_left_m, \
+                    _rb_rotate_right_m, \
+                    tree, \
+                    x, \
+                    y \
+                ); \
+            } \
         } \
+        rb_make_black_m(color(x)); \
     } \
-    rb_make_black_m(color(x)); \
 } \
 
 
