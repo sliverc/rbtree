@@ -643,7 +643,8 @@ do { \
         x = right(y); \
  \
     /* Remove node from the tree */ \
-    parent(x) = parent(y); \
+    if(x != nil) \
+        parent(x) = parent(y); \
     if(parent(y) != nil) { \
         if(y == left(parent(y))) \
             left(parent(y)) = x; \
@@ -801,21 +802,13 @@ do { \
         right, \
         cmp \
 ) \
-    cx##_type_t cx##_nil_mem; \
-    cx##_type_t* cx##_nil_ptr = &cx##_nil_mem; \
+    cx##_type_t* cx##_nil_ptr = NULL; \
     void \
     cx##_tree_init( \
             type** tree \
     ) \
     { \
-        rb_node_init_m( \
-                cx##_nil_ptr, \
-                color, \
-                parent, \
-                left, \
-                right, \
-                cx##_nil_ptr \
-        ); \
+        my_nil_ptr = NULL; \
         *tree = cx##_nil_ptr; \
     } \
     void \
@@ -1314,7 +1307,7 @@ do { \
 ) \
 { \
     y = right(parent(parent(x))); \
-    if(rb_is_red_m(color(y))) { \
+    if(y != nil && rb_is_red_m(color(y))) { \
         rb_make_black_m(color(parent(x))); \
         rb_make_black_m(color(y)); \
         rb_make_red_m(color(parent(parent(x)))); \
@@ -1477,13 +1470,13 @@ do { \
         y = right(parent(x)); \
     } \
     if( \
-            rb_is_black_m(color(left(y))) && \
-            rb_is_black_m(color(right(y))) \
+            (left(y) == nil || rb_is_black_m(color(left(y)))) && \
+            (right(y) == nil || rb_is_black_m(color(right(y)))) \
     ) { \
         rb_make_red_m(color(y)); \
         x = parent(x); \
     } else { \
-        if(rb_is_black_m(color(right(y)))) { \
+        if(right(y) == nil || rb_is_black_m(color(right(y)))) { \
             rb_make_black_m(color(left(y))); \
             rb_make_red_m(color(y)); \
             rot_right( \
