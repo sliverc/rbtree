@@ -196,7 +196,6 @@
 #define rb_new_context_m(cx, type) \
     typedef type cx##_type_t; \
     typedef type cx##_iter_t; \
-    extern cx##_type_t* cx##_nil_ptr; \
 
 
 // Comparators
@@ -262,8 +261,8 @@
 // type
 //    The type of the nodes in the red-black tree.
 //
-// nil
-//    A pointer to the nil object.
+// NULL
+//    A pointer to the NULL object.
 //
 // color
 //    The color trait of the nodes in the rbtree.
@@ -285,7 +284,7 @@
 //
 // Bound: cx##_node_init
 //
-// Initializes a node by setting the color to 0 and all pointers to nil.
+// Initializes a node by setting the color to 0 and all pointers to NULL.
 //
 // node
 //    The node to initialize.
@@ -293,7 +292,6 @@
 // .. code-block:: cpp
 //
 #define rb_node_init_m( \
-        nil, \
         color, \
         parent, \
         left, \
@@ -302,9 +300,9 @@
 ) \
 { \
     color(node) = 0; \
-    parent(node) = nil; \
-    left(node) = nil; \
-    right(node) = nil; \
+    parent(node) = NULL; \
+    left(node) = NULL; \
+    right(node) = NULL; \
 } \
 
 
@@ -373,16 +371,16 @@
 //
 // .. code-block:: cpp
 //
-#define rb_iter_init_m(nil, left, tree, elem) \
+#define rb_iter_init_m(left, tree, elem) \
 { \
-    if(tree == nil) \
-        elem = nil; \
+    if(tree == NULL) \
+        elem = NULL; \
     else { \
         elem = tree; \
-        while(left(elem) != nil) \
+        while(left(elem) != NULL) \
             elem = left(elem); \
     } \
-    if(elem == nil) \
+    if(elem == NULL) \
         elem = NULL; \
 } \
 
@@ -401,7 +399,6 @@
 // .. code-block:: cpp
 //
 #define _rb_iter_next_m( \
-    nil, \
     parent, \
     left, \
     right, \
@@ -410,16 +407,16 @@
 ) \
 do { \
     tmp = right(elem); \
-    if(tmp != nil) { \
+    if(tmp != NULL) { \
         elem = tmp; \
-        while(left(elem) != nil) \
+        while(left(elem) != NULL) \
             elem = left(elem); \
         break; \
     } \
     for(;;) { \
         /* Next would be the root, we are done */ \
-        if(parent(elem) == nil) { \
-            elem = nil; \
+        if(parent(elem) == NULL) { \
+            elem = NULL; \
             break; \
         } \
         tmp = parent(elem); \
@@ -430,13 +427,12 @@ do { \
         } \
         elem = tmp; \
     } \
-    if(elem == nil) \
+    if(elem == NULL) \
         elem = NULL; \
 } while(0) \
 
 
 #define rb_iter_next_m( \
-    nil, \
     type, \
     parent, \
     left, \
@@ -446,7 +442,6 @@ do { \
 { \
     type* __rb_next_tmp_; \
     _rb_iter_next_m( \
-        nil, \
         parent, \
         left, \
         right, \
@@ -480,7 +475,6 @@ do { \
 //
 #define _rb_insert_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -494,26 +488,26 @@ do { \
 ) \
 do { \
     assert(node != NULL && "Cannot insert NULL node"); \
-    assert(node != nil && "Cannot insert nil node"); \
+    assert(node != NULL && "Cannot insert NULL node"); \
     assert((( \
-        parent(node) == nil && \
-        left(node) == nil && \
-        right(node) == nil \
+        parent(node) == NULL && \
+        left(node) == NULL && \
+        right(node) == NULL \
     ) || rb_is_black_m(color(node))) && "Node already used or not initialized"); \
-    if(tree == nil) { \
+    if(tree == NULL) { \
         tree = node; \
         rb_make_black_m(color(tree)); \
         break; \
     } else { \
         assert(( \
-            parent(tree) == nil && \
+            parent(tree) == NULL && \
             rb_is_black_m(color(tree)) \
         ) && "Tree is not root"); \
     } \
     c = tree; \
     p = NULL; \
     r = 0; \
-    while(c != nil) { \
+    while(c != NULL) { \
         /* The node is already in the rbtree, we break */ \
         r = cmp(c, node); \
         if(r == 0) \
@@ -523,7 +517,7 @@ do { \
         c = r > 0 ? left(c) : right(c); \
     } \
     /* The node is already in the rbtree, we break */ \
-    if(c != nil) \
+    if(c != NULL) \
         break; \
  \
     parent(node) = p; \
@@ -531,15 +525,14 @@ do { \
  \
     /* Smaller on the left, bigger on the right */ \
     if(r > 0) { \
-        assert(left(p) == nil); \
+        assert(left(p) == NULL); \
         left(p) = node; \
     } else { \
-        assert(right(p) == nil); \
+        assert(right(p) == NULL); \
         right(p) = node; \
     } \
     _rb_insert_fix_m( \
             type, \
-            nil, \
             color, \
             parent, \
             left, \
@@ -552,7 +545,6 @@ do { \
 
 #define rb_insert_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -567,7 +559,6 @@ do { \
     int   __rb_ins_result_; \
     _rb_insert_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -601,7 +592,6 @@ do { \
 //
 #define _rb_delete_node_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -612,36 +602,36 @@ do { \
         y \
 ) \
 { \
-    assert(tree != nil && "Cannot remove node from empty tree"); \
-    assert(node != nil && "Cannot insert nil node"); \
+    assert(tree != NULL && "Cannot remove node from empty tree"); \
+    assert(node != NULL && "Cannot insert NULL node"); \
     assert(( \
-        parent(node) != nil || \
-        left(node) != nil || \
-        right(node) != nil || \
+        parent(node) != NULL || \
+        left(node) != NULL || \
+        right(node) != NULL || \
         rb_is_black_m(color(node)) \
     ) && "Node is not in a tree"); \
-    /* This node has at least one nil node, delete is simple */ \
-    if(left(node) == nil || right(node) == nil) \
+    /* This node has at least one NULL node, delete is simple */ \
+    if(left(node) == NULL || right(node) == NULL) \
         /* The node is suitable for deletion */ \
         y = node; \
     else { \
         /* We need to find another node for deletion that as \
          * only one child */ \
         y = right(node); \
-        while(left(y) != nil) \
+        while(left(y) != NULL) \
             y = left(y); \
     } \
  \
     /* If node (y) has a child we have to attach it to the parent */ \
-    if(left(y) != nil) \
+    if(left(y) != NULL) \
         x = left(y); \
     else \
         x = right(y); \
  \
     /* Remove node from the tree */ \
-    if(x != nil) \
+    if(x != NULL) \
         parent(x) = parent(y); \
-    if(parent(y) != nil) { \
+    if(parent(y) != NULL) { \
         if(y == left(parent(y))) \
             left(parent(y)) = x; \
         else \
@@ -652,7 +642,6 @@ do { \
     if(rb_is_black_m(color(y))) { \
         _rb_delete_fix_m( \
                 type, \
-                nil, \
                 color, \
                 parent, \
                 left, \
@@ -665,18 +654,18 @@ do { \
     /* This code is here instead of copying the data, if we own the memory we \
      * could do rb_value_m(node) = rb_value_m(y) */ \
     if(node != y) { \
-        if(parent(node) == nil) { \
+        if(parent(node) == NULL) { \
             tree = y; \
-            parent(y) = nil; \
+            parent(y) = NULL; \
         } else { \
             if(node == left(parent(node))) \
                 left(parent(node)) = y; \
             if(node == right(parent(node))) \
                 right(parent(node)) = y; \
         } \
-        if(left(node) != nil) \
+        if(left(node) != NULL) \
             parent(left(node)) = y; \
-        if(right(node) != nil) \
+        if(right(node) != NULL) \
             parent(right(node)) = y; \
         parent(y) = parent(node); \
         left(y) = left(node); \
@@ -689,7 +678,6 @@ do { \
 
 #define rb_delete_node_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -702,7 +690,6 @@ do { \
     type* __rb_del_y_; \
     _rb_delete_node_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -794,7 +781,6 @@ do { \
         right, \
         cmp \
 ) \
-    cx##_type_t* cx##_nil_ptr = NULL; \
     void \
     cx##_iter_init( \
             type* tree, \
@@ -804,7 +790,6 @@ do { \
     { \
         (void)(iter); \
         rb_iter_init_m( \
-            cx##_nil_ptr, \
             left, \
             tree, \
             *elem \
@@ -818,7 +803,6 @@ do { \
     { \
         (void)(iter); \
         rb_iter_next_m( \
-            cx##_nil_ptr, \
             type, \
             parent, \
             left, \
@@ -832,7 +816,6 @@ do { \
     ) \
     { \
         rb_node_init_m( \
-                cx##_nil_ptr, \
                 color, \
                 parent, \
                 left, \
@@ -848,7 +831,6 @@ do { \
     { \
         rb_insert_m( \
             type, \
-            cx##_nil_ptr, \
             color, \
             parent, \
             left, \
@@ -858,9 +840,9 @@ do { \
             node \
         ); \
         return ( \
-            parent(node) != cx##_nil_ptr || \
-            left(node) != cx##_nil_ptr || \
-            right(node) != cx##_nil_ptr || \
+            parent(node) != NULL || \
+            left(node) != NULL || \
+            right(node) != NULL || \
             *tree == node \
         ); \
     } \
@@ -870,7 +852,6 @@ do { \
             type* node \
     ) rb_delete_node_m( \
         type, \
-        cx##_nil_ptr, \
         color, \
         parent, \
         left, \
@@ -966,29 +947,28 @@ do { \
         tmp \
 ) \
 { \
-    type* nil = cx##_nil_ptr; \
-    if(node == nil) { \
+    if(node == NULL) { \
         if(pathdepth < 0) \
             pathdepth = depth; \
         else \
             assert(pathdepth == depth); \
     } else { \
         tmp = left(node); \
-        if(tmp != nil) { \
+        if(tmp != NULL) { \
             assert(parent(tmp) == node); \
             assert(cmp(tmp, node) < 0); \
         } \
         tmp = right(node); \
-        if(tmp != nil) { \
+        if(tmp != NULL) { \
             assert(parent(tmp) == node); \
             assert(cmp(tmp, node) > 0); \
         } \
         if(rb_is_red_m(color(node))) { \
             tmp = left(node); \
-            if(tmp != nil) \
+            if(tmp != NULL) \
                 assert(rb_is_black_m(color(tmp))); \
             tmp = right(node); \
-            if(tmp != nil) \
+            if(tmp != NULL) \
                 assert(rb_is_black_m(color(tmp))); \
             cx##_check_tree_rec(left(node), depth, &pathdepth); \
             cx##_check_tree_rec(right(node), depth, &pathdepth); \
@@ -1069,7 +1049,6 @@ do { \
 // .. code-block:: cpp
 //
 #define __rb_rotate_left_m( \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1084,13 +1063,13 @@ do { \
     y = right(x); \
     /* Turn y's left sub-tree into x's right sub-tree */ \
     right(x) = left(y); \
-    if(left(y) != nil) \
+    if(left(y) != NULL) \
         parent(left(y)) = x; \
     /* y's new parent was x's parent */ \
     parent(y) = parent(x); \
     /* Set the parent to point to y instead of x */ \
     /* First see whether we're at the root */ \
-    if(parent(x) != nil) { \
+    if(parent(x) != NULL) { \
         if(x == left(parent(x))) \
             /* x was on the left of its parent */ \
             left(parent(x)) = y; \
@@ -1107,7 +1086,6 @@ do { \
 
 #define _rb_rotate_left_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1119,7 +1097,6 @@ do { \
     type* __rb_rot_x_; \
     type* __rb_rot_y_; \
     __rb_rotate_left_m( \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1135,7 +1112,6 @@ do { \
 #define _rb_rotate_left_tr_m(cx, tree, node) \
     _rb_rotate_left_m( \
         cx##_type_t, \
-        cx##_nil_ptr, \
         rb_color_m, \
         rb_parent_m, \
         rb_left_m, \
@@ -1147,7 +1123,6 @@ do { \
 
 #define _rb_rotate_right_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1157,7 +1132,6 @@ do { \
 ) \
     _rb_rotate_left_m( \
         type, \
-        nil, \
         color, \
         parent, \
         right, /* Switched */ \
@@ -1170,7 +1144,6 @@ do { \
 #define _rb_rotate_right_tr_m(cx, tree, node) \
     _rb_rotate_right_m( \
         cx##_type_t, \
-        cx##_nil_ptr, \
         rb_color_m, \
         rb_parent_m, \
         rb_left_m, \
@@ -1198,7 +1171,6 @@ do { \
 //
 #define __rb_insert_fix_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1217,7 +1189,6 @@ do { \
         if(parent(x) == left(parent(parent(x)))) { \
             _rb_insert_fix_node_m( \
                 type, \
-                nil, \
                 color, \
                 parent, \
                 left, \
@@ -1231,7 +1202,6 @@ do { \
         } else { \
             _rb_insert_fix_node_m( \
                 type, \
-                nil, \
                 color, \
                 parent, \
                 right, /* Switched */ \
@@ -1250,7 +1220,6 @@ do { \
 
 #define _rb_insert_fix_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1263,7 +1232,6 @@ do { \
     type* __rb_insf_y_; \
     __rb_insert_fix_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1278,7 +1246,6 @@ do { \
 
 #define _rb_insert_fix_node_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1291,7 +1258,7 @@ do { \
 ) \
 { \
     y = right(parent(parent(x))); \
-    if(y != nil && rb_is_red_m(color(y))) { \
+    if(y != NULL && rb_is_red_m(color(y))) { \
         rb_make_black_m(color(parent(x))); \
         rb_make_black_m(color(y)); \
         rb_make_red_m(color(parent(parent(x)))); \
@@ -1301,7 +1268,6 @@ do { \
             x = parent(x); \
             rot_left( \
                 type, \
-                nil, \
                 color, \
                 parent, \
                 left, \
@@ -1314,7 +1280,6 @@ do { \
         rb_make_red_m(color(parent(parent(x)))); \
         rot_right( \
             type, \
-            nil, \
             color, \
             parent, \
             left, \
@@ -1343,7 +1308,6 @@ do { \
 //
 #define __rb_delete_fix_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1355,7 +1319,7 @@ do { \
 ) \
 { \
     x = node; \
-    if(x != nil) { \
+    if(x != NULL) { \
         while( \
                 (x != tree) && \
                 rb_is_black_m(color(x)) \
@@ -1363,7 +1327,6 @@ do { \
             if(x == left(parent(x))) { \
                 _rb_delete_fix_node_m( \
                     type, \
-                    nil, \
                     color, \
                     parent, \
                     left, \
@@ -1377,7 +1340,6 @@ do { \
             } else { \
                 _rb_delete_fix_node_m( \
                     type, \
-                    nil, \
                     color, \
                     parent, \
                     right, /* Switched */ \
@@ -1397,7 +1359,6 @@ do { \
 
 #define _rb_delete_fix_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1410,7 +1371,6 @@ do { \
     type* __rb_delf_y_; \
     __rb_delete_fix_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1425,7 +1385,6 @@ do { \
 
 #define _rb_delete_fix_node_m( \
         type, \
-        nil, \
         color, \
         parent, \
         left, \
@@ -1443,7 +1402,6 @@ do { \
         rb_make_red_m(color(parent(x))); \
         rot_left( \
             type, \
-            nil, \
             color, \
             parent, \
             left, \
@@ -1454,18 +1412,17 @@ do { \
         y = right(parent(x)); \
     } \
     if( \
-            (left(y) == nil || rb_is_black_m(color(left(y)))) && \
-            (right(y) == nil || rb_is_black_m(color(right(y)))) \
+            (left(y) == NULL || rb_is_black_m(color(left(y)))) && \
+            (right(y) == NULL || rb_is_black_m(color(right(y)))) \
     ) { \
         rb_make_red_m(color(y)); \
         x = parent(x); \
     } else { \
-        if(right(y) == nil || rb_is_black_m(color(right(y)))) { \
+        if(right(y) == NULL || rb_is_black_m(color(right(y)))) { \
             rb_make_black_m(color(left(y))); \
             rb_make_red_m(color(y)); \
             rot_right( \
                 type, \
-                nil, \
                 color, \
                 parent, \
                 left, \
@@ -1480,7 +1437,6 @@ do { \
         rb_make_black_m(color(right(y))); \
         rot_left( \
             type, \
-            nil, \
             color, \
             parent, \
             left, \
