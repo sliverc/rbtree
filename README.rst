@@ -1103,27 +1103,28 @@ node
    {
        x = node;
        y = right(x);
-   
-       /* Turn y's left sub-tree into x's right sub-tree */
-       right(x) = left(y);
-       if(left(y) != nil)
-           parent(left(y)) = x;
-       /* y's new parent was x's parent */
-       parent(y) = parent(x);
-       /* Set the parent to point to y instead of x */
-       /* First see whether we're at the root */
-       if(parent(x) != nil) {
-           if(x == left(parent(x)))
-               /* x was on the left of its parent */
-               left(parent(x)) = y;
-           else
-               /* x must have been on the right */
-               right(parent(x)) = y;
-       } else
-           tree = y;
-       /* Finally, put x on y's left */
-       left(y) = x;
-       parent(x) = y;
+       if(y != nil) {
+           /* Turn y's left sub-tree into x's right sub-tree */
+           right(x) = left(y);
+           if(left(y) != nil)
+               parent(left(y)) = x;
+           /* y's new parent was x's parent */
+           parent(y) = parent(x);
+           /* Set the parent to point to y instead of x */
+           /* First see whether we're at the root */
+           if(parent(x) != nil) {
+               if(x == left(parent(x)))
+                   /* x was on the left of its parent */
+                   left(parent(x)) = y;
+               else
+                   /* x must have been on the right */
+                   right(parent(x)) = y;
+           } else
+               tree = y;
+           /* Finally, put x on y's left */
+           left(y) = x;
+           parent(x) = y;
+       }
    }
    #enddef
    
