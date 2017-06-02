@@ -1,7 +1,5 @@
-// TODO: Check all instances of NULL
-// TODO: When insert and delete are working shrink again
-// TODO: Grep for TODOs
 // TODO: User docu
+//
 // TODO: Review
 //
 // ==============
@@ -10,15 +8,19 @@
 //
 // * Textbook implementation
 // * Extensive tests
-// * Has parent pointers
+// * Has parent pointers and therefore fast replace_node and delete_node
 // * No optimizations
 // * Composable
 // * Readable
 // * Generic
 // * Still fast
 // * Easy to use, a bit complex to extend because it is generic [1]_
+// * Code size could be optimized [2]_
 //
 // .. [1] My rgc preprocessor and its MACRO_DEBUG mode are very helpful.
+//
+// .. [2] It quite easy to bind intermediate functions. But it only uses
+//        about 1800 bytes (-Os), per type.
 //
 // WORK IN PROGRESS
 // ================
