@@ -1,0 +1,12 @@
+set terminal png font "DejaVuSans,13" size 1200,900
+set y2tics
+set logscale y2
+set ylabel "clock time"
+set y2label "log(clock time)"
+set xlabel "tree size in nodes"
+set key left top
+set title "rbtree vs sglib insert performance\nless is better"
+plot 'log' i 0 u 1:2 w lines title "rbtree delete_node",\
+     'log' i 1 u 1:2 w lines title "rbtree delete",\
+     'log' i 0 u 1:2 w lines title "rbtree delete_node (log)" axes x1y2,\
+     'log' i 1 u 1:2 w lines title "rbtree delete (log)" axes x1y2
