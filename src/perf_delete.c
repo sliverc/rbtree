@@ -85,5 +85,27 @@ main(void)
         }
     }
     assert(tree = my_nil_ptr);
+    tree = NULL;
+    for(int i = 0; i < MSIZE; i++) {
+        node = &mnodes[i];
+        rb_left_m(node) = NULL;
+        rb_right_m(node) = NULL;
+        sglib_node_t_add(&tree, node);
+    }
+    fprintf(stderr, "sglib\n");
+    printf("\n\n\"sglib\"\n");
+    start = clock();
+    for(int i = 0; i < MSIZE; i++) {
+        node = &mnodes[i];
+        sglib_node_t_delete(&tree, node);
+        if(((i + 1) % 10000) == 0) {
+            end = clock();
+            cpu_time_used = (double) (end - start);
+            printf("%d %f\n", i, cpu_time_used);
+            start = clock();
+        }
+    }
+    assert(tree = NULL);
+    printf("\n\n");
     return 0;
 }
