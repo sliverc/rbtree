@@ -151,9 +151,7 @@
 //
 // Why don't you just generate typed functions from the beginning?
 //    I want to be able to reuse and compose my code. Especially for
-//    composability I need access to the generic functions. Thats how st_map_m,
-//    st_filter_m and st_reduce_m can use the rbtree. Thats the reason we need
-//    granular/late binding (generation of typed functions).
+//    composability I need access to the generic functions.
 //
 // Why is the iterator so complicated?
 //    rbtree is part of a larger set of data-structures, some need more
