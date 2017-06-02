@@ -173,9 +173,9 @@ Performance
    :align: center
    :alt: delete
 
- sglib has no delete node. For many application a delete_node and a
- replace_node function comes handy, since the application already has the
- right node to delete or replace.
+sglib has no delete node. For many application a delete_node and a
+replace_node function comes handy, since the application already has the
+right node to delete or replace.
 
 Implementation
 ==============
