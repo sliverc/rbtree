@@ -178,11 +178,9 @@
 // Implementation
 // ==============
 //
-// Based on the following references: auckland1_, auckland2_, sglib_
+// Based on the following reference: algorithms_
 //
-// .. _auckland1: https://www.cs.auckland.ac.nz/software/AlgAnim/red_black.html
-// .. _auckland2: https://www.cs.auckland.ac.nz/~jmor159/PLDS210/niemann/s_rbt.txt
-// .. _sglib: http://sglib.sourceforge.net/doc/index.html#rbtree_api1
+// .. _algorithms: http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
 //
 // Assertion
 // =========
