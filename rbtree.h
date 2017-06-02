@@ -583,7 +583,7 @@ do { \
 // (tree) can change.
 //
 // tree
-//    The root node of the tree.
+//    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
 //    The node to delete.
@@ -1027,7 +1027,7 @@ do { \
 // switched.
 //
 // tree
-//    The root node of the tree.
+//    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
 //    The node to initialize.
@@ -1162,7 +1162,7 @@ do { \
 // property. The main loop moves up the tree, restoring the red-black property.
 //
 // tree
-//    The root node of the tree.
+//    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
 //    The start-node to fix.
@@ -1296,10 +1296,11 @@ do { \
 //
 // Internal: not bound
 //
-// TODO
+// After delete the node was labeled black, and possibly destroys the red-black
+// property. The main loop moves up the tree, restoring the red-black property.
 //
 // tree
-//    The root node of the tree.
+//    The root node of the tree. Pointer to NULL represents an empty tree.
 //
 // node
 //    The start-node to fix.

@@ -51,7 +51,6 @@ test_traits(void)
     T(test_set_traits(node));
 
     rb_node_init_m(
-        NULL,
         rb_color_m,
         rb_parent_m,
         rb_left_m,

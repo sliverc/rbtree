@@ -31,23 +31,3 @@ def test_delete(ints):
         do_sum = False
         s = 0
     assert(lib.test_delete(c, ints, ss, c - 1, s, do_sum) == 0)
-
-
-@given(st.lists(
-    st.integers(
-        min_value=-2**30,
-        max_value=(2**30) - 1
-    ),
-    min_size=2
-))
-def test_switch(ints):
-    """Test if rbtree is consistent after two node were switched."""
-    ints = deduplicate(ints)
-    s = sum(ints)
-    c = len(ints)
-    assume(c > 1)
-    do_sum = True
-    if abs(s) > (2**32 / 2) - 1:
-        do_sum = False
-        s = 0
-    assert(lib.test_switch(c, ints, s, do_sum) == 0)
