@@ -58,7 +58,7 @@ test: doc cppcheck tests  # Test only
 perf: $(BUILD)/perf_insert $(BUILD)/perf_delete
 
 plot: perf  ## Plot performance comparison
-	#$(BASE)/mk/perf.sh perf_insert
+	$(BASE)/mk/perf.sh perf_insert
 	$(BASE)/mk/perf.sh perf_delete
 
 $(BUILD)/perf_insert: $(BUILD)/src/perf_insert.o $(BUILD)/src/rbtree.o

@@ -9,6 +9,7 @@ Red-Black Tree
 ==============
 
 * Textbook implementation
+* Extensive tests
 * Has parent pointers
 * No optimizations
 * Composable
@@ -162,10 +163,19 @@ Why is the iterator so complicated?
 Performance
 ===========
 
-.. image:: https://github.com/ganwell/rbtree/raw/master/perf01.png
+.. image:: https://github.com/ganwell/rbtree/raw/master/perf_insert.png
    :width: 90%
    :align: center
    :alt: insert
+
+.. image:: https://github.com/ganwell/rbtree/raw/master/perf_delete.png
+   :width: 90%
+   :align: center
+   :alt: delete
+
+ sglib has no delete node. For many application a delete_node and a
+ replace_node function comes handy, since the application already has the
+ right node to delete or replace.
 
 Implementation
 ==============

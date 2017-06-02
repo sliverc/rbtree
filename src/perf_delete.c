@@ -64,6 +64,7 @@ main(void)
             start = clock();
         }
     }
+    fprintf(stderr, "prepare: ");
     assert(tree = my_nil_ptr);
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
@@ -85,6 +86,7 @@ main(void)
         }
     }
     assert(tree = my_nil_ptr);
+    fprintf(stderr, "prepare: ");
     tree = NULL;
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
