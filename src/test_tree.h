@@ -9,7 +9,11 @@ struct node_s {
 };
 void
 test_init(void);
-void
+int
 test_add(node_t* node);
 void
 test_remove(node_t* node);
+int
+test_find(node_t* node);
+int
+test_tree_nil(void);

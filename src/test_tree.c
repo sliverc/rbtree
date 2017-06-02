@@ -8,17 +8,45 @@ test_init(void)
     my_tree_init(&tree);
 }
 
-void
+int
 test_add(node_t* node)
 {
+    int ret;
     my_node_init(node);
-    my_insert(&tree, node);
-    //my_check_tree(tree);
+    ret = my_insert(&tree, node);
+    my_check_tree(tree);
+    if(ret != 0) {
+        assert(!(
+                rb_parent_m(node) != my_nil_ptr ||
+                rb_left_m(node) != my_nil_ptr ||
+                rb_right_m(node) != my_nil_ptr ||
+                rb_color_m(node) != 0
+        ) && "Node should be white");
+    }
+    return ret;
 }
 
 void
 test_remove(node_t* node)
 {
     my_delete_node(&tree, node);
-    //my_check_tree(tree);
+    my_check_tree(tree);
+}
+
+int
+test_find(node_t* node)
+{
+    node_t* out;
+    int ret;
+    ret = my_find(tree, node, &out);
+    if(ret == 0) {
+        TA(rb_value_m(node) == rb_value_m(out), "Did not find right node")
+    }
+    return ret;
+}
+
+int
+test_tree_nil(void)
+{
+    return tree == my_nil_ptr;
 }

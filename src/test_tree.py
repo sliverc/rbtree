@@ -30,6 +30,7 @@ class GenTree(GenericStateMachine):
     def __init__(self):
         self.comparison = set()
         self.hist = []
+        self.key = Node(ffi.new("node_t*"), 0)
         lib.test_init()
 
     def steps(self):
@@ -40,13 +41,22 @@ class GenTree(GenericStateMachine):
                 max_value=(2**30) - 1
             )
         )
+        rnd_find_strategy = tuples(
+            just("rnd_find"),
+            integers(
+                min_value=-2**30,
+                max_value=(2**30) - 1
+            )
+        )
         check_strategy = tuples(just("check"), just(None))
         if not self.comparison:
-            return add_strategy | check_strategy
+            return add_strategy | check_strategy | rnd_find_strategy
         else:
             return (
-                add_strategy | check_strategy |
-                tuples(just("delete"), sampled_from(sorted(self.comparison))))
+                add_strategy | check_strategy | rnd_find_strategy |
+                tuples(just("delete"), sampled_from(sorted(self.comparison))) |
+                tuples(just("find"), sampled_from(sorted(self.comparison)))
+            )
 
     def execute_step(self, step):
         action, value = step
@@ -54,12 +64,28 @@ class GenTree(GenericStateMachine):
             lib.test_remove(value.node)
             self.comparison.remove(value)
             assert value not in self.comparison
+            if not self.comparison:
+                assert lib.test_tree_nil() == 1
         elif action == 'add':
             self.hist.append(value)
             node = Node(ffi.new("node_t*"), value)
-            lib.test_add(node.node)
+            if node in self.comparison:
+                assert lib.test_add(node.node) != 0
+            else:
+                assert lib.test_add(node.node) == 0
             self.comparison.add(node)
             assert node in self.comparison
+        elif action == 'rnd_find':
+            key = self.key
+            key.node.value = value
+            if key in self.comparison:
+                assert lib.test_find(key.node) == 0
+            else:
+                assert lib.test_find(key.node) != 0
+        elif action == 'find':
+            key = self.key
+            key.node.value = value.node.value
+            assert lib.test_find(key.node) == 0
         else:
             assert value is None
             assert action == 'check'

@@ -475,7 +475,7 @@ cmp
    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
 
 tree
-   The root node of the tree. Pointer to NULL represents an empty tree.
+   The root node of the tree.
 
 node
    The node to insert.
@@ -587,7 +587,7 @@ node
    #enddef
    
 rb_delete_node_m
-------------
+----------------
 
 Bound: cx##_delete_node
 
@@ -617,7 +617,7 @@ node
    )
    {
        assert(tree != nil && "Cannot remove node from empty tree");
-       assert(node != nil && "Cannot insert nil node");
+       assert(node != nil && "Cannot delete nil node");
        assert((
            parent(node) != nil ||
            left(node) != nil ||
@@ -684,7 +684,10 @@ node
            right(y) = right(node);
            color(y) = color(node);
        }
-   
+       parent(node) = nil;
+       left(node) = nil;
+       right(node) = nil;
+       color(node) = 0;
    }
    #enddef
    
@@ -713,6 +716,57 @@ node
            __rb_del_x_,
            __rb_del_y_
        )
+   }
+   #enddef
+   
+rb_find_m
+---------
+
+Bound: cx##_find
+
+Find a node using another node as key. The node will be set to NULL if the
+key was not found.
+
+The bound function will return 0 on success.
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+key
+   The node used as search key.
+
+node
+   The output node.
+
+.. code-block:: cpp
+   
+   #begindef rb_find_m(
+           type,
+           nil,
+           color,
+           parent,
+           left,
+           right,
+           cmp,
+           tree,
+           key,
+           node
+   )
+   {
+       assert(key != NULL && "Search key has to be set");
+       assert(key != nil && "Do not use nil as search key");
+       if(tree == nil)
+           node = nil;
+       else {
+           node = tree;
+           int __rb_find_result_ = 1;
+           while(__rb_find_result_ && node != nil) {
+               __rb_find_result_  = cmp(node, key);
+               if(__rb_find_result_ == 0)
+                   break;
+               node = __rb_find_result_ > 0 ? left(node) : right(node);
+           }
+       }
    }
    #enddef
    
@@ -761,6 +815,12 @@ type
        cx##_delete_node(
                type** tree,
                type* node
+       );
+       int
+       cx##_find(
+               type* tree,
+               type* key,
+               type** node
        );
        void
        cx##_check_tree(type* tree);
@@ -878,7 +938,7 @@ type
                *tree,
                node
            );
-           return (
+           return !(
                parent(node) != cx##_nil_ptr ||
                left(node) != cx##_nil_ptr ||
                right(node) != cx##_nil_ptr ||
@@ -899,6 +959,27 @@ type
            *tree,
            node
        )
+       int
+       cx##_find(
+               type* tree,
+               type* key,
+               type** node
+       )
+       {
+           rb_find_m(
+               type,
+               cx##_nil_ptr,
+               color,
+               parent,
+               left,
+               right,
+               cmp,
+               tree,
+               key,
+               *node
+           );
+           return *node == cx##_nil_ptr;
+       }
        void
        cx##_check_tree(type* tree)
        {
@@ -1103,28 +1184,27 @@ node
    {
        x = node;
        y = right(x);
-       if(y != nil) {
-           /* Turn y's left sub-tree into x's right sub-tree */
-           right(x) = left(y);
-           if(left(y) != nil)
-               parent(left(y)) = x;
-           /* y's new parent was x's parent */
-           parent(y) = parent(x);
-           /* Set the parent to point to y instead of x */
-           /* First see whether we're at the root */
-           if(parent(x) != nil) {
-               if(x == left(parent(x)))
-                   /* x was on the left of its parent */
-                   left(parent(x)) = y;
-               else
-                   /* x must have been on the right */
-                   right(parent(x)) = y;
-           } else
-               tree = y;
-           /* Finally, put x on y's left */
-           left(y) = x;
-           parent(x) = y;
-       }
+   
+       /* Turn y's left sub-tree into x's right sub-tree */
+       right(x) = left(y);
+       if(left(y) != nil)
+           parent(left(y)) = x;
+       /* y's new parent was x's parent */
+       parent(y) = parent(x);
+       /* Set the parent to point to y instead of x */
+       /* First see whether we're at the root */
+       if(parent(x) != nil) {
+           if(x == left(parent(x)))
+               /* x was on the left of its parent */
+               left(parent(x)) = y;
+           else
+               /* x must have been on the right */
+               right(parent(x)) = y;
+       } else
+           tree = y;
+       /* Finally, put x on y's left */
+       left(y) = x;
+       parent(x) = y;
    }
    #enddef
    
@@ -1354,7 +1434,8 @@ _rb_delete_fix_m
 
 Internal: not bound
 
-TODO
+After delete the node was labeled black, and possibly destroys the red-black
+property. The main loop moves up the tree, restoring the red-black property.
 
 tree
    The root node of the tree.
@@ -1459,6 +1540,8 @@ node
    )
    {
        y = right(parent(x));
+       if(y == nil)
+           break;
        if(rb_is_red_m(color(y))) {
            rb_make_black_m(color(y));
            rb_make_red_m(color(parent(x)));
@@ -1511,122 +1594,5 @@ node
            );
            x = tree;
        }
-   }
-   #enddef
-   
-_rb_switch_node_m
-------------
-
-Internal not bound.
-
-Switch two nodes.
-
-tree
-   The root node of the tree.
-
-x
-   The node to switch.
-
-y
-   The node to switch.
-
-.. code-block:: cpp
-
-   #begindef __rb_switch_node_m(
-           type,
-           nil,
-           parent,
-           left,
-           right,
-           tree,
-           x,
-           y,
-           t /* tmp parent */
-   )
-   {
-       if(x != y) {
-           /* Switch parents */
-           if(y == parent(x)) {
-               parent(x) = parent(y);
-               parent(y) = x;
-           } else if(x == parent(y)) {
-               parent(y) = parent(x);
-               parent(x) = y;
-           } else {
-               t = parent(x);
-               parent(x) = parent(y);
-               parent(y) = t;
-           }
-           /* Switch childs */
-           t = left(x);
-           left(x) = left(y);
-           left(y) = t;
-           t = right(x);
-           right(x) = right(y);
-           right(y) = t;
-           /* Fix parents */
-           t = parent(x);
-           if(t == parent(y)) {
-               /* Siblings */
-               if(x == left(t)) {
-                   left(t) = y;
-                   right(t) = x;
-               } else {
-                   left(t) = x;
-                   right(t) = y;
-               }
-           } else {
-               if(t != nil) {
-                   if(y == left(t))
-                       left(t) = x;
-                   else
-                       right(t) = x;
-               } else
-                   tree = x;
-               t = parent(y);
-               if(t != nil) {
-                   if(x == left(t))
-                       left(t) = y;
-                   else
-                       right(t) = y;
-               } else
-                   tree = y;
-           }
-           /* Fix other nodes */
-           if (left(x) != nil)
-               parent(left(x)) = x;
-           if (left(y) != nil)
-               parent(left(y)) = y;
-           if (right(x) != nil)
-               parent(right(x)) = x;
-           if (right(y) != nil)
-               parent(right(y)) = y;
-       }
-   }
-   #enddef
-   
-   #begindef _rb_switch_node_m(
-           type,
-           nil,
-           parent,
-           left,
-           right,
-           tree,
-           node,
-           new
-   )
-   {
-       type *__rb_repl_tmp_;
-       __rb_switch_node_m(
-           type,
-           nil,
-           parent,
-           left,
-           right,
-           tree,
-           node,
-           new,
-           __rb_repl_tmp_ /* t */
-       )
    }
    #enddef
