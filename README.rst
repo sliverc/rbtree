@@ -672,7 +672,7 @@ node
            } else {
                if(node == left(parent(node)))
                    left(parent(node)) = y;
-               if(node == right(parent(node)))
+               else if(node == right(parent(node)))
                    right(parent(node)) = y;
            }
            if(left(node) != nil)
@@ -1540,8 +1540,6 @@ node
    )
    {
        y = right(parent(x));
-       if(y == nil)
-           break;
        if(rb_is_red_m(color(y))) {
            rb_make_black_m(color(y));
            rb_make_red_m(color(parent(x)));
