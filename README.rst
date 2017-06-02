@@ -488,7 +488,6 @@ node
    )
    do {
        assert(node != NULL && "Cannot insert NULL node");
-       assert(node != NULL && "Cannot insert NULL node");
        assert(((
            parent(node) == NULL &&
            left(node) == NULL &&
@@ -702,6 +701,55 @@ node
    }
    #enddef
    
+rb_find_m
+---------
+
+Bound: cx##_find
+
+Find a node using another node as key. The node will be set to NULL if the
+key was not found.
+
+The bound function will return 0 on success.
+
+tree
+   The root node of the tree. Pointer to NULL represents an empty tree.
+
+key
+   The node used as search key.
+
+node
+   The output node.
+
+.. code-block:: cpp
+
+   #begindef rb_find_m(
+           type,
+           color,
+           parent,
+           left,
+           right,
+           cmp,
+           tree,
+           key,
+           node
+   )
+   {
+       assert(key != NULL && "Search key has to be set");
+       if(tree == NULL)
+           node = NULL;
+       else {
+           node = tree;
+           int __rb_find_result_ = 1;
+           while(__rb_find_result_ && node != NULL) {
+               __rb_find_result_  = cmp(key, node);
+               if(__rb_find_result_ == 0)
+                   break;
+               node = __rb_find_result_ > 0 ? left(node) : right(node);
+           }
+       }
+   }
+   #enddef
+   
 rb_bind_decl_m
 --------------
 
@@ -743,6 +791,12 @@ type
        cx##_delete_node(
                type** tree,
                type* node
+       );
+       int
+       cx##_find(
+               type* tree,
+               type* key,
+               type** node
        );
        void
        cx##_check_tree(type* tree);
@@ -859,6 +913,26 @@ type
            *tree,
            node
        )
+       int
+       cx##_find(
+               type* tree,
+               type* key,
+               type** node
+       )
+       {
+           rb_find_m(
+               type,
+               color,
+               parent,
+               left,
+               right,
+               cmp,
+               tree,
+               key,
+               *node
+           );
+           return node == NULL;
+       }
        void
        cx##_check_tree(type* tree)
        {
