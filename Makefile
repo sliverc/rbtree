@@ -20,6 +20,7 @@ endif
 OBJS := \
 	$(BUILD)/src/rbtree.o \
 	$(BUILD)/src/perf_insert.o \
+	$(BUILD)/src/perf_replace.o \
 	$(BUILD)/src/perf_delete.o
 
 TESTS := \
@@ -35,6 +36,7 @@ HEADERS := \
 DOCS := \
 	$(BUILD)/src/perf_insert.c.rst \
 	$(BUILD)/src/perf_delete.c.rst \
+	$(BUILD)/src/perf_replace.c.rst \
 	$(BUILD)/src/rbtree.rg.h.rst \
 	$(BUILD)/src/testing.rg.h.rst \
 	$(BUILD)/src/test_traits.h.rst \
@@ -55,13 +57,17 @@ all: perf rbtree test  ## Make everything
 
 test: doc cppcheck tests  # Test only
 
-perf: $(BUILD)/perf_insert $(BUILD)/perf_delete
+perf: $(BUILD)/perf_insert $(BUILD)/perf_delete $(BUILD)/perf_replace
 
 plot: perf  ## Plot performance comparison
 	$(BASE)/mk/perf.sh perf_insert
 	$(BASE)/mk/perf.sh perf_delete
+	$(BASE)/mk/perf.sh perf_replace
 
 $(BUILD)/perf_insert: $(BUILD)/src/perf_insert.o $(BUILD)/src/rbtree.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+
+$(BUILD)/perf_replace: $(BUILD)/src/perf_replace.o $(BUILD)/src/rbtree.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 $(BUILD)/perf_delete: $(BUILD)/src/perf_delete.o $(BUILD)/src/rbtree.o

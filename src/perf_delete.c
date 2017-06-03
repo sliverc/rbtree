@@ -90,6 +90,8 @@ main(void)
     tree = NULL;
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
+        rb_color_m(node) = 0;
+        rb_parent_m(node) = NULL;
         rb_left_m(node) = NULL;
         rb_right_m(node) = NULL;
         sglib_node_t_add(&tree, node);
@@ -107,7 +109,7 @@ main(void)
             start = clock();
         }
     }
-    assert(tree = NULL);
+    assert(tree == NULL);
     printf("\n\n");
     return 0;
 }

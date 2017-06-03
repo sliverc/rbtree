@@ -61,7 +61,10 @@ main(void)
     tree = NULL;
     for(int i = 0; i < MSIZE; i++) {
         node = &mnodes[i];
-        my_node_init(node);
+        rb_color_m(node) = 0;
+        rb_parent_m(node) = NULL;
+        rb_left_m(node) = NULL;
+        rb_right_m(node) = NULL;
     }
     fprintf(stderr, "sglib\n");
     printf("\n\n\"sglib\"\n");

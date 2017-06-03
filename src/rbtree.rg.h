@@ -2,8 +2,6 @@
 //
 // TODO: Review
 //
-// TODO: Recomment everything according to textbook
-//
 // TODO: Comments in with ., lists don't
 //
 // TODO: Assert message don't have periods
@@ -174,6 +172,9 @@
 // Performance
 // ===========
 //
+// I reference sglib, because it is the best and greatest I know. Kodos to
+// Marian Vittek.
+//
 // .. image:: https://github.com/ganwell/rbtree/raw/master/perf_insert.png
 //    :width: 90%
 //    :align: center
@@ -187,6 +188,14 @@
 // sglib has no delete_node. For many application a delete_node and a
 // replace_node function is handy, since the application already has the right
 // node to delete or replace.
+//
+// .. image:: https://github.com/ganwell/rbtree/raw/master/perf_replace.png
+//    :width: 90%
+//    :align: center
+//    :alt: replace
+//
+// Because we have parent pointer we can implement replace_node in constant
+// time O(1). With sglib we have to add/remove for a replacement.
 //
 // Implementation
 // ==============
@@ -243,7 +252,7 @@
 #begindef rb_new_context_m(cx, type)
     typedef type cx##_type_t;
     typedef type cx##_iter_t;
-    extern cx##_type_t* cx##_nil_ptr;
+    extern cx##_type_t* const cx##_nil_ptr;
 #enddef
 
 // Comparators
@@ -537,11 +546,11 @@ do {
 )
 do {
     assert(node != nil && "Cannot insert nil node");
-    assert(((
+    assert(
         parent(node) == nil &&
         left(node) == nil &&
-        right(node) == nil
-    ) || rb_is_black_m(color(node))) &&
+        right(node) == nil &&
+        tree != node &&
         "Node already used or not initialized"
     );
     if(tree == nil) {
@@ -982,7 +991,7 @@ do {
         cmp
 )
     cx##_type_t cx##_nil_mem;
-    cx##_type_t* cx##_nil_ptr = &cx##_nil_mem;
+    cx##_type_t* const cx##_nil_ptr = &cx##_nil_mem;
     void
     cx##_tree_init(
             type** tree
