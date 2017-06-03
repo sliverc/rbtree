@@ -26,6 +26,8 @@
 // .. [2] It quite easy to bind intermediate functions. But it only uses
 //        about 1800 bytes (-Os), per type.
 //
+//  Jean-Louis Fuchs <ganwell@fangorn.ch> based on Introduction To Algorithms
+//
 // WORK IN PROGRESS
 // ================
 //
@@ -135,8 +137,7 @@
 //
 // rb_x_m
 //    These functions are macros and take a type and traits as standard
-//    arguments and are the most verbose. Used to build upon rbtree. For
-//    example prbtree (persistent rbtree) will use these function.
+//    arguments and are the most verbose. Used to extend rbtree.
 //
 //    To use the rb_x_m functions you also need to initialize the nil pointer.
 //
@@ -177,16 +178,21 @@
 //    :align: center
 //    :alt: delete
 //
-// sglib has no delete node. For many application a delete_node and a
-// replace_node function comes handy, since the application already has the
-// right node to delete or replace.
+// sglib has no delete_node. For many application a delete_node and a
+// replace_node function is handy, since the application already has the right
+// node to delete or replace.
 //
 // Implementation
 // ==============
 //
-// Based on the following reference: algorithms_
+// Based on Introduction to Algorithms: official_, wiki_, _web_, pdf_ and
+// archive_.
 //
-// .. _algorithms: http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
+// .. _official: https://mitpress.mit.edu/books/introduction-algorithms
+// .. _wiki: https://en.wikipedia.org/wiki/Introduction_to_Algorithms
+// .. _web http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
+// .. _pdf: http://www.realtechsupport.org/UB/SR/algorithms/Cormen_Algorithms_3rd.pdf
+// .. _archive: https://archive.org/details/IntroductionToAlgorithms3edCorman_201508
 //
 // Properties
 // ----------
