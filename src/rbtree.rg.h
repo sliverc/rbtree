@@ -25,7 +25,7 @@
 // .. [1] My rgc preprocessor and its MACRO_DEBUG mode are very helpful.
 //
 // .. [2] It quite easy to bind intermediate functions. But it only uses
-//        about 1800 bytes (-Os), per type.
+//        about 2100 bytes (-Os), per type.
 //
 // Jean-Louis Fuchs <ganwell@fangorn.ch> based on Introduction To Algorithms
 //
@@ -198,6 +198,27 @@
 //
 // Because we have parent pointer we can implement replace_node in constant
 // time O(1). With sglib we have to add/remove for a replacement.
+//
+// Code size
+// =========
+//
+// 0x018 T my_node_init
+// 0x01b T my_tree_init
+// 0x020 C my_nil_mem
+// 0x032 T my_iter_init
+// 0x03d T my_find
+// 0x042 T my_check_tree
+// 0x043 T my_check_tree_rec
+// 0x048 T my_iter_next
+// 0x05d T my_replace
+// 0x060 T my_delete
+// 0x08b T my_replace_node
+// 0x20e T my_insert
+// 0x356 T my_delete_node
+//
+// About 2100 bytes. If code size really really matters, check_tree and
+// check_tree_rec could be removed and _rb_rotate_left_m could be bound and
+// called by delete and insert. But in my opinion 2100 bytes is small.
 //
 // Implementation
 // ==============
