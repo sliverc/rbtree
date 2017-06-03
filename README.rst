@@ -6,6 +6,8 @@ TODO: Recomment everything according to textbook
 
 TODO: Comments in with ., lists don't
 
+TODO: Assert message don't have periods
+
 ==============
 Red-Black Tree
 ==============
@@ -17,7 +19,6 @@ Red-Black Tree
 * Composable
 * Readable
 * Generic
-* Still fast
 * Easy to use, a bit complex to extend because it is generic [1]_
 * Code size could be optimized [2]_
 
@@ -70,11 +71,11 @@ This will expand the macros into .c files, so gdb can step into them.
 Usage
 =====
 
-Short
------
+Standard
+--------
 
 
-Detailed
+Extended
 --------
 
 Every function x comes in two flavors
@@ -190,7 +191,7 @@ node to delete or replace.
 Implementation
 ==============
 
-Based on Introduction to Algorithms: official_, wiki_, _web_, pdf_ and
+Based on Introduction to Algorithms: official_, wiki_, web_, pdf_ and
 archive_.
 
 .. _official: https://mitpress.mit.edu/books/introduction-algorithms
@@ -847,6 +848,7 @@ new
        assert(tree != nil && "The tree can't be nil");
        assert(old != nil && "The old node can't be nil");
        assert(new != nil && "The new node can't be nil");
+       assert(new != old && "The old and new node must differ");
        if(cmp(old, new) == 0) {
            if(old == tree)
                tree = new;
