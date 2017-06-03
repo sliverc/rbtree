@@ -73,13 +73,6 @@
 // Short
 // -----
 //
-// You have to bind your functions to a context first. The context has two
-// function:
-//
-// * Defining the type the bound function operate on
-//
-// * Allowing function composition. For example my_reduce, will use the
-//   functions my_iter_*.
 //
 // Detailed
 // --------
@@ -164,6 +157,18 @@
 //    rbtree is part of a larger set of data-structures, some need more
 //    complicated iterator setups, to make the data-structures interchangeable,
 //    all have to follow the iterator protocol. use rb_for_cx_m.
+//
+// Lessons learned
+// ===============
+//
+// I thought I don't have to understand the red-black trees and can just adjust
+// an existing implementation. I chose poorly and the thing was inherently
+// broken. I wasted a lot of time on it. They replaced the nil pointer with
+// NULL and it resulted in a tree that works, but is not balanced. So my
+// check_tree function failed and I tried to fix that implementation. It turns
+// out buttom-up-fixups are very difficult to implement with NULL pointers. So
+// after many wasted hours I just read Introductions to Algorithms and fixed my
+// implementation.
 //
 // Performance
 // ===========
@@ -530,7 +535,6 @@ do {
         r  /* result */
 )
 do {
-    assert(node != NULL && "Cannot insert NULL node");
     assert(node != nil && "Cannot insert nil node");
     assert(((
         parent(node) == nil &&
@@ -790,7 +794,6 @@ do {
         node
 )
 {
-    assert(key != NULL && "Search key has to be set");
     assert(key != nil && "Do not use nil as search key");
     if(tree == nil)
         node = nil;
@@ -803,6 +806,69 @@ do {
                 break;
             node = __rb_find_result_ > 0 ? left(node) : right(node);
         }
+    }
+}
+#enddef
+
+// rb_replace_node_m
+// -----------------
+//
+// Bound: cx##_replace_node
+//
+// Replace a node with another. The cmp(old, new) has to return 0 or the
+// function won't do anything.
+//
+// The bound function will return 0 on success.
+//
+// tree
+//    The root node of the tree. Pointer to NULL represents an empty tree.
+//
+// old
+//    The node to be replaced.
+//
+// new
+//    The new node.
+//
+// .. code-block:: cpp
+
+#begindef rb_replace_node_m(
+        type,
+        nil,
+        color,
+        parent,
+        left,
+        right,
+        cmp,
+        tree,
+        old,
+        new
+)
+{
+    assert(tree != nil && "The tree can't be nil");
+    assert(old != nil && "The old node can't be nil");
+    assert(new != nil && "The new node can't be nil");
+    if(cmp(old, new) == 0) {
+        if(old == tree)
+            tree = new;
+        else {
+            if(old == left(parent(old)))
+                left(parent(old)) = new;
+            else
+                right(parent(old)) = new;
+        }
+        if(left(old) != nil)
+            parent(left(old)) = new;
+        if(right(old) != nil)
+            parent(right(old)) = new;
+        parent(new) = parent(old);
+        left(new) = left(old);
+        right(new) = right(old);
+        color(new) = color(old);
+        /* Clear the old node */
+        parent(old) = nil;
+        left(old) = nil;
+        right(old) = nil;
+        color(old) = 0;
     }
 }
 #enddef
@@ -857,6 +923,12 @@ do {
     cx##_delete(
             type** tree,
             type* key
+    );
+    int
+    cx##_replace_node(
+            type** tree,
+            type* old,
+            type* new
     );
     int
     cx##_find(
@@ -1013,6 +1085,32 @@ do {
             return 0;
         }
         return 1;
+    }
+    int
+    cx##_replace_node(
+            type** tree,
+            type* old,
+            type* new
+    )
+    {
+        rb_replace_node_m(
+            type,
+            cx##_nil_ptr,
+            color,
+            parent,
+            left,
+            right,
+            cmp,
+            *tree,
+            old,
+            new
+        );
+        return !(
+            parent(old) == cx##_nil_ptr &&
+            left(old) == cx##_nil_ptr &&
+            right(old) == cx##_nil_ptr &&
+            old != *tree
+        );
     }
     int
     cx##_find(

@@ -54,6 +54,14 @@ test_find(node_t* node)
 }
 
 int
+test_replace_node(node_t* old, node_t* new)
+{
+    int ret = my_replace_node(&tree, old, new);
+    my_check_tree(tree);
+    return ret;
+}
+
+int
 test_tree_nil(void)
 {
     return tree == my_nil_ptr;

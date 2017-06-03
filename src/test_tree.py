@@ -30,7 +30,6 @@ class GenTree(GenericStateMachine):
 
     def __init__(self):
         self.comparison = set()
-        self.hist = []
         self.key = Node(ffi.new("node_t*"), 0)
         lib.test_init()
 
@@ -55,6 +54,9 @@ class GenTree(GenericStateMachine):
         delete = tuples(just(
             "delete"
         ), sampled_from(sorted(self.comparison)))
+        replace = tuples(just(
+            "replace"
+        ), sampled_from(sorted(self.comparison)))
         find = tuples(just("find"), sampled_from(sorted(self.comparison)))
         check_strategy = tuples(just("check"), just(None))
         if not self.comparison:
@@ -62,7 +64,7 @@ class GenTree(GenericStateMachine):
         else:
             return (
                 add_strategy | check_strategy | rnd_find_strategy |
-                delete_node | delete | find
+                delete_node | delete | find | replace
             )
 
     def execute_step(self, step):
@@ -81,8 +83,15 @@ class GenTree(GenericStateMachine):
             assert value not in self.comparison
             if not self.comparison:
                 assert lib.test_tree_nil() == 1
+        elif action == 'replace':
+            new = ffi.new("node_t*")
+            new.value = value.node.value
+            assert lib.test_replace_node(value.node, new) == 0
+            value.node = new
+            other = Node(ffi.new("node_t*"), value.node.value + 1)
+            if other not in self.comparison:
+                assert lib.test_replace_node(value.node, other.node) == 1
         elif action == 'add':
-            self.hist.append(value)
             node = Node(ffi.new("node_t*"), value)
             if node in self.comparison:
                 assert lib.test_add(node.node) != 0
