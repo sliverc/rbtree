@@ -931,6 +931,12 @@ do { \
             type* new \
     ); \
     int \
+    cx##_replace( \
+            type** tree, \
+            type* key, \
+            type* new \
+    ); \
+    int \
     cx##_find( \
             type* tree, \
             type* key, \
@@ -1111,6 +1117,19 @@ do { \
             right(old) == cx##_nil_ptr && \
             old != *tree \
         ); \
+    } \
+    int \
+    cx##_replace( \
+            type** tree, \
+            type* key, \
+            type* new \
+    ) \
+    { \
+        type* old; \
+        if(cx##_find(*tree, key, &old) == 0) { \
+            return cx##_replace_node(tree, old, new); \
+        } \
+        return 1; \
     } \
     int \
     cx##_find( \
