@@ -60,7 +60,7 @@ main(void)
         if(((i + 1) % 10000) == 0) {
             end = clock();
             cpu_time_used = (double) (end - start);
-            printf("%d %f\n", i, cpu_time_used);
+            printf("%d %f\n", MSIZE - i, cpu_time_used);
             start = clock();
         }
     }
@@ -81,7 +81,7 @@ main(void)
         if(((i + 1) % 10000) == 0) {
             end = clock();
             cpu_time_used = (double) (end - start);
-            printf("%d %f\n", i, cpu_time_used);
+            printf("%d %f\n", MSIZE - i, cpu_time_used);
             start = clock();
         }
     }
@@ -105,7 +105,7 @@ main(void)
         if(((i + 1) % 10000) == 0) {
             end = clock();
             cpu_time_used = (double) (end - start);
-            printf("%d %f\n", i, cpu_time_used);
+            printf("%d %f\n", MSIZE - i, cpu_time_used);
             start = clock();
         }
     }
