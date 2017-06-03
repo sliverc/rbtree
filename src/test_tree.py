@@ -1,5 +1,6 @@
 """Test if the tree stays consistent."""
 from build._rbtree_tests import lib, ffi
+from hypothesis import settings
 from hypothesis.stateful import GenericStateMachine
 from hypothesis.strategies import tuples, sampled_from, just, integers
 
@@ -91,4 +92,5 @@ class GenTree(GenericStateMachine):
             assert action == 'check'
 
 
-TestTree = GenTree.TestCase
+with settings(max_examples=2000):
+    TestTree = GenTree.TestCase

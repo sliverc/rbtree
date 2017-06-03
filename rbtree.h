@@ -2,14 +2,16 @@
 //
 // TODO: Review
 //
+// TODO: Recomment everything according to textbook
+//
 // ==============
 // Red-Black Tree
 // ==============
 //
 // * Textbook implementation
 // * Extensive tests
-// * Has parent pointers and therefore fast replace_node and delete_node
-// * No optimizations
+// * Has parent pointers and therefore faster delete_node and constant time
+//   replace_node
 // * Composable
 // * Readable
 // * Generic
@@ -35,7 +37,7 @@
 //
 // Developed on github_
 //
-// .. _github: https://github.com/adfinis-sygroup/rbtree
+// .. _github: https://github.com/ganwell/rbtree
 //
 // Requirements
 // ------------
@@ -195,7 +197,7 @@
 // Basic traits
 // ============
 //
-// Traits used by default (x_m macros)
+// Traits used by default (rb_x_m macros)
 //
 // .. code-block:: cpp
 //
@@ -252,18 +254,14 @@
 //
 // .. code-block:: cpp
 //
-#define RB_RED   (1 << 0)
-#define RB_ROOT  (1 << 1)
-#define RB_COPY  (1 << 2) /* Used in future for persistent rbtrees */
+#define RB_BLACK 0
+#define RB_RED   1
 
-#define rb_is_red_m(x)     (x & RB_RED)
-#define rb_is_black_m(x) (!(x & RB_RED))
-#define rb_needs_copy_m(x) (x & RB_COPY)
+#define rb_is_black_m(x)   (x == RB_BLACK)
+#define rb_is_red_m(x)     (x == RB_RED)
 
-#define rb_make_black_m(x) x &= ~RB_RED
-#define rb_make_red_m(x)   x |= RB_RED
-#define rb_set_copy_m(x)   x |= RB_COPY
-#define rb_unset_copy_m(x) x &= ~RB_COPY
+#define rb_make_black_m(x) x = RB_BLACK
+#define rb_make_red_m(x)   x = RB_RED
 
 // API
 // ===
@@ -511,7 +509,9 @@ do { \
         parent(node) == nil && \
         left(node) == nil && \
         right(node) == nil \
-    ) || rb_is_black_m(color(node))) && "Node already used or not initialized"); \
+    ) || rb_is_black_m(color(node))) && \
+        "Node already used or not initialized" \
+    ); \
     if(tree == nil) { \
         tree = node; \
         rb_make_black_m(color(tree)); \
@@ -541,14 +541,12 @@ do { \
     parent(node) = p; \
     rb_make_red_m(color(node)); \
  \
-    /* Smaller on the left, bigger on the right */ \
-    if(r > 0) { \
-        assert(left(p) == nil); \
+    /* Lesser on the left, greater on the right */ \
+    if(r > 0) \
         left(p) = node; \
-    } else { \
-        assert(right(p) == nil); \
+    else \
         right(p) = node; \
-    } \
+ \
     _rb_insert_fix_m( \
             type, \
             nil, \
@@ -644,13 +642,13 @@ do { \
             y = left(y); \
     } \
  \
-    /* If node (y) has a child we have to attach it to the parent */ \
+    /* If y has a child we have to attach it to the parent */ \
     if(left(y) != nil) \
         x = left(y); \
     else \
         x = right(y); \
  \
-    /* Remove node from the tree */ \
+    /* Remove y from the tree */ \
     parent(x) = parent(y); \
     if(parent(y) != nil) { \
         if(y == left(parent(y))) \
@@ -660,6 +658,7 @@ do { \
     } else \
         tree = x; \
  \
+    /* Fixup the tree */ \
     if(rb_is_black_m(color(y))) { \
         _rb_delete_fix_m( \
                 type, \
@@ -673,6 +672,7 @@ do { \
         ); \
     } \
  \
+    /* Replace y with the node since we don't control memory */ \
     if(node != y) { \
         if(parent(node) == nil) { \
             tree = y; \
@@ -692,6 +692,7 @@ do { \
         right(y) = right(node); \
         color(y) = color(node); \
     } \
+    /* Clear the node */ \
     parent(node) = nil; \
     left(node) = nil; \
     right(node) = nil; \
