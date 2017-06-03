@@ -49,20 +49,34 @@ class GenTree(GenericStateMachine):
                 max_value=(2**30) - 1
             )
         )
+        delete_node = tuples(just(
+            "delete_node"
+        ), sampled_from(sorted(self.comparison)))
+        delete = tuples(just(
+            "delete"
+        ), sampled_from(sorted(self.comparison)))
+        find = tuples(just("find"), sampled_from(sorted(self.comparison)))
         check_strategy = tuples(just("check"), just(None))
         if not self.comparison:
             return add_strategy | check_strategy | rnd_find_strategy
         else:
             return (
                 add_strategy | check_strategy | rnd_find_strategy |
-                tuples(just("delete"), sampled_from(sorted(self.comparison))) |
-                tuples(just("find"), sampled_from(sorted(self.comparison)))
+                delete_node | delete | find
             )
 
     def execute_step(self, step):
         action, value = step
-        if action == 'delete':
-            lib.test_remove(value.node)
+        if action == 'delete_node':
+            assert lib.test_remove(value.node) == 0
+            self.comparison.remove(value)
+            assert value not in self.comparison
+            if not self.comparison:
+                assert lib.test_tree_nil() == 1
+            else:
+                assert lib.test_remove(value.node) == 1
+        elif action == 'delete':
+            lib.test_remove_node(value.node)
             self.comparison.remove(value)
             assert value not in self.comparison
             if not self.comparison:

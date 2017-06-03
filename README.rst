@@ -854,6 +854,11 @@ type
                type* node
        );
        int
+       cx##_delete(
+               type** tree,
+               type* key
+       );
+       int
        cx##_find(
                type* tree,
                type* key,
@@ -996,6 +1001,19 @@ type
            *tree,
            node
        )
+       int
+       cx##_delete(
+               type** tree,
+               type* key
+       )
+       {
+           type* node;
+           if(cx##_find(*tree, key, &node) == 0) {
+               cx##_delete_node(tree, node);
+               return 0;
+           }
+           return 1;
+       }
        int
        cx##_find(
                type* tree,

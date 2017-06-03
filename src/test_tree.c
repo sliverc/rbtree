@@ -26,8 +26,16 @@ test_add(node_t* node)
     return ret;
 }
 
+int
+test_remove(node_t* key)
+{
+    int ret = my_delete(&tree, key);
+    my_check_tree(tree);
+    return ret;
+}
+
 void
-test_remove(node_t* node)
+test_remove_node(node_t* node)
 {
     my_delete_node(&tree, node);
     my_check_tree(tree);

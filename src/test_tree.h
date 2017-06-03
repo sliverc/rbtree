@@ -12,6 +12,8 @@ test_init(void);
 int
 test_add(node_t* node);
 void
+test_remove_node(node_t* node);
+int
 test_remove(node_t* node);
 int
 test_find(node_t* node);
