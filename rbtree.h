@@ -780,6 +780,9 @@ do { \
 //
 // The bound function will return 0 on success.
 //
+// cmp
+//    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
+//
 // tree
 //    The root node of the tree. Pointer to NULL represents an empty tree.
 //
@@ -829,6 +832,9 @@ do { \
 // function won't do anything.
 //
 // The bound function will return 0 on success.
+//
+// cmp
+//    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
 //
 // tree
 //    The root node of the tree. Pointer to NULL represents an empty tree.
