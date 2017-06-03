@@ -837,7 +837,7 @@ old
    The node to be replaced.
 
 new
-   The new node.
+   The new node. Has not to be initialized since all fields are replaced.
 
 .. code-block:: cpp
    
