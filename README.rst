@@ -6,6 +6,8 @@ TODO: Comments in with ., lists don't
 
 TODO: Assert message don't have periods
 
+TODO: Word consistency for example always write red-black tree
+
 ==============
 Red-Black Tree
 ==============
