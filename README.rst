@@ -196,7 +196,7 @@ archive_.
 
 .. _official: https://mitpress.mit.edu/books/introduction-algorithms
 .. _wiki: https://en.wikipedia.org/wiki/Introduction_to_Algorithms
-.. _web http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
+.. _web: http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
 .. _pdf: http://www.realtechsupport.org/UB/SR/algorithms/Cormen_Algorithms_3rd.pdf
 .. _archive: https://archive.org/details/IntroductionToAlgorithms3edCorman_201508
 
