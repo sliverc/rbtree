@@ -4,6 +4,8 @@ TODO: Review
 
 TODO: Recomment everything according to textbook
 
+TODO: Comments in with ., lists don't
+
 ==============
 Red-Black Tree
 ==============
@@ -185,6 +187,25 @@ Implementation
 Based on the following reference: algorithms_
 
 .. _algorithms: http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap14.htm
+
+Properties
+----------
+
+A binary search tree is a red-black tree if it satisfies the following
+red-black properties:
+
+1. Every node is either red or black.
+
+2. Every leaf (NIL) is black.
+
+3. If a node is red, then both its children are black.
+
+4. Every simple path from a node to a descendant leaf contains the same
+   number of black nodes.
+
+In order to understand the deletion, the concept of double (extra) blackness
+is introduced. If a black node was deleted its blackness is pushed down and a
+child can become extra black. This is the way property 1 can be violated.
 
 Assertion
 =========
@@ -658,7 +679,8 @@ node
        } else
            tree = x;
    
-       /* Fixup the tree */
+       /* A black node was removed, to fix the problem pretend to have pushed the
+        * blackness onto x. Therefore x is double black and violates property 1. */
        if(rb_is_black_m(color(y))) {
            _rb_delete_fix_m(
                    type,
@@ -1200,17 +1222,18 @@ node
            parent(left(y)) = x;
        /* y's new parent was x's parent */
        parent(y) = parent(x);
-       /* Set the parent to point to y instead of x */
-       /* First see whether we're at the root */
-       if(parent(x) != nil) {
+       if(parent(x) == nil)
+           /* If x is root y becomes the new root */
+           tree = y;
+       else {
+           /* Set the parent to point to y instead of x */
            if(x == left(parent(x)))
                /* x was on the left of its parent */
                left(parent(x)) = y;
            else
                /* x must have been on the right */
                right(parent(x)) = y;
-       } else
-           tree = y;
+       }
        /* Finally, put x on y's left */
        left(y) = x;
        parent(x) = y;
@@ -1322,6 +1345,7 @@ node
    )
    {
        x = node;
+       /* Move up the tree and fix property 3. */
        while(
                (x != tree) &&
                rb_is_red_m(color(parent(x)))
@@ -1403,12 +1427,17 @@ node
    )
    {
        y = right(parent(parent(x)));
+       /* Case 1: z’s uncle y is red. */
        if(rb_is_red_m(color(y))) {
            rb_make_black_m(color(parent(x)));
            rb_make_black_m(color(y));
            rb_make_red_m(color(parent(parent(x))));
+           /* Locally property 3 is fixed, but changing the color of the
+            * grandparent might have created a new violation. We continue with the
+            * grandparent. */
            x = parent(parent(x));
        } else {
+           /* Case 2: z’s uncle y is black and z is a right child. */
            if(x == right(parent(x))) {
                x = parent(x);
                rot_left(
@@ -1422,6 +1451,7 @@ node
                    x
                );
            }
+           /* Case 3: z’s uncle y is black and z is a left child. */
            rb_make_black_m(color(parent(x)));
            rb_make_red_m(color(parent(parent(x))));
            rot_right(
@@ -1468,6 +1498,7 @@ node
    )
    {
        x = node;
+       /* Move up extra blackness till x is red. */
        while(
                (x != tree) &&
                rb_is_black_m(color(x))
@@ -1502,6 +1533,7 @@ node
                );
            }
        }
+       /* If x is red we can introduce a real black node. */
        rb_make_black_m(color(x));
    }
    #enddef
@@ -1545,12 +1577,14 @@ node
            rot_right,
            tree,
            x,
-           y
+           w
    )
    {
-       y = right(parent(x));
-       if(rb_is_red_m(color(y))) {
-           rb_make_black_m(color(y));
+       /* X is double (extra) black. Goal: introduce a real black node. */
+       w = right(parent(x));
+       /* Case 1: x’s sibling w is red. */
+       if(rb_is_red_m(color(w))) {
+           rb_make_black_m(color(w));
            rb_make_red_m(color(parent(x)));
            rot_left(
                type,
@@ -1562,18 +1596,23 @@ node
                tree,
                parent(x)
            );
-           y = right(parent(x));
+           /* Transforms into case 2, 3 or 4 */
+           w = right(parent(x));
        }
        if(
-               rb_is_black_m(color(left(y))) &&
-               rb_is_black_m(color(right(y)))
+               rb_is_black_m(color(left(w))) &&
+               rb_is_black_m(color(right(w)))
        ) {
-           rb_make_red_m(color(y));
+           /* Case 2: x’s sibling w is black, and both of w’s children are black. */
+           rb_make_red_m(color(w));
+           /* Double blackness move up. Reenter loop. */
            x = parent(x);
        } else {
-           if(rb_is_black_m(color(right(y)))) {
-               rb_make_black_m(color(left(y)));
-               rb_make_red_m(color(y));
+           /* Case 3: x’s sibling w is black, w’s left child is red, and w’s right
+            * child is black. */
+           if(rb_is_black_m(color(right(w)))) {
+               rb_make_black_m(color(left(w)));
+               rb_make_red_m(color(w));
                rot_right(
                    type,
                    nil,
@@ -1582,13 +1621,15 @@ node
                    left,
                    right,
                    tree,
-                   y
+                   w
                );
-               y = right(parent(x));
+               w = right(parent(x));
            }
-           color(y) = color(parent(x));
+           /* Case 3: x’s sibling w is black, w’s left child is red, and w’s right
+            * child is black. */
+           color(w) = color(parent(x));
            rb_make_black_m(color(parent(x)));
-           rb_make_black_m(color(right(y)));
+           rb_make_black_m(color(right(w)));
            rot_left(
                type,
                nil,
@@ -1599,7 +1640,9 @@ node
                tree,
                parent(x)
            );
+           /* Terminate the loop. */
            x = tree;
        }
+       /* When the loop ends x is red and will be colored black. */
    }
    #enddef
