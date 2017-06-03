@@ -26,7 +26,7 @@
 // .. [2] It quite easy to bind intermediate functions. But it only uses
 //        about 1800 bytes (-Os), per type.
 //
-//  Jean-Louis Fuchs <ganwell@fangorn.ch> based on Introduction To Algorithms
+// Jean-Louis Fuchs <ganwell@fangorn.ch> based on Introduction To Algorithms
 //
 // WORK IN PROGRESS
 // ================
