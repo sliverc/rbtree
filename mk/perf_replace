@@ -1,0 +1,7 @@
+set terminal png font "DejaVuSans,13" size 1200,900
+set ylabel "clock time"
+set xlabel "tree size in nodes"
+set key left top
+set title "replace node vs add/remove performance\nless is better"
+plot 'log' i 0 u 1:2 w lines title "replace node",\
+     'log' i 1 u 1:2 w lines title "add/remove"
