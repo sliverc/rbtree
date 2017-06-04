@@ -102,7 +102,7 @@ test_insert_static(void)
     }
     TA(sum == 3, "Sum should be 3");
     sum = 0;
-    rb_for_cx_m(my, tree, iter, elem) {
+    rb_for_m(my, tree, iter, elem) {
         sum += rb_value_m(elem);
     }
     TA(sum == 3, "Sum should be 3");
@@ -306,7 +306,7 @@ test_insert(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
         rb_iter_decl_cx_m(my, iter, elem);
         //printf("elems: ");
         node = tree;
-        rb_for_cx_m(my, tree, iter, elem) {
+        rb_for_m(my, tree, iter, elem) {
             //printf("%d ", rb_value_m(elem));
             if(sorted[elems] != rb_value_m(elem))
                 fail = 1;

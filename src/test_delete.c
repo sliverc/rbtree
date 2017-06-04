@@ -43,7 +43,7 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
         i = 0;
         tsum = 0;
         int fail = 0;
-        rb_for_cx_m(my, tree, iter, elem) {
+        rb_for_m(my, tree, iter, elem) {
             if(sorted[i] != rb_value_m(elem))
                 fail = 1;
             tsum += rb_value_m(elem);

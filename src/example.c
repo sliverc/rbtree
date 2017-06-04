@@ -67,7 +67,7 @@ main(void)
     rb_iter_decl_cx_m(bk, bk_iter, bk_elem);
     printf("Catalog:\n\n");
     /* The red-black tree may not be modified during iteration. */
-    rb_for_cx_m(bk, tree, bk_iter, bk_elem) {
+    rb_for_m(bk, tree, bk_iter, bk_elem) {
         printf("%s\n", bk_elem->isbn);
     }
     printf("\nRemoving:\n\n");

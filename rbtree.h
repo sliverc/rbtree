@@ -107,13 +107,13 @@
 //    #define bk_cmp_m(x, y) memcmp(x->isbn, y->isbn, 13)
 //
 // Then we have to declare all the rbtree functions. rbtree uses a concept I
-// call context to find functions it needs. For example the functions look
-// for macro called $CONTEXT_cmp_m. I developed this concept to make functions
+// call context to find functions it needs. For example the functions look for
+// a macro called $CONTEXT_cmp_m. I developed this concept to make functions
 // composable without being too verbose. For example
 //
 // .. code-block:: cpp
 //
-//    rb_for_cx_m(bk, tree, bk_iter, bk_elem)
+//    rb_for_m(bk, tree, bk_iter, bk_elem)
 //
 // will look for the functions bk_iter_init and bk_iter_next.
 //
@@ -154,7 +154,7 @@
 //        bk_insert(&tree, book);
 //    }
 //
-// Note that we pass double pointer to bk_insert, since it might need to change
+// Note that we pass a double pointer to bk_insert, since it might need to change
 // the root node.
 //
 // Or we can lookup a book.
@@ -177,7 +177,7 @@
 //    }
 //
 // The key is just another node, we don't have to initialize it, but only set
-// the field used by the comparator. bk_find will set book to the node found.
+// the fields used by the comparator. bk_find will set book to the node found.
 //
 // We can also iterate over the tree, the result will be sorted, lesser element
 // first. The tree may not be modified during iteration.
@@ -185,7 +185,7 @@
 // .. code-block:: cpp
 //
 //    rb_iter_decl_cx_m(bk, bk_iter, bk_elem);
-//    rb_for_cx_m(bk, tree, bk_iter, bk_elem) {
+//    rb_for_m(bk, tree, bk_iter, bk_elem) {
 //        printf("%s\n", bk_elem->isbn);
 //    }
 //
@@ -209,6 +209,71 @@
 //    while(tree != bk_nil_ptr) {
 //        remove_book(tree);
 //    }
+//
+// API
+// ---
+//
+// rb_bind_decl_m(context, type)
+//    Bind the rbtree function declarations for *type* to *context*. Usually
+//    used in a header.
+//
+// rb_bind_impl_m(context, type)
+//    Bind the rbtree function implementations for *type* to *context*. Usually
+//    used in a c-file.
+//
+// Then the following functions will be available.
+//
+// cx##_tree_init(type* tree)
+//    Initialize *tree* by assigning *cx##_nil_ptr* to it.
+//
+// cx##_node_init(type* node)
+//    Initialize *node* by initializing the color, parent, left, right fields.
+//
+// cx##_insert(type** tree, type* node)
+//    Insert *node* into *tree*. If a node with the same key exists the
+//    function returns 1 and *node* is not inserted, 0 on success.
+//
+// cx##_delete_node(type** tree, type* node)
+//    Delete the known *node* from *tree*.
+//
+// cx##_delete(type** tree, type* key)
+//    Delete the node matching *key* from *tree*. If *key* is not in the tree
+//    the function returns 1, 0 on success.
+//
+// cx##_replace_node(type** tree, type* old, type* new)
+//    Replace known node *old* with *new*. If *old* and *new* are not equal the
+//    function will not do anything and returns 1, 0 on success.
+//
+// cx##_replace(type** tree, type* key, type* new)
+//    Replace the node matching *key* with *new*. If *key* and *new* are not
+//    equal the function will not do anything and returns 1. If *key* is not in
+//    the tree the function will not do anything and returns 1. It returns 0 on
+//    success.
+//
+// cx##_find(type* tree, type* key, type** node)
+//    Find the node matching *key* and assign it to *node*. If *key* is not in
+//    the tree *node* will not be assigned and the function return 1, 0 on
+//    success.
+//
+// cx##_size(type* tree)
+//    Returns the size of tree. By default RB_SIZE_T is int to avoid addional
+//    dependencies. Feel free to define RB_SIZE_T as size_t for example.
+//
+// rb_iter_decl_cx_m(cx, iter, elem)
+//    Declares the variables *iter* and *elem* for the context cx.
+//
+// cx##_iter_init(type* tree, cx##_iter_t* iter, type** elem)
+//    Initializes *elem* to point to the first element in tree. Use
+//    rb_iter_decl_cx_m to declare *iter* and *elem*. If the tree is empty
+//    *elem* will be cx##_nil_ptr.
+//
+// cx##_iter_next(cx##_iter_t* iter, type** elem)
+//    Move *elem* to the next element in the tree. *elem* will point to
+//    cx##_nil_ptr at the end.
+//
+// cx##_check_tree(type* tree)
+//    Check the consistency of a tree. Only interesting for development of
+//    rbtree itself. If will fail with an assert if there is an inconsistency.
 //
 // Extended
 // --------
@@ -292,7 +357,7 @@
 // Why is the iterator so complicated?
 //    rbtree is part of a larger set of data-structures, some need more
 //    complicated iterator setups, to make the data-structures interchangeable,
-//    all have to follow the iterator protocol. use rb_for_cx_m.
+//    all have to follow the iterator protocol. Use rb_for_m.
 //
 // Performance
 // ===========
@@ -410,6 +475,9 @@
 #ifndef rb_tree_h
 #define rb_tree_h
 #include <assert.h>
+#ifndef RB_SIZE_T
+#define RB_SIZE_T int
+#endif
 
 //
 // Basic traits
@@ -536,8 +604,8 @@
 } \
 
 
-// rb_for_cx_m
-// ------------
+// rb_for_m
+// --------
 //
 // Generates a for loop header using the iterator.
 //
@@ -549,7 +617,7 @@
 //
 // .. code-block:: cpp
 //
-#define rb_for_cx_m(cx, tree, iter, elem) \
+#define rb_for_m(cx, tree, iter, elem) \
     for( \
             cx##_iter_init(tree, iter, &elem); \
             elem != NULL; \
@@ -1135,7 +1203,8 @@ do { \
             type* key, \
             type** node \
     ); \
-    int cx##_size( \
+    RB_SIZE_T \
+    cx##_size( \
             type* tree \
     ); \
     void \
@@ -1348,7 +1417,8 @@ do { \
         ); \
         return *node == cx##_nil_ptr; \
     } \
-    int cx##_size( \
+    RB_SIZE_T \
+    cx##_size( \
             type* tree \
     ) \
     { \
