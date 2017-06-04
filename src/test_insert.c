@@ -26,14 +26,14 @@ test_insert_static(void)
     TA(rb_is_black_m(rb_color_m(node)), "Node not black after first insert");
 
     node = &mnodes[1];
-    rb_value_m(node) = RB_BLACK;
+    rb_value_m(node) = 0;
     my_insert(&tree, node);
-        TA((
-            rb_parent_m(node) == my_nil_ptr &&
-            rb_left_m(node) == my_nil_ptr &&
-            rb_right_m(node) == my_nil_ptr &&
-            rb_is_black_m(rb_color_m(node))
-        ), "Node should not have been added");
+    TA((
+        rb_parent_m(node) == my_nil_ptr &&
+        rb_left_m(node) == my_nil_ptr &&
+        rb_right_m(node) == my_nil_ptr &&
+        node != tree
+    ), "Node should not have been added");
     TA(tree == &mnodes[0], "Equal node should not have been inserted");
 
     rb_value_m(node) = 1;

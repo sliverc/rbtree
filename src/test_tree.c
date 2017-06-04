@@ -20,8 +20,8 @@ test_add(node_t* node)
                 rb_parent_m(node) != my_nil_ptr ||
                 rb_left_m(node) != my_nil_ptr ||
                 rb_right_m(node) != my_nil_ptr ||
-                rb_color_m(node) != 0
-        ) && "Node should be white");
+                rb_color_m(node) != RB_BLACK
+        ) && "Node should be black");
     }
     return ret;
 }

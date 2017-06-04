@@ -657,7 +657,7 @@ rb_node_init_m
 
 Bound: cx##_node_init
 
-Initializes a node by setting the color to 0 and all pointers to nil.
+Initializes a node by setting the color to black and all pointers to nil.
 
 node
    The node to initialize.
@@ -734,7 +734,7 @@ Bound: cx##_iter_init
 Initialize iterator. It will point to the first element.
 
 tree
-   The root node of the tree. Pointer to NULL represents an empty tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 iter
    The iterator.
@@ -764,7 +764,7 @@ rb_iter_next_m
 
 Bound: cx##_iter_next
 
-Initialize iterator. It will point to the first element. The element fill be
+Initialize iterator. It will point to the first element. The element will be
 NULL, if the iteration is at the end.
 
 elem
@@ -834,8 +834,8 @@ rb_insert_m
 Bound: cx##_insert
 
 Insert the node into the tree. This function might replace the root node
-(tree). If an equal node exists in the tree, the node will not be added and
-will still be RB_WHITE.
+(*tree*). If an equal node exists in the tree, the node will not be added and
+will still be in its initialized state.
 
 The bound function will return 0 on success.
 
@@ -843,7 +843,7 @@ cmp
    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 node
    The node to insert.
@@ -962,7 +962,7 @@ node. If you don't have it use rb_find_m first or rb_delete_m. The root node
 (tree) can change.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 node
    The node to delete.
@@ -1093,7 +1093,7 @@ rb_find_m
 
 Bound: cx##_find
 
-Find a node using another node as key. The node will be set to NULL if the
+Find a node using another node as key. The node will be set to nil if the
 key was not found.
 
 The bound function will return 0 on success.
@@ -1102,7 +1102,7 @@ cmp
    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
 
 tree
-   The root node of the tree. Pointer to NULL represents an empty tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 key
    The node used as search key.
@@ -1155,7 +1155,7 @@ cmp
    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
 
 tree
-   The root node of the tree. Pointer to NULL represents an empty tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 old
    The node to be replaced.
@@ -1673,7 +1673,7 @@ _rb_rotate_right_m is _rb_rotate_left_m where left and right had been
 switched.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 node
    The node to initialize.
@@ -1817,7 +1817,7 @@ After insert new node is labeled red, and possibly destroys the red-black
 property. The main loop moves up the tree, restoring the red-black property.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 node
    The start-node to fix.
@@ -1970,7 +1970,7 @@ After delete the node was labeled black, and possibly destroys the red-black
 property. The main loop moves up the tree, restoring the red-black property.
 
 tree
-   The root node of the tree.
+   The root node of the tree. Pointer to nil represents an empty tree.
 
 node
    The start-node to fix.
