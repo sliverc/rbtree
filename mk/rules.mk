@@ -124,6 +124,7 @@ clean:  ## Clean build
 	touch $(BUILD)/.keep
 
 cppcheck: headers  ## Static analysis
+ifneq ($(TRAVIS),true)
 	cppcheck -v \
 		--error-exitcode=1 \
 		--std=c99 \
@@ -132,3 +133,4 @@ cppcheck: headers  ## Static analysis
 		-I"$(BASE)/src" \
 		-I"$(BUILD)/src" \
 		"$(BASE)/src"
+endif
