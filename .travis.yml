@@ -3,6 +3,7 @@ addons:
   apt:
     packages:
     - python3
+    - python3-pip
 install:
   - pip3 install pytest cffi hypothesis
 script: make all
