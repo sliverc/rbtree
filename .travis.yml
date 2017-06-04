@@ -1,4 +1,8 @@
 language: c
+addons:
+  apt:
+    packages:
+    - python3
 install:
   - pip3 install pytest cffi hypothesis
 script: make all
