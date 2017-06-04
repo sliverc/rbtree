@@ -23,6 +23,7 @@
 // * C99
 // * Easy to use, a bit complex to extend because it is generic [1]_
 // * Code size could be optimized [2]_
+// * MIT license
 // * By Jean-Louis Fuchs <ganwell@fangorn.ch>
 // * Based on Introduction To Algorithms
 // * Text review by Eva Fuchs
