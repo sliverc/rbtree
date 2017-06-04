@@ -21,7 +21,9 @@
 // * Code size could be optimized [2]_
 // * By Jean-Louis Fuchs <ganwell@fangorn.ch>
 // * Based on Introduction To Algorithms
-// * Reviewed by `Sven Osterwalder`_
+// * Text review by Eva Fuchs
+// * Code review by `Sven Osterwalder`_
+// * Thanks a lot to both
 //
 // .. _`Sven Osterwalder`: https://github.com/sosterwalder
 //
@@ -121,6 +123,8 @@
 //
 //    #define rb_safe_cmp_m(x, y) (((x)>(y) ? 1 : ((x)<(y) ? -1 : 0)))
 //    #define my_cmp_m(x, y) rb_safe_cmp(x->value, y->value)
+//
+// rb_safe_cmp_m is provided by rbtree.
 //
 // Then we have to declare all the rbtree functions. rbtree uses a concept I
 // call context to find functions it needs. For example the functions look for
