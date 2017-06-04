@@ -76,8 +76,139 @@ Getting started
 
 This example can be found on github: example_h_, example_c_
 
+.. _example_h: https://github.com/ganwell/rbtree/blob/master/src/example.h
+.. _example_c: https://github.com/ganwell/rbtree/blob/master/src/example.c
 
+First we have to define the struct we use in the red-black tree in
+example.h.
 
+.. code-block:: cpp
+
+   struct book_s;
+   typedef struct book_s book_t;
+   struct book_s {
+       char    isbn[14];
+       char*   title;
+       char*   author;
+       char    color;
+       book_t* parent;
+       book_t* left;
+       book_t* right;
+   };
+
+You can add the fields color, parent, left, right to any existing struct.
+It is also possible to use other names than the above (see Extendend).
+
+Next we have to define the comparator function, since we want to lookup
+books using the ISBN-number, we compare it using memcmp.
+
+.. code-block:: cpp
+
+   #define bk_cmp_m(x, y) memcmp(x->isbn, y->isbn, 13)
+
+Then we have to declare all the rbtree functions. rbtree uses a concept I
+call context to find functions it needs. For example the functions look
+for macro called $CONTEXT_cmp_m. I developed this concept to make functions
+composable without being too verbose. For example
+
+.. code-block:: cpp
+
+   rb_for_cx_m(bk, tree, bk_iter, bk_elem)
+
+will look for the functions bk_iter_init and bk_iter_next.
+
+rb_bind_decl_m takes the context, bk in this case and the type as arguments.
+
+.. code-block:: cpp
+
+   rb_bind_decl_m(bk, book_t)
+
+Now we switch to example.c and define all the rbtree functions and the trees
+root node.
+
+.. code-block:: cpp
+
+   #include "example.h"
+   rb_bind_impl_m(bk, book_t)
+   book_t* tree;
+
+In order to use the tree we have to initialize it, which is actually only
+assigning bk_nil_ptr to it.
+
+.. code-block:: cpp
+
+   bk_tree_init(&tree);
+
+Now we can register a book.
+
+.. code-block:: cpp
+
+   void
+   register_book(char isbn[14], char* title, char* author)
+   {
+       book_t* book = malloc(sizeof(book_t));
+       bk_node_init(book);
+       book->title  = title;
+       book->author = author;
+       memcpy(book->isbn, isbn, 14);
+       bk_insert(&tree, book);
+   }
+
+Note that we pass double pointer to bk_insert, since it might need to change
+the root node.
+
+Or we can lookup a book.
+
+.. code-block:: cpp
+
+   void
+   lookup_book(char isbn[14])
+   {
+       book_t* book;
+       book_t key;
+       memcpy(key.isbn, isbn, 14);
+       bk_find(tree, &key, &book);
+       printf(
+           "ISBN:   %s\nTitle:  %s\nAuthor: %s\n\n",
+           book->isbn,
+           book->title,
+           book->author
+       );
+   }
+
+The key is just another node, we don't have to initialize it, but only set
+the field used by the comparator. bk_find will set book to the node found.
+
+We can also iterate over the tree, the result will be sorted, lesser element
+first. The tree may not be modified during iteration.
+
+.. code-block:: cpp
+
+   rb_iter_decl_cx_m(bk, bk_iter, bk_elem);
+   rb_for_cx_m(bk, tree, bk_iter, bk_elem) {
+       printf("%s\n", bk_elem->isbn);
+   }
+
+Removing a book is straight forward.
+
+.. code-block:: cpp
+
+   void
+   remove_book(book_t* book)
+   {
+       printf("Removing %s\n", book->isbn);
+       bk_delete_node(&tree, book);
+       free(book);
+   }
+
+But we cannot use the iterator. Therefore we just remove the root till the
+tree is empty.
+
+.. code-block:: cpp
+
+   while(tree != bk_nil_ptr) {
+       remove_book(tree);
+   }
 
 Extended
 --------
