@@ -71,14 +71,18 @@
 // Usage
 // =====
 //
-// Standard
-// --------
+// Getting started
+// ---------------
+//
+// This example can be found on github: example_h_, example_c_
+//
+//
 //
 //
 // Extended
 // --------
 //
-// Every function x comes in two flavors
+// Many functions x come in two flavors
 //
 // cx_x
 //    These functions are bound to a type. Traits and the comparator are mapped
@@ -159,18 +163,6 @@
 //    complicated iterator setups, to make the data-structures interchangeable,
 //    all have to follow the iterator protocol. use rb_for_cx_m.
 //
-// Lessons learned
-// ===============
-//
-// I thought I don't have to understand the red-black trees and can just adjust
-// an existing implementation. I chose poorly and the thing was inherently
-// broken. I wasted a lot of time on it. They replaced the nil pointer with
-// NULL and it resulted in a tree that works, but is not balanced. So my
-// check_tree function failed and I tried to fix that implementation. It turns
-// out buttom-up-fixups are very difficult to implement with NULL pointers. So
-// after many wasted hours I just read Introductions to Algorithms and fixed my
-// implementation.
-//
 // Performance
 // ===========
 //
@@ -222,6 +214,32 @@
 // check_tree_rec could be removed and _rb_rotate_left_m could be bound and
 // called by delete and insert. But in my opinion 2100 bytes is small.
 //
+// Lessons learned
+// ===============
+//
+// I thought I don't have to understand the red-black trees and can just adjust
+// an existing implementation. I chose poorly and the thing was inherently
+// broken. I wasted a lot of time on it. They replaced the nil pointer with
+// NULL and it resulted in a tree that works, but is not balanced. So my
+// check_tree function failed and I tried to fix that implementation. It turns
+// out buttom-up-fixups are very difficult to implement with NULL pointers. So
+// after many hours wasted I just read Introductions to Algorithms and fixed my
+// implementation.
+//
+// I thought I can adapt this code easily to make a persistent data-structure,
+// but I found it is more important to have the parent pointers and therefore
+// keep complexity at bay. If I am going to implement any persistent
+// data-structure I am going to build the persistent vector as in closure and
+// then convert the red-black tree to use vector-indexes and make it persistent
+// on top of the persistent vector. It seems like the persistent vector can be
+// built using reference-counting: pyrsistent_, so it should be possible.
+//
+// With the right mindset generic and composable programming in C is awesome.
+// Well, you need my rgc preprocessor (readable generic C) or debugging is
+// almost impossible. But rgc is just 60 lines of python and very simple.
+//
+// .. _pyrsistent: https://github.com/tobgu/pyrsistent/blob/master/pvectorcmodule.c
+//
 // Implementation
 // ==============
 //
@@ -253,11 +271,13 @@
 // is introduced. If a black node was deleted its blackness is pushed down and a
 // child can become extra black. This is the way property 1 can be violated.
 //
-// Assertion
-// =========
+// Guards and includes
+// ===================
 //
 // .. code-block:: cpp
 //
+#ifndef rb_tree_h
+#define rb_tree_h
 #include <assert.h>
 
 //
@@ -593,7 +613,7 @@ do { \
     r = 0; \
     while(c != nil) { \
         /* The node is already in the rbtree, we break */ \
-        r = cmp(c, node); \
+        r = cmp((c), (node)); \
         if(r == 0) \
             break; \
         p = c; \
@@ -839,7 +859,7 @@ do { \
         node = tree; \
         int __rb_find_result_ = 1; \
         while(__rb_find_result_ && node != nil) { \
-            __rb_find_result_  = cmp(node, key); \
+            __rb_find_result_  = cmp((node), (key)); \
             if(__rb_find_result_ == 0) \
                 break; \
             node = __rb_find_result_ > 0 ? left(node) : right(node); \
@@ -889,7 +909,7 @@ do { \
     assert(old != nil && "The old node can't be nil"); \
     assert(new != nil && "The new node can't be nil"); \
     assert(new != old && "The old and new node must differ"); \
-    if(cmp(old, new) == 0) { \
+    if(cmp((old), (new)) == 0) { \
         if(old == tree) \
             tree = new; \
         else { \
@@ -983,6 +1003,9 @@ do { \
             type* tree, \
             type* key, \
             type** node \
+    ); \
+    int cx##_size( \
+            type* tree \
     ); \
     void \
     cx##_check_tree(type* tree); \
@@ -1194,6 +1217,18 @@ do { \
         ); \
         return *node == cx##_nil_ptr; \
     } \
+    int cx##_size( \
+            type* tree \
+    ) \
+    { \
+        if(tree == cx##_nil_ptr) \
+            return 0; \
+        else \
+            return ( \
+                cx##_size(left(tree)) + \
+                cx##_size(right(tree)) + 1 \
+            ); \
+    } \
     void \
     cx##_check_tree(type* tree) \
     { \
@@ -1292,12 +1327,12 @@ do { \
         tmp = left(node); \
         if(tmp != nil) { \
             assert(parent(tmp) == node); \
-            assert(cmp(tmp, node) < 0); \
+            assert(cmp((tmp), (node)) < 0); \
         } \
         tmp = right(node); \
         if(tmp != nil) { \
             assert(parent(tmp) == node); \
-            assert(cmp(tmp, node) > 0); \
+            assert(cmp((tmp), (node)) > 0); \
         } \
         if(rb_is_red_m(color(node))) { \
             tmp = left(node); \
@@ -1829,3 +1864,5 @@ do { \
     /* When the loop ends x is red and will be colored black. */ \
 } \
 
+
+#endif // rb_tree_h

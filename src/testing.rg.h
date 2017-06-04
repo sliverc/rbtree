@@ -1,3 +1,6 @@
+#ifndef rb_testing_h
+#define rb_testing_h
+
 #include "rbtree.h"
 
 #include <stdio.h>
@@ -112,3 +115,4 @@ recursive_sum(int* sum, int* elems, node_t* node)
     recursive_sum(sum, elems, rb_left_m(node));
     recursive_sum(sum, elems, rb_right_m(node));
 }
+#endif // rb_testing_h

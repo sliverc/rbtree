@@ -22,4 +22,6 @@ test_replace(node_t* old, node_t* new);
 int
 test_find(node_t* node);
 int
+test_size(void);
+int
 test_tree_nil(void);

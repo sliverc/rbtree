@@ -120,6 +120,7 @@ class GenTree(GenericStateMachine):
         elif action == 'find':
             key = self.key
             key.node.value = value.node.value
+            assert lib.test_size() == len(self.comparison)
             assert lib.test_find(key.node) == 0
         else:
             assert value is None

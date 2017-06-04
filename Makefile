@@ -18,6 +18,7 @@ include $(BASE)/mk/dev.mk
 endif
 
 OBJS := \
+	$(BUILD)/src/example.o \
 	$(BUILD)/src/rbtree.o \
 	$(BUILD)/src/perf_insert.o \
 	$(BUILD)/src/perf_replace.o \
@@ -34,6 +35,8 @@ HEADERS := \
 	$(BUILD)/src/testing.h
 
 DOCS := \
+	$(BUILD)/src/example.c.rst \
+	$(BUILD)/src/example.h.rst \
 	$(BUILD)/src/perf_insert.c.rst \
 	$(BUILD)/src/perf_delete.c.rst \
 	$(BUILD)/src/perf_replace.c.rst \
@@ -53,9 +56,15 @@ ide:
 
 ride: docs perf rbtree module
 
-all: perf rbtree test  ## Make everything
+all: perf rbtree test example ## Make everything
 
 test: doc cppcheck tests  # Test only
+	
+example: $(BUILD)/example
+	$(BUILD)/example
+
+$(BUILD)/example: $(BUILD)/src/example.o $(BUILD)/src/rbtree.o
+	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 
 perf: $(BUILD)/perf_insert $(BUILD)/perf_delete $(BUILD)/perf_replace
 

@@ -70,6 +70,12 @@ test_replace(node_t* old, node_t* new)
 }
 
 int
+test_size(void)
+{
+    return my_size(tree);
+}
+
+int
 test_tree_nil(void)
 {
     return tree == my_nil_ptr;
