@@ -208,7 +208,7 @@
 //
 // .. code-block:: cpp
 //
-//    rb_iter_decl_cx_m(bk, bk_iter, bk_elem);
+//    rb_iter_decl_m(bk, bk_iter, bk_elem);
 //    rb_for_m(bk, tree, bk_iter, bk_elem) {
 //        printf("%s\n", bk_elem->isbn);
 //    }
@@ -237,13 +237,18 @@
 // API
 // ---
 //
-// rb_bind_decl_m(context, type)
+// rb_bind_decl_m(context, type) alias rb_bind_decl_cx_m
 //    Bind the rbtree function declarations for *type* to *context*. Usually
 //    used in a header.
 //
 // rb_bind_impl_m(context, type)
 //    Bind the rbtree function implementations for *type* to *context*. Usually
-//    used in a c-file.
+//    used in a c-file. The variant uses the standard rb_*_m traits.
+//
+// rb_bind_impl_cx_m(context, type)
+//    Bind the rbtree function implementations for *type* to *context*. Usually
+//    used in a c-file. The variant uses cx##_*_m traits, which means you have
+//    to define them.
 //
 // rb_safe_value_cmp_m(x, y)
 //    Basis for safe value comparators. *x* and *y* are comparable values of
@@ -287,12 +292,12 @@
 //    Returns the size of tree. By default RB_SIZE_T is int to avoid additional
 //    dependencies. Feel free to define RB_SIZE_T as size_t for example.
 //
-// rb_iter_decl_cx_m(cx, iter, elem)
+// rb_iter_decl_m(cx, iter, elem)
 //    Declares the variables *iter* and *elem* for the context *cx*.
 //
 // cx##_iter_init(type* tree, cx##_iter_t* iter, type** elem)
 //    Initializes *elem* to point to the first element in tree. Use
-//    rb_iter_decl_cx_m to declare *iter* and *elem*. If the tree is empty
+//    rb_iter_decl_m to declare *iter* and *elem*. If the tree is empty
 //    *elem* will be *cx##_nil_ptr*.
 //
 // cx##_iter_next(cx##_iter_t* iter, type** elem)
@@ -734,7 +739,7 @@
 // Initialize iterator. It will point to the first element.
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // iter
 //    The iterator.
@@ -840,10 +845,10 @@ do { \
 // The bound function will return 0 on success.
 //
 // cmp
-//    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
+//    Comparator (rb_pointer_cmp_m or rb_safe_value_cmp_m could be used)
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // node
 //    The node to insert.
@@ -957,12 +962,12 @@ do { \
 //
 // Bound: cx##_delete_node
 //
-// Insert delete a node from the tree. This function acts on an actual tree
+// Delete a node from the tree. This function acts on an actual tree
 // node. If you don't have it use rb_find_m first or rb_delete_m. The root node
-// (tree) can change.
+// (*tree*) can change.
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // node
 //    The node to delete.
@@ -1099,10 +1104,10 @@ do { \
 // The bound function will return 0 on success.
 //
 // cmp
-//    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
+//    Comparator (rb_pointer_cmp_m or rb_safe_value_cmp_m could be used).
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // key
 //    The node used as search key.
@@ -1152,10 +1157,10 @@ do { \
 // The bound function will return 0 on success.
 //
 // cmp
-//    Comparator (rb_pointer_cmp_m or rb_value_cmp_m could be used)
+//    Comparator (rb_pointer_cmp_m or rb_safe_value_cmp_m could be used).
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // old
 //    The node to be replaced.
@@ -1571,10 +1576,10 @@ do { \
 // Check consistency of a tree
 //
 // node
-//    Node to check
+//    Node to check.
 //
 // result
-//    Zero on success, other on failure
+//    Zero on success, other on failure.
 //
 // .. code-block:: cpp
 //
@@ -1655,8 +1660,8 @@ do { \
 } \
 
 
-// Private
-// =======
+// Internal
+// ========
 //
 // Functions that are used internally.
 //
@@ -1673,7 +1678,7 @@ do { \
 // switched.
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // node
 //    The node to initialize.
@@ -1813,11 +1818,12 @@ do { \
 //
 // Internal: not bound
 //
-// After insert new node is labeled red, and possibly destroys the red-black
-// property. The main loop moves up the tree, restoring the red-black property.
+// After insert the new node is labeled red, and possibly destroys the
+// red-black property. The main loop moves up the tree, restoring the red-black
+// property.
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // node
 //    The start-node to fix.
@@ -1966,11 +1972,11 @@ do { \
 //
 // Internal: not bound
 //
-// After delete the node was labeled black, and possibly destroys the red-black
-// property. The main loop moves up the tree, restoring the red-black property.
+// After deleting a black node, the blackness is pushed down to the child. If
+// is black, it is now double (extra) black. Property 1 has to be restored.
 //
 // tree
-//    The root node of the tree. Pointer to nil represents an empty tree.
+//    The root node of the tree. A pointer to nil represents an empty tree.
 //
 // node
 //    The start-node to fix.
