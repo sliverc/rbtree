@@ -52,6 +52,7 @@
 // ------------
 //
 // * gcc or clang
+// * pytest
 // * hypothesis
 // * cffi
 // * rst2html

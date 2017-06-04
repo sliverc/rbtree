@@ -1,0 +1,4 @@
+language: c
+install:
+  - pip3 install pytest cffi hypothesis
+script: make all
