@@ -10,6 +10,9 @@ TODO: Word consistency for example always write red-black tree
 Red-Black Tree
 ==============
 
+.. image:: https://travis-ci.org/ganwell/rbtree.svg?branch=master
+   :target: https://travis-ci.org/ganwell/rbtree/
+
 * Textbook implementation
 * Extensive tests
 * Has parent pointers and therefore faster delete_node and constant time
