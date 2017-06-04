@@ -17,7 +17,7 @@ test_insert_static(void)
             rb_parent_m(node) == my_nil_ptr &&
             rb_left_m(node) == my_nil_ptr &&
             rb_right_m(node) == my_nil_ptr &&
-            rb_color_m(node) == 0
+            rb_color_m(node) == RB_BLACK
         ), "Node not properly initialized");
     }
     node = &mnodes[0];
@@ -26,7 +26,7 @@ test_insert_static(void)
     TA(rb_is_black_m(rb_color_m(node)), "Node not black after first insert");
 
     node = &mnodes[1];
-    rb_value_m(node) = 0;
+    rb_value_m(node) = RB_BLACK;
     my_insert(&tree, node);
         TA((
             rb_parent_m(node) == my_nil_ptr &&
@@ -294,7 +294,7 @@ test_insert(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
                 rb_parent_m(node) == my_nil_ptr &&
                 rb_left_m(node) == my_nil_ptr &&
                 rb_right_m(node) == my_nil_ptr &&
-                rb_color_m(node) == 0
+                rb_color_m(node) == RB_BLACK
             ), "Node not properly initialized");
             my_insert(&tree, node);
             //print_tree(0, tree, NULL);

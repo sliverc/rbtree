@@ -26,7 +26,7 @@ test_delete(int len, int* nodes, int* sorted, int count, int sum, int do_sum)
                 rb_parent_m(node) != my_nil_ptr ||
                 rb_left_m(node) != my_nil_ptr ||
                 rb_right_m(node) != my_nil_ptr ||
-                rb_color_m(node) != 0
+                rb_color_m(node) != RB_BLACK
         ), "Node is not in a tree");
         node = &mnodes[len - 1];
         //print_tree(0, tree, NULL);

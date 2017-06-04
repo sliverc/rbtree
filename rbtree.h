@@ -6,12 +6,12 @@
 //
 // TODO: Word consistency for example always write red-black tree
 //
+// .. image:: https://travis-ci.org/ganwell/rbtree.svg?branch=master
+//    :target: https://travis-ci.org/ganwell/rbtree/
+//
 // ==============
 // Red-Black Tree
 // ==============
-//
-// .. image:: https://travis-ci.org/ganwell/rbtree.svg?branch=master
-//    :target: https://travis-ci.org/ganwell/rbtree/
 //
 // * Textbook implementation
 // * Extensive tests
@@ -157,7 +157,7 @@
 //    book_t* tree;
 //
 // In order to use the tree we have to initialize it, which is actually only
-// assigning bk_nil_ptr to it.
+// assigning *bk_nil_ptr* to it.
 //
 // .. code-block:: cpp
 //
@@ -200,8 +200,8 @@
 //        );
 //    }
 //
-// The key is just another node, we don't have to initialize it, but only set
-// the fields used by the comparator. bk_find will set book to the node found.
+// The *key* is just another node, we don't have to initialize it, but only set
+// the fields used by the comparator. bk_find will set *book* to the node found.
 //
 // We can also iterate over the tree, the result will be sorted, lesser element
 // first. The tree may not be modified during iteration.
@@ -284,20 +284,20 @@
 //    success.
 //
 // cx##_size(type* tree)
-//    Returns the size of tree. By default RB_SIZE_T is int to avoid addional
+//    Returns the size of tree. By default RB_SIZE_T is int to avoid additional
 //    dependencies. Feel free to define RB_SIZE_T as size_t for example.
 //
 // rb_iter_decl_cx_m(cx, iter, elem)
-//    Declares the variables *iter* and *elem* for the context cx.
+//    Declares the variables *iter* and *elem* for the context *cx*.
 //
 // cx##_iter_init(type* tree, cx##_iter_t* iter, type** elem)
 //    Initializes *elem* to point to the first element in tree. Use
 //    rb_iter_decl_cx_m to declare *iter* and *elem*. If the tree is empty
-//    *elem* will be cx##_nil_ptr.
+//    *elem* will be *cx##_nil_ptr*.
 //
 // cx##_iter_next(cx##_iter_t* iter, type** elem)
 //    Move *elem* to the next element in the tree. *elem* will point to
-//    cx##_nil_ptr at the end.
+//    *cx##_nil_ptr* at the end.
 //
 // cx##_check_tree(type* tree)
 //    Check the consistency of a tree. Only interesting for development of
@@ -327,7 +327,7 @@
 //       my_tree_init(&tree);
 //       my_node_init(node);
 //
-//    There is also a short if you know your are going to use all standard
+//    There is also a shortcut if you know your are going to use all standard
 //    fields in your struct (color, parent, left right)
 //
 //    .. code-block:: cpp
@@ -397,7 +397,7 @@
 // Performance
 // ===========
 //
-// I reference sglib, because it is the best and greatest I know. Kodos to
+// I compare with sglib, because it is the best and greatest I know. Kodos to
 // Marian Vittek.
 //
 // .. image:: https://github.com/ganwell/rbtree/raw/master/perf_insert.png
@@ -461,14 +461,15 @@
 // I thought I can adapt this code easily to make a persistent data-structure,
 // but I found it is more important to have the parent pointers and therefore
 // keep complexity at bay. If I am going to implement any persistent
-// data-structure I am going to build the persistent vector as in closure and
-// then convert the red-black tree to use vector-indexes and make it persistent
-// on top of the persistent vector. It seems like the persistent vector can be
-// built using reference-counting: pyrsistent_, so it should be possible.
+// data-structure, I am going to build the persistent vector as used in closure
+// and then convert the red-black tree to use vector-indexes and make it
+// persistent on top of the persistent vector. It seems like the persistent
+// vector can be built using reference-counting: pyrsistent_, so it should be
+// possible.
 //
 // With the right mindset generic and composable programming in C is awesome.
 // Well, you need my rgc preprocessor (readable generic C) or debugging is
-// almost impossible. But rgc is just 60 lines of python and very simple.
+// almost impossible. But rgc is just 60 lines of Python and very simple.
 //
 // .. _pyrsistent: https://github.com/tobgu/pyrsistent/blob/master/pvectorcmodule.c
 //
@@ -503,8 +504,10 @@
 // is introduced. If a black node was deleted its blackness is pushed down and a
 // child can become extra black. This is the way property 1 can be violated.
 //
-// Guards and includes
-// ===================
+// Definitions
+// ===========
+//
+// RB_SIZE_T can be defined by the user to use size_t for example.
 //
 // .. code-block:: cpp
 //
@@ -514,7 +517,6 @@
 #ifndef RB_SIZE_T
 #define RB_SIZE_T int
 #endif
-
 //
 // Basic traits
 // ============
@@ -528,7 +530,17 @@
 #define rb_left_m(x) (x)->left
 #define rb_right_m(x) (x)->right
 #define rb_value_m(x) (x)->value
-
+//
+// Context creation
+// ================
+//
+// Create the type aliases. Actually only cx##_iter_t is used, since we can
+// just referrer to *type*. Note the const before cx##_nil_ptr, is the secret
+// to make the code so small: the compiler just inserts the value into all
+// comparisons with nil.
+//
+// .. code-block:: cpp
+//
 #define rb_new_context_m(cx, type) \
     typedef type cx##_type_t; \
     typedef type cx##_iter_t; \
@@ -568,11 +580,10 @@
     rb_safe_cmp_m(x, y) \
 
 
-// rb_value_cmp_m
-// ----------------
+// rb_safe_value_cmp_m
+// --------------------
 //
-// Compares nodes that have the rb_value_m trait. Only safe if you only use
-// 30bit values.
+// Safe value comparator. Compares nodes that have the rb_value_m trait.
 //
 // x, y
 //    Nodes to compare
@@ -584,7 +595,7 @@
 
 
 // rb_value_cmp_m
-// ----------------
+// ---------------
 //
 // Compares nodes that have the rb_value_m trait. Only safe if you only use
 // 30bit values.
@@ -601,8 +612,7 @@
 // Colors
 // ======
 //
-// The obvious color plus white which is used for nodes that are currently not
-// in the rbtree. This way we can assert if a node is added twice.
+// The obvious colors.
 //
 // .. code-block:: cpp
 //
@@ -663,7 +673,7 @@
         node \
 ) \
 { \
-    color(node) = 0; \
+    color(node) = RB_BLACK; \
     parent(node) = nil; \
     left(node) = nil; \
     right(node) = nil; \
@@ -1046,7 +1056,7 @@ do { \
     parent(node) = nil; \
     left(node) = nil; \
     right(node) = nil; \
-    color(node) = 0; \
+    color(node) = RB_BLACK; \
 } \
 
 
@@ -1193,7 +1203,7 @@ do { \
         parent(old) = nil; \
         left(old) = nil; \
         right(old) = nil; \
-        color(old) = 0; \
+        color(old) = RB_BLACK; \
     } \
 } \
 
