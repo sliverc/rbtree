@@ -60,7 +60,7 @@ struct node_s {
 };
 
 
-#define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+#define my_cmp_m(x, y) rb_safe_value_cmp_m(x, y)
 rb_bind_decl_m(my, node_t)
 
 static

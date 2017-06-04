@@ -1,5 +1,3 @@
-// TODO: User docu
-//
 // TODO: Review
 //
 // TODO: Comments in with ., lists don't
@@ -21,13 +19,17 @@
 // * Generic
 // * Easy to use, a bit complex to extend because it is generic [1]_
 // * Code size could be optimized [2]_
+// * By Jean-Louis Fuchs <ganwell@fangorn.ch>
+// * Based on Introduction To Algorithms
+// * Reviewed by `Sven Osterwalder`_
+//
+// .. _`Sven Osterwalder`: https://github.com/sosterwalder
 //
 // .. [1] My rgc preprocessor and its MACRO_DEBUG mode are very helpful.
 //
 // .. [2] It quite easy to bind intermediate functions. But it only uses
 //        about 2100 bytes (-Os), per type.
 //
-// Jean-Louis Fuchs <ganwell@fangorn.ch> based on Introduction To Algorithms
 //
 // WORK IN PROGRESS
 // ================
@@ -74,13 +76,13 @@
 // Getting started
 // ---------------
 //
-// This example can be found on github: example_h_, example_c_
+// The example is on github: example_h_, example_c_
 //
 // .. _example_h: https://github.com/ganwell/rbtree/blob/master/src/example.h
 // .. _example_c: https://github.com/ganwell/rbtree/blob/master/src/example.c
 //
-// First we have to define the struct we use in the red-black tree in
-// example.h.
+// First we have to define the struct we use in the red-black tree
+// (example.h).
 //
 // .. code-block:: cpp
 //
@@ -105,6 +107,20 @@
 // .. code-block:: cpp
 //
 //    #define bk_cmp_m(x, y) memcmp(x->isbn, y->isbn, 13)
+//
+// Note if you do something like:
+//
+// .. code-block:: cpp
+//
+//    #define my_cmp_m(x, y) (x->value - y->value)
+//
+// You may only use values from (MIN_INT / 4) - 1 to (MAX_INT / 4) since rbtree
+// uses a int to store the result. To be safe write the comparator as:
+//
+// .. code-block:: cpp
+//
+//    #define rb_safe_cmp_m(x, y) (((x)>(y) ? 1 : ((x)<(y) ? -1 : 0)))
+//    #define my_cmp_m(x, y) rb_safe_cmp(x->value, y->value)
 //
 // Then we have to declare all the rbtree functions. rbtree uses a concept I
 // call context to find functions it needs. For example the functions look for
@@ -221,6 +237,10 @@
 //    Bind the rbtree function implementations for *type* to *context*. Usually
 //    used in a c-file.
 //
+// rb_safe_value_cmp_m(x, y)
+//    Basis for safe value comparators. *x* and *y* are comparable values of
+//    the some type.
+//
 // Then the following functions will be available.
 //
 // cx##_tree_init(type* tree)
@@ -291,7 +311,7 @@
 //       #define my_parent_m(x) (x)->parent
 //       #define my_left_m(x) (x)->left
 //       #define my_right_m(x) (x)->right
-//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+//       #define my_cmp_m(x, y) rb_safe_value_cmp_m(x, y)
 //       rb_bind_cx_m(my, node_t)
 //
 //    .. code-block:: cpp
@@ -304,7 +324,7 @@
 //
 //    .. code-block:: cpp
 //
-//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+//       #define my_cmp_m(x, y) rb_safe_value_cmp_m(x, y)
 //       rb_bind_m(my, node_t)
 //
 //    .. code-block:: cpp
@@ -317,7 +337,7 @@
 //
 //    .. code-block:: cpp
 //
-//       #define my_cmp_m(x, y) rb_value_cmp_m(x, y)
+//       #define my_cmp_m(x, y) rb_safe_value_cmp_m(x, y)
 //       rb_bind_decl_m(my, node_t)
 //
 //    And example.c:
@@ -355,9 +375,16 @@
 //    composability I need access to the generic functions.
 //
 // Why is the iterator so complicated?
-//    rbtree is part of a larger set of data-structures, some need more
+//    rbtree may become part of a larger set of data-structures, some need more
 //    complicated iterator setups, to make the data-structures interchangeable,
 //    all have to follow the iterator protocol. Use rb_for_m.
+//
+// Why yet another red-black tree?
+//    I often joke that C programmers will reimplement every thing till it
+//    perfectly fits their use-case/payload. I need the replace_node function
+//    in my project. I found no way to avoid creating rbtree. sglib is the only
+//    generic red-black tree implementation I know of and it has no parent
+//    pointers, which makes replace_node impossible.
 //
 // Performance
 // ===========
@@ -395,6 +422,7 @@
 //    0x018 T my_node_init
 //    0x01b T my_tree_init
 //    0x020 C my_nil_mem
+//    0x02d T my_size
 //    0x032 T my_iter_init
 //    0x03d T my_find
 //    0x042 T my_check_tree
@@ -504,6 +532,20 @@
 //
 // Some basic comparators usually you would define your own.
 //
+// rb_safe_cmp_m
+// ----------------
+//
+// Base for safe value comparator.
+//
+// x, y
+//    Values to compare
+//
+// .. code-block:: cpp
+//
+#define rb_safe_cmp_m(x, y) \
+    (((x)>(y) ? 1 : ((x)<(y) ? -1 : 0))) \
+
+//
 // rb_pointer_cmp_m
 // ----------------
 //
@@ -515,13 +557,29 @@
 // .. code-block:: cpp
 //
 #define rb_pointer_cmp_m(x, y) \
-    ((int) (x - y)) \
+    rb_safe_cmp_m(x, y) \
 
 
 // rb_value_cmp_m
 // ----------------
 //
-// Compares nodes that have the rb_value_m trait.
+// Compares nodes that have the rb_value_m trait. Only safe if you only use
+// 30bit values.
+//
+// x, y
+//    Nodes to compare
+//
+// .. code-block:: cpp
+//
+#define rb_safe_value_cmp_m(x, y) \
+    rb_safe_cmp_m(rb_value_m(x), rb_value_m(y)) \
+
+
+// rb_value_cmp_m
+// ----------------
+//
+// Compares nodes that have the rb_value_m trait. Only safe if you only use
+// 30bit values.
 //
 // x, y
 //    Nodes to compare
@@ -713,13 +771,13 @@ do { \
         break; \
     } \
     for(;;) { \
-        /* Next would be the root, we are done */ \
+        /* Next would be the root, we are done. */ \
         if(parent(elem) == nil) { \
             elem = nil; \
             break; \
         } \
         tmp = parent(elem); \
-        /* tmp is a left node, therefore it is the next node */ \
+        /* tmp is a left node, therefore it is the next node. */ \
         if(elem == left(tmp)) { \
             elem = tmp; \
             break; \
@@ -811,22 +869,21 @@ do { \
     p = NULL; \
     r = 0; \
     while(c != nil) { \
-        /* The node is already in the rbtree, we break */ \
+        /* The node is already in the rbtree, we break. */ \
         r = cmp((c), (node)); \
         if(r == 0) \
             break; \
         p = c; \
-        /* Smaller on the left, bigger on the right */ \
+        /* Lesser on the left, greater on the right. */ \
         c = r > 0 ? left(c) : right(c); \
     } \
-    /* The node is already in the rbtree, we break */ \
+    /* The node is already in the rbtree, we break. */ \
     if(c != nil) \
         break; \
  \
     parent(node) = p; \
     rb_make_red_m(color(node)); \
  \
-    /* Lesser on the left, greater on the right */ \
     if(r > 0) \
         left(p) = node; \
     else \
@@ -915,25 +972,24 @@ do { \
         right(node) != nil || \
         rb_is_black_m(color(node)) \
     ) && "Node is not in a tree"); \
-    /* This node has at least one nil node, delete is simple */ \
     if(left(node) == nil || right(node) == nil) \
-        /* The node is suitable for deletion */ \
+        /* This node has at least one nil node, delete is simple. */ \
         y = node; \
     else { \
         /* We need to find another node for deletion that as \
-         * only one child */ \
+         * only one child. This is tree-next. */ \
         y = right(node); \
         while(left(y) != nil) \
             y = left(y); \
     } \
  \
-    /* If y has a child we have to attach it to the parent */ \
+    /* If y has a child we have to attach it to the parent. */ \
     if(left(y) != nil) \
         x = left(y); \
     else \
         x = right(y); \
  \
-    /* Remove y from the tree */ \
+    /* Remove y from the tree. */ \
     parent(x) = parent(y); \
     if(parent(y) != nil) { \
         if(y == left(parent(y))) \
@@ -958,7 +1014,7 @@ do { \
         ); \
     } \
  \
-    /* Replace y with the node since we don't control memory */ \
+    /* Replace y with the node since we don't control memory. */ \
     if(node != y) { \
         if(parent(node) == nil) { \
             tree = y; \
@@ -978,7 +1034,7 @@ do { \
         right(y) = right(node); \
         color(y) = color(node); \
     } \
-    /* Clear the node */ \
+    /* Clear the node. */ \
     parent(node) = nil; \
     left(node) = nil; \
     right(node) = nil; \
@@ -1125,7 +1181,7 @@ do { \
         left(new) = left(old); \
         right(new) = right(old); \
         color(new) = color(old); \
-        /* Clear the old node */ \
+        /* Clear the old node. */ \
         parent(old) = nil; \
         left(old) = nil; \
         right(old) = nil; \
@@ -1635,25 +1691,25 @@ do { \
     x = node; \
     y = right(x); \
  \
-    /* Turn y's left sub-tree into x's right sub-tree */ \
+    /* Turn y's left sub-tree into x's right sub-tree. */ \
     right(x) = left(y); \
     if(left(y) != nil) \
         parent(left(y)) = x; \
-    /* y's new parent was x's parent */ \
+    /* y's new parent was x's parent. */ \
     parent(y) = parent(x); \
     if(parent(x) == nil) \
-        /* If x is root y becomes the new root */ \
+        /* If x is root y becomes the new root. */ \
         tree = y; \
     else { \
-        /* Set the parent to point to y instead of x */ \
+        /* Set the parent to point to y instead of x. */ \
         if(x == left(parent(x))) \
-            /* x was on the left of its parent */ \
+            /* x was on the left of its parent. */ \
             left(parent(x)) = y; \
         else \
-            /* x must have been on the right */ \
+            /* x must have been on the right. */ \
             right(parent(x)) = y; \
     } \
-    /* Finally, put x on y's left */ \
+    /* Finally, put x on y's left. */ \
     left(y) = x; \
     parent(x) = y; \
 } \
@@ -1917,7 +1973,7 @@ do { \
 ) \
 { \
     x = node; \
-    /* Move up extra blackness till x is red. */ \
+    /* Move up fix extra blackness till x is red. */ \
     while( \
             (x != tree) && \
             rb_is_black_m(color(x)) \
