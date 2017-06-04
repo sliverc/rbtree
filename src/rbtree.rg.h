@@ -522,7 +522,7 @@
 #define rb_tree_h
 #include <assert.h>
 #ifndef RB_SIZE_T
-#define RB_SIZE_T int
+#   define RB_SIZE_T int
 #endif
 //
 // Basic traits
@@ -798,7 +798,7 @@ do {
     for(;;) {
         /* Next would be the root, we are done. */
         if(parent(elem) == nil) {
-            elem = nil;
+            elem = NULL;
             break;
         }
         tmp = parent(elem);
@@ -809,8 +809,6 @@ do {
         }
         elem = tmp;
     }
-    if(elem == nil)
-        elem = NULL;
 } while(0)
 #enddef
 
