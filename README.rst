@@ -27,14 +27,12 @@ Red-Black Tree
 * By Jean-Louis Fuchs <ganwell@fangorn.ch>
 * Based on Introduction To Algorithms
 * Text review by Eva Fuchs
-* Code review by `Sven Osterwalder`_
+* Code review by XXXX
 * Thanks a lot to both
-
-.. _`Sven Osterwalder`: https://github.com/sosterwalder
 
 .. [1] My rgc preprocessor and its MACRO_DEBUG mode are very helpful.
 
-.. [2] It quite easy to bind intermediate functions. But it only uses
+.. [2] It is quite easy to bind intermediate functions. But rbtree only uses
        about 2100 bytes (-Os), per type.
 
 
@@ -106,8 +104,8 @@ First we have to define the struct we use in the red-black tree
        book_t* right;
    };
 
-You can add the fields color, parent, left, right to any existing struct.
-It is also possible to use other names than the above (see Extendend).
+You can add the fields color, parent, left and right to any existing struct.
+It is also possible to use different names than the above (see Extendend).
 
 Next we have to define the comparator function, since we want to lookup
 books using the ISBN-number, we compare it using memcmp.
@@ -132,10 +130,10 @@ uses a int to store the result. To be safe write the comparator as:
 
 rb_safe_cmp_m is provided by rbtree.
 
-Then we have to declare all the rbtree functions. rbtree uses a concept I
-call context to find functions it needs. For example the functions look for
-a macro called $CONTEXT_cmp_m. I developed this concept to make functions
-composable without being too verbose. For example
+Then we have to declare all the rbtree functions. rbtree uses a concept, I
+call context, to find functions it needs. For example the rbtree functions
+look for a macro called $CONTEXT_cmp_m. I developed this concept to make
+functions composable without being too verbose.
 
 .. code-block:: cpp
 
@@ -158,14 +156,14 @@ root node.
    rb_bind_impl_m(bk, book_t)
    book_t* tree;
 
-In order to use the tree we have to initialize it, which is actually only
+In order to use the tree, we have to initialize it, which actually is
 assigning *bk_nil_ptr* to it.
 
 .. code-block:: cpp
 
    bk_tree_init(&tree);
 
-Now we can register a book.
+Now we can register a book:
 
 .. code-block:: cpp
 
@@ -183,7 +181,7 @@ Now we can register a book.
 Note that we pass a double pointer to bk_insert, since it might need to change
 the root node.
 
-Or we can lookup a book.
+Or we can lookup a book:
 
 .. code-block:: cpp
 
@@ -245,16 +243,16 @@ rb_bind_decl_m(context, type) alias rb_bind_decl_cx_m
 
 rb_bind_impl_m(context, type)
    Bind the rbtree function implementations for *type* to *context*. Usually
-   used in a c-file. The variant uses the standard rb_*_m traits.
+   used in a c-file. This variant uses the standard rb_*_m traits.
 
 rb_bind_impl_cx_m(context, type)
    Bind the rbtree function implementations for *type* to *context*. Usually
-   used in a c-file. The variant uses cx##_*_m traits, which means you have
+   used in a c-file. This variant uses cx##_*_m traits, which means you have
    to define them.
 
 rb_safe_value_cmp_m(x, y)
    Basis for safe value comparators. *x* and *y* are comparable values of
-   the some type.
+   the same type.
 
 Then the following functions will be available.
 
@@ -262,7 +260,7 @@ cx##_tree_init(type* tree)
    Initialize *tree* by assigning *cx##_nil_ptr* to it.
 
 cx##_node_init(type* node)
-   Initialize *node* by initializing the color, parent, left, right fields.
+   Initialize *node* by initializing the color, parent, left and right fields.
 
 cx##_insert(type** tree, type* node)
    Insert *node* into *tree*. If a node with the same key exists the
@@ -287,12 +285,13 @@ cx##_replace(type** tree, type* key, type* new)
 
 cx##_find(type* tree, type* key, type** node)
    Find the node matching *key* and assign it to *node*. If *key* is not in
-   the tree *node* will not be assigned and the function return 1, 0 on
+   the tree *node* will not be assigned and the function returns 1, 0 on
    success.
 
 cx##_size(type* tree)
    Returns the size of tree. By default RB_SIZE_T is int to avoid additional
-   dependencies. Feel free to define RB_SIZE_T as size_t for example.
+   dependencies. Feel free to define RB_SIZE_T as size_t for example. O(log
+   (N)).
 
 rb_iter_decl_m(cx, iter, elem)
    Declares the variables *iter* and *elem* for the context *cx*.
@@ -347,19 +346,19 @@ cx_x
       my_tree_init(&tree);
       my_node_init(node);
 
-   Of course usually you want to split declaration and implementation of the
-   function so it is. example.h:
+   Of course usually, you want to split declaration and implementation of the
+   function, so it is: header.h:
 
    .. code-block:: cpp
 
       #define my_cmp_m(x, y) rb_safe_value_cmp_m(x, y)
       rb_bind_decl_m(my, node_t)
 
-   And example.c:
+   And object.c:
 
    .. code-block:: cpp
 
-      #include "example.h"
+      #include "header.h"
       rb_bind_impl_m(my, node_t)
 
       int main(void) { my_node_init(node); return 0; }
@@ -404,8 +403,10 @@ Why yet another red-black tree?
 Performance
 ===========
 
-I compare with sglib, because it is the best and greatest I know. Kodos to
+I compare with sglib_, because it is the best and greatest I know. Kudos to
 Marian Vittek.
+
+.. _sglib: http://sglib.sourceforge.net/
 
 .. image:: https://github.com/ganwell/rbtree/raw/master/perf_insert.png
    :width: 90%
@@ -417,7 +418,7 @@ Marian Vittek.
    :align: center
    :alt: delete
 
-sglib has no delete_node. For many application a delete_node and a
+sglib has no delete_node. For many applications, a delete_node and a
 replace_node function is handy, since the application already has the right
 node to delete or replace.
 
@@ -449,32 +450,32 @@ Code size
    0x20e T my_insert
    0x356 T my_delete_node
 
-About 2100 bytes. If code size really really matters, check_tree and
+About 2100 bytes. If code size really really matters to you, check_tree and
 check_tree_rec could be removed and _rb_rotate_left_m could be bound and
 called by delete and insert. But in my opinion 2100 bytes is small.
 
 Lessons learned
 ===============
 
-I thought I don't have to understand the red-black trees and can just adjust
-an existing implementation. I chose poorly and the thing was inherently
-broken. I wasted a lot of time on it. They replaced the nil pointer with
-NULL and it resulted in a tree that works, but is not balanced. So my
-check_tree function failed and I tried to fix that implementation. It turns
-out buttom-up-fixups are very difficult to implement with NULL pointers. So
-after many hours wasted I just read Introductions to Algorithms and fixed my
-implementation.
+I thought I don't have to understand the red-black trees and could simply
+adjust an existing implementation. I chose poorly and the thing was
+inherently broken. I wasted a lot of time on it. They replaced the nil
+pointer with NULL and it resulted in a tree that works, but is not balanced.
+So my check_tree function failed and I tried to fix that implementation. It
+turns out bottom-up-fixups are very difficult to implement with NULL
+pointers. So after many hours wasted I just read Introductions to Algorithms
+and fixed my implementation.
 
-I thought I can adapt this code easily to make a persistent data-structure,
+I thought I could adapt this code easily to make a persistent data-structure,
 but I found it is more important to have the parent pointers and therefore
 keep complexity at bay. If I am going to implement any persistent
-data-structure, I am going to build the persistent vector as used in closure
+data-structures, I am going to build the persistent vector as used in closure
 and then convert the red-black tree to use vector-indexes and make it
 persistent on top of the persistent vector. It seems like the persistent
 vector can be built using reference-counting: pyrsistent_, so it should be
 possible.
 
-With the right mindset generic and composable programming in C is awesome.
+With the right mindset, generic and composable programming in C is awesome.
 Well, you need my rgc preprocessor (readable generic C) or debugging is
 almost impossible. But rgc is just 60 lines of Python and very simple.
 
@@ -542,7 +543,7 @@ Context creation
 ================
 
 Create the type aliases. Actually only cx##_iter_t is used, since we can
-just referrer to *type*. Note the const before cx##_nil_ptr, is the secret
+just refer to *type*. Note the const before cx##_nil_ptr, is the secret
 to make the code so small: the compiler just inserts the value into all
 comparisons with nil.
 
@@ -557,12 +558,12 @@ comparisons with nil.
 Comparators
 ===========
 
-Some basic comparators usually you would define your own.
+Some basic comparators, you would usually define your own.
 
 rb_safe_cmp_m
 ----------------
 
-Base for safe value comparator.
+Base for safe value comparators.
 
 x, y
    Values to compare
@@ -690,7 +691,7 @@ node
 rb_for_m
 --------
 
-Generates a for loop header using the iterator.
+Generates a for-loop-header using the iterator.
 
 iter
    The new iterator variable.
@@ -963,7 +964,7 @@ rb_delete_node_m
 Bound: cx##_delete_node
 
 Delete a node from the tree. This function acts on an actual tree
-node. If you don't have it use rb_find_m first or rb_delete_m. The root node
+node. If you don't have it; use rb_find_m first or rb_delete_m. The root node
 (*tree*) can change.
 
 tree
@@ -999,8 +1000,8 @@ node
            /* This node has at least one nil node, delete is simple. */
            y = node;
        else {
-           /* We need to find another node for deletion that as
-            * only one child. This is tree-next. */
+           /* We need to find another node for deletion that has only one child.
+            * This is tree-next. */
            y = right(node);
            while(left(y) != nil)
                y = left(y);
@@ -1022,7 +1023,7 @@ node
        } else
            tree = x;
    
-       /* A black node was removed, to fix the problem pretend to have pushed the
+       /* A black node was removed, to fix the problem we pretend to have pushed the
         * blackness onto x. Therefore x is double black and violates property 1. */
        if(rb_is_black_m(color(y))) {
            _rb_delete_fix_m(
@@ -1671,8 +1672,8 @@ _rb_rotate_left_m
 Internal: not bound
 
 A rotation is a local operation in a search tree that preserves in-order
-traversal key ordering. Used to fix insert/deletion discrepancies. This
-operation might change the current root.
+traversal key ordering. It is used to fix insert/deletion discrepancies.
+This operation might change the current root.
 
 _rb_rotate_right_m is _rb_rotate_left_m where left and right had been
 switched.
@@ -1818,7 +1819,7 @@ _rb_insert_fix_m
 
 Internal: not bound
 
-After insert the new node is labeled red, and possibly destroys the
+After inserting the new node is labeled red, and possibly destroys the
 red-black property. The main loop moves up the tree, restoring the red-black
 property.
 
@@ -1973,7 +1974,7 @@ _rb_delete_fix_m
 Internal: not bound
 
 After deleting a black node, the blackness is pushed down to the child. If
-is black, it is now double (extra) black. Property 1 has to be restored.
+it is black, it is now double (extra) black. Property 1 has to be restored.
 
 tree
    The root node of the tree. A pointer to nil represents an empty tree.
