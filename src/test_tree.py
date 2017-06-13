@@ -34,14 +34,14 @@ class GenTree(GenericStateMachine):
         lib.test_init()
 
     def steps(self):
-        add_strategy = tuples(
+        add_node = tuples(
             just("add"),
             integers(
                 min_value=-2**30,
                 max_value=(2**30) - 1
             )
         )
-        rnd_find_strategy = tuples(
+        rnd_find = tuples(
             just("rnd_find"),
             integers(
                 min_value=-2**30,
@@ -61,13 +61,12 @@ class GenTree(GenericStateMachine):
             "replace"
         ), sampled_from(sorted(self.comparison)))
         find = tuples(just("find"), sampled_from(sorted(self.comparison)))
-        check_strategy = tuples(just("check"), just(None))
         if not self.comparison:
-            return add_strategy | check_strategy | rnd_find_strategy
+            return add_node | rnd_find
         else:
             return (
-                add_strategy | check_strategy | rnd_find_strategy |
-                delete_node | delete | find | replace | replace_node
+                add_node | rnd_find | delete_node | delete | find |
+                replace | replace_node
             )
 
     def execute_step(self, step):
@@ -123,8 +122,7 @@ class GenTree(GenericStateMachine):
             assert lib.test_size() == len(self.comparison)
             assert lib.test_find(key.node) == 0
         else:
-            assert value is None
-            assert action == 'check'
+            assert False
 
 
 with settings(max_examples=2000):

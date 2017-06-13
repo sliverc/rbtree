@@ -2,6 +2,7 @@
 from build._rbtree_tests import lib
 from hypothesis import given, assume
 import hypothesis.strategies as st
+from test_all import call_ffi
 
 
 def deduplicate(seq):
@@ -30,4 +31,4 @@ def test_delete(ints):
     if abs(s) > (2**32 / 4) - 1:
         do_sum = False
         s = 0
-    assert(lib.test_delete(c, ints, ss, c - 1, s, do_sum) == 0)
+    call_ffi(lib.test_delete, c, ints, ss, c - 1, s, do_sum)

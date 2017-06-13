@@ -25,12 +25,14 @@ OBJS := \
 	$(BUILD)/src/perf_delete.o
 
 TESTS := \
+	$(BUILD)/src/test_queue.o \
 	$(BUILD)/src/test_traits.o \
 	$(BUILD)/src/test_delete.o \
 	$(BUILD)/src/test_tree.o \
 	$(BUILD)/src/test_insert.o
 
 HEADERS := \
+	$(BUILD)/src/qs.h \
 	$(BUILD)/src/rbtree.h \
 	$(BUILD)/src/testing.h
 
@@ -40,8 +42,11 @@ DOCS := \
 	$(BUILD)/src/perf_insert.c.rst \
 	$(BUILD)/src/perf_delete.c.rst \
 	$(BUILD)/src/perf_replace.c.rst \
+	$(BUILD)/src/qs.rg.h.rst \
 	$(BUILD)/src/rbtree.rg.h.rst \
 	$(BUILD)/src/testing.rg.h.rst \
+	$(BUILD)/src/test_queue.h.rst \
+	$(BUILD)/src/test_queue.c.rst \
 	$(BUILD)/src/test_traits.h.rst \
 	$(BUILD)/src/test_traits.c.rst \
 	$(BUILD)/src/test_insert.h.rst \
@@ -54,9 +59,9 @@ DOCS := \
 ide:
 	$(MAKE) ride 2>&1 | $(BASE)/mk/pfix
 
-ride: docs perf rbtree module
+ride: docs perf rbtree qs module
 
-all: perf rbtree test example ## Make everything
+all: perf rbtree qs test example ## Make everything
 
 test: doc cppcheck tests  # Test only
 	
@@ -92,11 +97,17 @@ headers: $(HEADERS)  ## Make headers
 
 docs: $(DOCS)
 	cp -f $(BUILD)/src/rbtree.rg.h.rst $(BASE)/README.rst
+	cp -f $(BUILD)/src/qs.rg.h.rst $(BASE)/qs.rst
 	git add $(BASE)/README.rst
+	git add $(BASE)/qs.rst
 
 rbtree: $(BUILD)/src/rbtree.h ## Make rbtree.h
 	cp -f $(BUILD)/src/rbtree.h $(BASE)/rbtree.h
 	git add $(BASE)/rbtree.h
+
+qs: $(BUILD)/src/rbtree.h ## Make qs.h
+	cp -f $(BUILD)/src/qs.h $(BASE)/qs.h
+	git add $(BASE)/qs.h
 
 doc: docs  ## Make documentation
 	command -v rst2html && \

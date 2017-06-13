@@ -2,6 +2,7 @@
 from build._rbtree_tests import lib
 from hypothesis import given
 import hypothesis.strategies as st
+from test_all import call_ffi
 
 
 def deduplicate(seq):
@@ -27,7 +28,7 @@ def test_insert(ints):
     if abs(s) > (2**32 / 2) - 1:
         do_sum = False
         s = 0
-    assert(lib.test_insert(c, ints, ss, sc, s, do_sum) == 0)
+    call_ffi(lib.test_insert, c, ints, ss, sc, s, do_sum)
 
 
 def test_insert_fix():
@@ -37,14 +38,14 @@ def test_insert_fix():
     sc = len(ss)
     s = sum(ss)
     c = len(ints)
-    assert(lib.test_insert(c, ints, ss, sc, s, True) == 0)
+    call_ffi(lib.test_insert, c, ints, ss, sc, s, True)
 
 
 def test_insert_static():
     """Test if rbtree is consistent after inserts."""
-    assert(lib.test_insert_static() == 0)
+    call_ffi(lib.test_insert_static)
 
 
 def test_rotate():
     """Test if rotate left/right work."""
-    assert(lib.test_rotate() == 0)
+    call_ffi(lib.test_rotate)

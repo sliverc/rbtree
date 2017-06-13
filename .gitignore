@@ -3,3 +3,4 @@
 /.cache
 /.hypothesis
 __pycache__
+/.ldocker

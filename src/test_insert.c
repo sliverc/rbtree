@@ -86,7 +86,7 @@ test_insert_static(void)
     int sum = 0;
     rb_iter_decl_cx_m(my, iter, elem);
 
-    my_iter_init(tree, iter, &elem);
+    my_iter_init(tree, &iter, &elem);
     while(elem != NULL) {
         sum += rb_value_m(elem);
         my_iter_next(iter, &elem);
@@ -94,7 +94,7 @@ test_insert_static(void)
     TA(sum == 3, "Sum should be 3");
     sum = 0;
     for(
-            my_iter_init(tree, iter, &elem);
+            my_iter_init(tree, &iter, &elem);
             elem != NULL;
             my_iter_next(iter, &elem)
     ) {

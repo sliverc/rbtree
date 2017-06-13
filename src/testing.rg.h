@@ -2,10 +2,10 @@
 #define rb_testing_h
 
 #include "rbtree.h"
+#include "qs.h"
 
 #include <stdio.h>
 #include <string.h>
-
 
 #begindef TA(condition, ...)
 {
@@ -62,6 +62,15 @@ struct node_s {
 
 #define my_cmp_m(x, y) rb_safe_value_cmp_m(x, y)
 rb_bind_decl_m(my, node_t)
+
+struct item_s;
+typedef struct item_s item_t;
+struct item_s {
+    int     value;
+    item_t* next;
+};
+
+qs_queue_bind_decl_m(qq, item_t)
 
 static
 void

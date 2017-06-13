@@ -13,6 +13,7 @@ TODO: Word consistency for example always write red-black tree
 Red-Black Tree
 ==============
 
+* Bonus: `qs.h`_ (Queue / Stack)
 * Textbook implementation
 * Extensive tests
 * Has parent pointers and therefore faster delete_node and constant time
@@ -34,6 +35,8 @@ Red-Black Tree
 
 .. [2] It is quite easy to bind intermediate functions. But rbtree only uses
        about 2100 bytes (-Os), per type.
+
+.. _`qs.h`: https://github.com/ganwell/rbtree/blob/master/qs.rst
 
 
 WORK IN PROGRESS
@@ -299,11 +302,11 @@ rb_iter_decl_m(cx, iter, elem)
 cx##_iter_init(type* tree, cx##_iter_t* iter, type** elem)
    Initializes *elem* to point to the first element in tree. Use
    rb_iter_decl_m to declare *iter* and *elem*. If the tree is empty
-   *elem* will be *cx##_nil_ptr*.
+   *elem* will be NULL.
 
 cx##_iter_next(cx##_iter_t* iter, type** elem)
    Move *elem* to the next element in the tree. *elem* will point to
-   *cx##_nil_ptr* at the end.
+   NULL at the end.
 
 cx##_check_tree(type* tree)
    Check the consistency of a tree. Only interesting for development of
@@ -703,7 +706,7 @@ elem
 
    #begindef rb_for_m(cx, tree, iter, elem)
        for(
-               cx##_iter_init(tree, iter, &elem);
+               cx##_iter_init(tree, &iter, &elem);
                elem != NULL;
                cx##_iter_next(iter, &elem)
        )
@@ -748,7 +751,7 @@ iter
    The iterator.
 
 elem
-   The pointer to the current element.
+   The pointer to the current element. Is NULL if the tree is empty.
 
 
 .. code-block:: cpp
@@ -756,7 +759,7 @@ elem
    #begindef rb_iter_init_m(nil, left, tree, elem)
    {
        if(tree == nil)
-           elem = nil;
+           elem = NULL;
        else {
            elem = tree;
            while(left(elem) != nil)
@@ -1238,7 +1241,7 @@ type
        void
        cx##_iter_init(
                type* tree,
-               cx##_iter_t* iter,
+               cx##_iter_t** iter,
                type** elem
        );
        void
@@ -1344,7 +1347,7 @@ type
        void
        cx##_iter_init(
                type* tree,
-               cx##_iter_t* iter,
+               cx##_iter_t** iter,
                type** elem
        )
        {
