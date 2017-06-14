@@ -24,7 +24,7 @@ _includes = "\n".join([
 ])
 
 _defs = []
-for h in _headers:
+for h in sorted(_headers):
     with codecs.open(h, encoding="UTF-8") as f:
         _defs.append(f.read())
 

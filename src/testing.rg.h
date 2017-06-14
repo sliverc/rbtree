@@ -71,6 +71,7 @@ struct item_s {
 };
 
 qs_queue_bind_decl_m(qq, item_t)
+qs_stack_bind_decl_m(qs, item_t)
 
 static
 void

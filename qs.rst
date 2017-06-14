@@ -112,9 +112,9 @@ item
    )
    {
        assert(next(item) == NULL && "Item already in use");
-       if(queue == NULL) {
+       if(queue == NULL)
            next(item) = item;
-       } else {
+       else {
            next(item) = next(queue);
            next(queue) = item;
        }
@@ -128,6 +128,7 @@ qs_dequeue_m
 Bound: cx##_dequeue
 
 Dequeue an item from the queue. Returns the first item in the queue (FIFO).
+Does nothing if the queue is empty.
 
 queue
    Beginning of the queue
@@ -144,13 +145,14 @@ item
    )
    {
        assert(item == NULL && "Item should be NULL");
-       assert(queue != NULL && "Cannot dequeue from empty queue");
-       item = next(queue);
-       if(next(queue) == queue)
-           queue = NULL;
-       else
-           next(queue) = next(item);
-       next(item) = NULL;
+       if(queue != NULL) {
+           item = next(queue);
+           if(next(queue) == queue)
+               queue = NULL;
+           else
+               next(queue) = next(item);
+           next(item) = NULL;
+       }
    }
    #enddef
    
@@ -239,7 +241,6 @@ type
                type** elem
        )
        {
-           (void)(iter);
            qs_queue_iter_init_m(
                next,
                queue,
@@ -253,7 +254,6 @@ type
                type** elem
        )
        {
-           (void)(iter);
            qs_queue_iter_next_m(
                next,
                iter,
@@ -310,7 +310,8 @@ qs_queue_iter_init_m
 
 Bound: cx##_iter_init
 
-Initialize iterator. It will point to the first element.
+Initialize iterator. It will point to the first element or NULL if the queue
+is empty.
 
 queue
    The queue.
@@ -327,7 +328,10 @@ elem
    #begindef qs_queue_iter_init_m(next, queue, iter, elem)
    {
        iter = queue;
-       elem = next(queue);
+       if(queue == NULL)
+           elem = NULL;
+       else
+           elem = next(queue);
    }
    #enddef
    
@@ -357,5 +361,266 @@ elem
            elem = NULL;
        else
            elem = next(elem);
+   }
+   #enddef
+   
+   
+Stack
+-----
+
+Common arguments
+
+next
+   Get the next item of the stack
+
+qs_push_m
+---------
+
+Bound: cx##_push
+
+Push an item to the stack.
+
+stack
+   Base pointer to the stack.
+
+item
+   Item to push.
+
+.. code-block:: cpp
+
+   #begindef qs_push_m(
+           next,
+           stack,
+           item
+   )
+   {
+       assert(next(item) == NULL && "Item already in use");
+       next(item) = stack;
+       stack = item;
+   }
+   #enddef
+   
+qs_pop_m
+--------
+
+Bound: cx##_pop
+
+Pop an item from the stack. Returns the last item in the stack (LIFO).
+Does nothing if the stack is empty.
+
+stack
+   Base pointer to the stack.
+
+item
+   Item popped.
+
+.. code-block:: cpp
+
+   #begindef qs_pop_m(
+           next,
+           stack,
+           item
+   )
+   {
+       assert(item == NULL && "Item should be NULL");
+       if(stack != NULL) {
+           item = stack;
+           stack = next(stack);
+           next(item) = NULL;
+       }
+   }
+   #enddef
+   
+qs_stack_bind_decl_m
+--------------------
+
+Alias: qs_stack_bind_decl_cx_m
+
+Bind stack functions to a context. This only generates declarations.
+
+cx
+   Name of the new context.
+
+type
+   The type of the items of the stack.
+
+.. code-block:: cpp
+
+   #begindef qs_stack_bind_decl_m(cx, type)
+       typedef type cx##_iter_t;
+       typedef type cx##_type_t;
+       void
+       cx##_push(
+               type** stack,
+               type* item
+       );
+       void
+       cx##_pop(
+               type** stack,
+               type** item
+       );
+       void
+       cx##_iter_init(
+               type* stack,
+               cx##_iter_t** iter,
+               type** elem
+       );
+       void
+       cx##_iter_next(
+               cx##_iter_t* iter,
+               type** elem
+       );
+   #enddef
+   
+   #define qs_stack_bind_decl_cx_m(cx, type) qs_stack_bind_decl_m(cx, type)
+   
+qs_stack_bind_impl_m
+---------------------
+
+Bind stack functions to a context. This only generates implementations.
+
+qs_stack_bind_impl_m uses qs_next_m. qs_stack_bind_impl_cx_m uses
+cx##_next_m.
+
+cx
+   Name of the new context.
+
+type
+   The type of the items of the stack.
+
+.. code-block:: cpp
+
+   #begindef _qs_stack_bind_impl_tr_m(cx, type, next)
+       void
+       cx##_push(
+               type** stack,
+               type* item
+       ) qs_push_m(
+               next,
+               *stack,
+               item
+       )
+       void
+       cx##_pop(
+               type** stack,
+               type** item
+       ) qs_pop_m(
+               next,
+               *stack,
+               *item
+       )
+       void
+       cx##_iter_init(
+               type* stack,
+               cx##_iter_t** iter,
+               type** elem
+       )
+       {
+           (void)(iter);
+           qs_stack_iter_init_m(
+               next,
+               stack,
+               *elem
+           );
+       }
+       void
+       cx##_iter_next(
+               cx##_iter_t* iter,
+               type** elem
+       )
+       {
+           (void)(iter);
+           qs_stack_iter_next_m(
+               next,
+               *elem
+           )
+       }
+   #enddef
+   
+   #begindef qs_stack_bind_impl_cx_m(cx, type)
+       _qs_stack_bind_impl_tr_m(cx, type, cx##_next_m)
+   #enddef
+   
+   #begindef qs_stack_bind_impl_m(cx, type)
+       _qs_stack_bind_impl_tr_m(cx, type, qs_next_m)
+   #enddef
+   
+   #begindef qs_stack_bind_cx_m(cx, type)
+       qs_stack_bind_decl_cx_m(cx, type)
+       qs_stack_bind_impl_cx_m(cx, type)
+   #enddef
+   
+   #begindef qs_stack_bind_m(cx, type)
+       qs_stack_bind_decl_m(cx, type)
+       qs_stack_bind_impl_m(cx, type)
+   #enddef
+   
+qs_stack_iter_decl_m
+---------------------
+
+Also: qs_stack_iter_decl_cx_m
+
+Declare iterator variables.
+
+iter
+   The new iterator variable.
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef qs_stack_iter_decl_m(type, iter, elem)
+       type* iter = NULL;
+       type* elem = NULL;
+   #enddef
+   
+   #begindef qs_stack_iter_decl_cx_m(cx, iter, elem)
+       cx##_type_t* iter = NULL;
+       cx##_type_t* elem = NULL;
+   #enddef
+   
+qs_stack_iter_init_m
+---------------------
+
+Bound: cx##_iter_init
+
+Initialize iterator. It will point to the first element or NULL if the stack
+is empty.
+
+stack
+   Base pointer to the stack.
+
+elem
+   The pointer to the current element.
+
+
+.. code-block:: cpp
+
+   #begindef qs_stack_iter_init_m(next, stack, elem)
+   {
+       elem = stack;
+   }
+   #enddef
+   
+qs_stack_iter_next_m
+--------------------
+
+Bound: cx##_iter_next
+
+Initialize iterator. It will point to the first element. The element will be
+NULL, if the iteration is at the end.
+
+elem
+   The pointer to the current element.
+
+.. code-block:: cpp
+
+   #begindef qs_stack_iter_next_m(
+           next,
+           elem
+   )
+   {
+       elem = next(elem);
    }
    #enddef

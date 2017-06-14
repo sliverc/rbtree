@@ -25,6 +25,7 @@ OBJS := \
 	$(BUILD)/src/perf_delete.o
 
 TESTS := \
+	$(BUILD)/src/test_stack.o \
 	$(BUILD)/src/test_queue.o \
 	$(BUILD)/src/test_traits.o \
 	$(BUILD)/src/test_delete.o \
@@ -45,6 +46,8 @@ DOCS := \
 	$(BUILD)/src/qs.rg.h.rst \
 	$(BUILD)/src/rbtree.rg.h.rst \
 	$(BUILD)/src/testing.rg.h.rst \
+	$(BUILD)/src/test_stack.h.rst \
+	$(BUILD)/src/test_stack.c.rst \
 	$(BUILD)/src/test_queue.h.rst \
 	$(BUILD)/src/test_queue.c.rst \
 	$(BUILD)/src/test_traits.h.rst \
@@ -123,7 +126,7 @@ xtests: module
 module: $(BUILD)/_rbtree_tests.o
 
 $(BUILD)/_rbtree_tests.o: $(BUILD)/rbtests.a
-	cd $(BUILD) && python $(BASE)/src/cffi_build.py
+	cd $(BUILD) && python3 $(BASE)/src/cffi_build.py
 	cd $(BUILD) && touch __init__.py
 	command -v setfattr && \
 		setfattr -n user.pax.flags -v "emr" $(BUILD)/*.so || true

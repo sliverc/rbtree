@@ -1,4 +1,4 @@
-"""Test if queue the tree stays consistent."""
+"""Test if the queue stays consistent."""
 from build._rbtree_tests import lib, ffi
 from hypothesis import settings
 from hypothesis.stateful import GenericStateMachine
@@ -26,7 +26,7 @@ def test_queuex():
 
 
 class GenQueue(GenericStateMachine):
-    """Test if the stays consistent."""
+    """Test if the queue stays consistent."""
 
     def __init__(self):
         self.comparison = []
